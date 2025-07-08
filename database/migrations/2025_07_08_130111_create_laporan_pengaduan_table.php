@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('status', ['Pending', 'Diterima', 'Dalam_Investigasi', 'Selesai', 'Ditolak'])->default('Pending');
             $table->string('lokasi_kejadian');
             $table->datetime('tanggal_kejadian');
-            $table->json('bukti_dokumen')->nullable(); // array of file paths
+            $table->json('bukti_dokumen')->nullable();
             $table->text('keterangan_admin')->nullable();
             $table->timestamps();
 
