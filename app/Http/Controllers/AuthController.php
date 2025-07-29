@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,6 +12,12 @@ class AuthController extends Controller
     {
         return view('auth.login');
     }
+
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
 
     public function login(Request $request)
     {
@@ -53,5 +60,26 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('success', 'Anda telah logout.');
+    }
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_lengkap' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|email|unique:users',
+            'no_telepon' => 'required|string|max:20',
+            'alamat' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            ...$validated,
+            'role' => 'Warga',
+            'is_active' => true,
+        ]);
+
+        auth()->login($user);
+
+        return redirect()->route('login')->with('success', 'Registrasi berhasil!');
     }
 }

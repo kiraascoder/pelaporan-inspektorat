@@ -14,7 +14,6 @@ class WargaController extends Controller
     {
         $user = auth()->user();
 
-        // Statistik laporan warga
         $stats = [
             'total_laporan' => $user->laporanPengaduan()->count(),
             'laporan_pending' => $user->laporanPengaduan()->pending()->count(),
@@ -22,7 +21,7 @@ class WargaController extends Controller
             'laporan_selesai' => $user->laporanPengaduan()->selesai()->count(),
         ];
 
-        // Laporan terbaru
+
         $laporanTerbaru = $user->laporanPengaduan()
             ->latest()
             ->limit(5)
@@ -74,19 +73,18 @@ class WargaController extends Controller
 
         LaporanPengaduan::create($data);
 
-        return redirect()->route('warga.laporan.index')
+        return redirect()->route('warga.laporan')
             ->with('success', 'Laporan berhasil diajukan.');
     }
 
     public function show(LaporanPengaduan $laporan)
     {
-        // Middleware sudah handle ownership check
-        return view('warga.laporan.show', compact('laporan'));
+        return view('warga.detail-laporan', compact('laporan'));
     }
 
     public function edit(LaporanPengaduan $laporan)
     {
-        // Hanya bisa edit jika status masih pending
+        
         if ($laporan->status !== 'Pending') {
             return redirect()->back()->with('error', 'Laporan tidak dapat diubah karena sudah diproses.');
         }
@@ -118,7 +116,7 @@ class WargaController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        return view('warga.profile', compact('user'));
+        return view(' ', compact('user'));
     }
 
     public function updateProfile(Request $request)
@@ -141,7 +139,34 @@ class WargaController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('warga.profile')
+        return redirect()->route(' ')
             ->with('success', 'Profile berhasil diperbarui.');
+    }
+
+    public function laporanView()
+    {
+        $user = auth()->user();
+
+
+        $stats = [
+            'total_laporan' => $user->laporanPengaduan()->count(),
+            'laporan_pending' => $user->laporanPengaduan()->pending()->count(),
+            'laporan_dalam_investigasi' => $user->laporanPengaduan()->dalamInvestigasi()->count(),
+            'laporan_selesai' => $user->laporanPengaduan()->selesai()->count(),
+        ];
+
+
+        $laporanTerbaru = $user->laporanPengaduan()
+            ->latest()
+            ->paginate(5);
+
+
+        return view('warga.laporan', compact('stats', 'laporanTerbaru'));
+    }
+
+    public function profileView()
+    {
+        $user = auth()->user();
+        return view('warga.profile', compact('user'));
     }
 }

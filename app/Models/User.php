@@ -2,6 +2,7 @@
 
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+
 
     protected $primaryKey = 'user_id';
 
@@ -36,7 +38,7 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    
+
     public function scopeWarga($query)
     {
         return $query->where('role', 'Warga');
@@ -64,19 +66,19 @@ class User extends Authenticatable
 
     // Relationships
 
-    // User sebagai pengaju laporan (Warga)
+
     public function laporanPengaduan()
     {
         return $this->hasMany(LaporanPengaduan::class, 'user_id', 'user_id');
     }
 
-    // User sebagai ketua tim investigasi
+
     public function timInvestigasiDipimpin()
     {
         return $this->hasMany(TimInvestigasi::class, 'ketua_tim_id', 'user_id');
     }
 
-    // User sebagai anggota tim investigasi (many to many)
+
     public function timInvestigasiDiikuti()
     {
         return $this->belongsToMany(TimInvestigasi::class, 'anggota_tim', 'pegawai_id', 'tim_id')
@@ -84,13 +86,13 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // User sebagai pembuat surat tugas
+
     public function suratTugasDibuat()
     {
         return $this->hasMany(SuratTugas::class, 'dibuat_oleh', 'user_id');
     }
 
-    // User sebagai pegawai yang membuat laporan tugas
+
     public function laporanTugas()
     {
         return $this->hasMany(LaporanTugas::class, 'pegawai_id', 'user_id');
