@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $query->where('is_active', true);
     }
 
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
+
     // Relationships
 
 

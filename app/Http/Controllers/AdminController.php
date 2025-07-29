@@ -14,31 +14,35 @@ class AdminController extends Controller
     public function dashboard()
     {
         // Statistik umum
+        $user = auth()->user();
+
         $stats = [
-            'total_users' => User::active()->count(),
-            'total_warga' => User::warga()->active()->count(),
-            'total_pegawai' => User::pegawai()->active()->count(),
-            'total_laporan' => LaporanPengaduan::count(),
+            'total_laporan' => LaporanPengaduan::all()->count(),
             'laporan_pending' => LaporanPengaduan::pending()->count(),
-            'laporan_selesai' => LaporanPengaduan::selesai()->count(),
-            'tim_aktif' => TimInvestigasi::aktif()->count(),
-            'surat_overdue' => SuratTugas::overdue()->count(),
+            'laporan_dalam_investigasi' => LaporanPengaduan::dalamInvestigasi()->count(),
+            'laporan_selesai' => $user->laporanPengaduan()->selesai()->count(),
         ];
 
-        // Data untuk chart/grafik
-        $laporanBulanan = LaporanPengaduan::selectRaw('MONTH(created_at) as bulan, COUNT(*) as total')
-            ->whereYear('created_at', date('Y'))
-            ->groupBy('bulan')
-            ->get();
 
-        return view('admin.dashboard', compact('stats', 'laporanBulanan'));
+        $laporanTerbaru = LaporanPengaduan::latest()->limit(5)->get();
+
+
+        return view('admin.dashboard', compact('stats', 'laporanTerbaru'));
     }
 
     public function users()
     {
-        $users = User::latest()->paginate(10);
 
-        return view('admin.users.index', compact('users'));
+
+        $stats = [
+            'total_user' => User::all()->count(),
+            'user_aktif' => User::active()->count(),
+            'user_nonaktif' => User::inactive()->count(),
+        ];
+
+        $users = User::latest()->limit(5)->get();
+
+        return view('admin.users', compact('stats', 'users'));
     }
 
     public function createUser()
@@ -128,7 +132,7 @@ class AdminController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('admin.laporan.index', compact('laporan'));
+        return view('admin.laporane', compact('laporan'));
     }
 
     public function showLaporan(LaporanPengaduan $laporan)

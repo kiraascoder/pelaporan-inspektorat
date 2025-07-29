@@ -14,20 +14,50 @@ class PegawaiController extends Controller
     {
         $user = auth()->user();
 
-        // Statistik untuk pegawai
         $stats = [
             'tim_aktif' => $user->timInvestigasiDiikuti()->aktif()->count(),
             'surat_tugas_aktif' => SuratTugas::whereHas('timInvestigasi.anggota', function ($query) use ($user) {
-                $query->where('pegawai_id', $user->user_id)->where('is_active', true);
+                $query->where('anggota_tim.pegawai_id', $user->user_id)
+                    ->where('anggota_tim.is_active', 1);
             })->dalamPelaksanaan()->count(),
             'laporan_tugas_draft' => $user->laporanTugas()->draft()->count(),
             'laporan_tugas_submitted' => $user->laporanTugas()->submitted()->count(),
         ];
 
-        // Surat tugas terbaru
+        // Surat tugas terbaru - also fixed ambiguous column
         $suratTugasTerbaru = SuratTugas::whereHas('timInvestigasi.anggota', function ($query) use ($user) {
-            $query->where('pegawai_id', $user->user_id)->where('is_active', true);
+            $query->where('anggota_tim.pegawai_id', $user->user_id)
+                ->where('anggota_tim.is_active', true);
         })
+            ->with(['timInvestigasi', 'laporanPengaduan'])
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('pegawai.dashboard', compact('stats', 'suratTugasTerbaru'));
+    }
+
+    // Alternative approach using the new anggotaAktif relationship
+    public function dashboardAlternative()
+    {
+        $user = auth()->user();
+
+        // Get active team IDs for the user
+        $activeTeamIds = $user->timInvestigasiDiikuti()
+            ->wherePivot('is_active', true)
+            ->pluck('tim_investigasi.tim_id');
+
+        $stats = [
+            'tim_aktif' => $activeTeamIds->count(),
+            'surat_tugas_aktif' => SuratTugas::whereIn('tim_id', $activeTeamIds)
+                ->dalamPelaksanaan()
+                ->count(),
+            'laporan_tugas_draft' => $user->laporanTugas()->draft()->count(),
+            'laporan_tugas_submitted' => $user->laporanTugas()->submitted()->count(),
+        ];
+
+        
+        $suratTugasTerbaru = SuratTugas::whereIn('tim_id', $activeTeamIds)
             ->with(['timInvestigasi', 'laporanPengaduan'])
             ->latest()
             ->limit(5)

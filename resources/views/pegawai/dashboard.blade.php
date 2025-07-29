@@ -171,7 +171,7 @@
                 </div>
 
                 <div class="mt-4 text-center">
-                    <a href="{{ route('pegawai.surat_tugas.index') }}"
+                    <a href=""
                         class="text-primary-600 hover:text-primary-700 text-sm font-medium">
                         Lihat semua tugas →
                     </a>

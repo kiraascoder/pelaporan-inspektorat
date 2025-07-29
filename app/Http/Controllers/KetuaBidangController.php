@@ -15,7 +15,6 @@ class KetuaBidangController extends Controller
     {
         $user = auth()->user();
 
-        // Statistik untuk ketua bidang
         $stats = [
             'laporan_pending' => LaporanPengaduan::pending()->count(),
             'tim_dipimpin' => $user->timInvestigasiDipimpin()->count(),

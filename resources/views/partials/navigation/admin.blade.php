@@ -10,7 +10,7 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('admin.users.index') }}"
+        <a href="{{ route('admin.users') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -20,7 +20,7 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('admin.laporan.index') }}"
+        <a href="{{ route('admin.laporan') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -30,7 +30,7 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('admin.tim.index') }}"
+        <a href="{{ route('admin.tim') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -40,7 +40,7 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('admin.surat_tugas.index') }}"
+        <a href="{{ route('admin.surat_tugas') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -50,7 +50,7 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('admin.reports.index') }}"
+        <a href="{{ route('admin.reports') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

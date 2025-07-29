@@ -56,4 +56,5 @@ class AnggotaTim extends Model
     {
         return $this->belongsTo(User::class, 'pegawai_id', 'user_id');
     }
+
 }

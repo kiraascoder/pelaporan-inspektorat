@@ -36,6 +36,7 @@ class LaporanPengaduan extends Model
         return $query->where('status', 'Pending');
     }
 
+
     public function scopeDiterima($query)
     {
         return $query->where('status', 'Diterima');
@@ -44,6 +45,11 @@ class LaporanPengaduan extends Model
     public function scopeDalamInvestigasi($query)
     {
         return $query->where('status', 'Dalam_Investigasi');
+    }
+
+    public function scopeDitolak($query)
+    {
+        return $query->where('status', 'Ditolak');
     }
 
     public function scopeSelesai($query)
