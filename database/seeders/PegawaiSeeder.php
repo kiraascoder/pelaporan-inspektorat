@@ -17,10 +17,10 @@ class PegawaiSeeder extends Seeder
         $users = [
             // Pegawai
             [
-                'user_id' => 4,
-                'username' => 'pegawai1',
-                'email' => 'pegawai01@gmail.com',
-                'nama_lengkap' => 'Pegawai 01',
+                'user_id' => 8,
+                'username' => 'pegawai4',
+                'email' => 'pegawai04@gmail.com',
+                'nama_lengkap' => 'Pegawai 04',
                 'password' => Hash::make('password123'),
                 'no_telepon' => '1234567890',
                 'alamat' => 'Jl. Contoh, Kota Contoh',

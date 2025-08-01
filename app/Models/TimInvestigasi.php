@@ -52,10 +52,16 @@ class TimInvestigasi extends Model
         return $this->belongsTo(User::class, 'ketua_tim_id', 'user_id');
     }
 
+    public function anggotaTim()
+    {
+        return $this->belongsTo(User::class, 'pegawai_id', 'user_id');
+    }
+
     // Relationship to laporan pengaduan (if applicable)
+ 
     public function laporanPengaduan()
     {
-        return $this->belongsTo(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
+        return $this->hasOne(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
 
     // Relationship to surat tugas

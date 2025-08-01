@@ -84,7 +84,7 @@ class WargaController extends Controller
 
     public function edit(LaporanPengaduan $laporan)
     {
-        
+
         if ($laporan->status !== 'Pending') {
             return redirect()->back()->with('error', 'Laporan tidak dapat diubah karena sudah diproses.');
         }
@@ -125,6 +125,7 @@ class WargaController extends Controller
 
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->user_id . ',user_id',
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
             'no_telepon' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
@@ -139,7 +140,7 @@ class WargaController extends Controller
 
         $user->update($data);
 
-        return redirect()->route(' ')
+        return redirect()->route('warga.profile')
             ->with('success', 'Profile berhasil diperbarui.');
     }
 
@@ -168,5 +169,13 @@ class WargaController extends Controller
     {
         $user = auth()->user();
         return view('warga.profile', compact('user'));
+    }
+
+
+    public function deleteLaporan($id)
+    {
+        $laporan = LaporanPengaduan::find($id);
+        $laporan->delete();
+        return redirect()->route('warga.laporan')->with('success', 'Laporan berhasil dihapus.');
     }
 }

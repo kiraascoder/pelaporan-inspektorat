@@ -6,7 +6,10 @@ use App\Models\LaporanPengaduan;
 use App\Models\TimInvestigasi;
 use App\Models\SuratTugas;
 use App\Models\LaporanTugas;
+use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PegawaiController extends Controller
 {
@@ -56,7 +59,7 @@ class PegawaiController extends Controller
             'laporan_tugas_submitted' => $user->laporanTugas()->submitted()->count(),
         ];
 
-        
+
         $suratTugasTerbaru = SuratTugas::whereIn('tim_id', $activeTeamIds)
             ->with(['timInvestigasi', 'laporanPengaduan'])
             ->latest()
@@ -68,15 +71,94 @@ class PegawaiController extends Controller
 
     public function laporanTersedia()
     {
-        // Laporan yang belum ditangani atau perlu investigasi tambahan
-        $laporan = LaporanPengaduan::whereIn('status', ['Diterima', 'Dalam_Investigasi'])
-            ->with(['user', 'timInvestigasi'])
-            ->latest()
-            ->paginate(10);
+        $laporan = LaporanPengaduan::with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit(12) // Limit to show recent 12 reports
+            ->get();
 
-        return view('pegawai.laporan.tersedia', compact('laporan'));
+        $stats = [
+            'laporan_pending' => LaporanPengaduan::pending()->count(),
+            'laporan_diterima' => LaporanPengaduan::diterima()->count(),
+            'laporan_dalam_investigasi' => LaporanPengaduan::dalamInvestigasi()->count(),
+            'laporan_selesai' => LaporanPengaduan::selesai()->count(),
+            'semuaTim' => TimInvestigasi::count(),
+            'surat_tugas_aktif' => SuratTugas::where('status_surat', 'Aktif')->count(),
+        ];
+
+        return view('pegawai.laporan', compact('laporan', 'stats'));
+    }
+    public function showLaporan(LaporanPengaduan $laporan)
+    {
+        return view('pegawai.detail.laporan', compact('laporan'));
+    }
+    public function showTimInvestigasi($tim_id)
+    {
+        try {
+            $tim = TimInvestigasi::with([
+                'ketuaTim',
+                'anggotaAktif',
+                'laporanPengaduan',
+                'suratTugas'
+            ])->findOrFail($tim_id);
+
+            return view('pegawai.detail.tim', compact('tim'));
+        } catch (Exception $e) {
+            return back()->with('error', 'Tim tidak ditemukan');
+        }
     }
 
+    public function tim()
+{
+    try {
+        $pegawaiId = Auth::user()->user_id;
+
+        // Ambil semua tim yang memiliki anggota aktif dengan pegawai_id = user login
+        $timList = TimInvestigasi::whereHas('anggotaAktif', function ($query) use ($pegawaiId) {
+            $query->where('pegawai_id', $pegawaiId);
+        })
+        ->with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])
+        ->latest()
+        ->get();
+
+        // Hitung total dan statistik hanya dari tim yang diikuti
+        $totalTim = $timList->count();
+        $timAktif = $timList->where('is_active', true)->count();
+
+        // $dalamInvestigasi = $timList->filter(function ($tim) {
+        //     return $tim->laporanPengaduan->contains('status_tim', 'Dalam Investigasi');
+        // })->count();
+
+        // $kasusSelesai = $timList->filter(function ($tim) {
+        //     return $tim->laporanPengaduan->contains('status_tim', 'Selesai');
+        // })->count();
+
+        // Pegawai list dan laporan hanya jika kamu perlu (misalnya untuk modal tambah tim)
+        $pegawaiList = User::where('role', 'Pegawai')->get()->map(function ($user) {
+            return [
+                'id' => $user->user_id,
+                'user_id' => $user->user_id,
+                'nama_lengkap' => $user->nama_lengkap,
+                'jabatan' => $user->jabatan
+            ];
+        });
+
+        $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
+            ->whereDoesntHave('timInvestigasi')
+            ->get(['laporan_id as id', 'judul_laporan']);
+
+        return view('pegawai.tim', compact(
+            'totalTim',
+            'timAktif',
+            // 'dalamInvestigasi',
+            // 'kasusSelesai',
+            'timList',
+            'pegawaiList',
+            'laporanList'
+        ));
+    } catch (Exception $e) {
+        return back()->with('error', 'Terjadi kesalahan saat memuat data: ' . $e->getMessage());
+    }
+}
     public function timSaya()
     {
         $user = auth()->user();

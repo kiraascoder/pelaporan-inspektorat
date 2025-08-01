@@ -177,54 +177,7 @@
                     </a>
                 </div>
             </div>
-        </div>
-
-        <!-- Performance Overview -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Workload Chart -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Beban Kerja Bulanan</h3>
-                <div class="h-64">
-                    <canvas id="workloadChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Aktivitas Terbaru</h3>
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                        </div>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-gray-900">Laporan tugas disubmit</p>
-                            <p class="text-xs text-gray-500">Investigasi korupsi Dinas X • 2 jam lalu</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                        </div>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-gray-900">Bergabung dengan tim baru</p>
-                            <p class="text-xs text-gray-500">Tim Gamma • 1 hari lalu</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                        </div>
-                        <div class="ml-3 flex-1">
-                            <p class="text-sm font-medium text-gray-900">Surat tugas baru diterima</p>
-                            <p class="text-xs text-gray-500">Investigasi pelayanan publik • 2 hari lalu</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </div>                
     </div>
 
     @push('scripts')

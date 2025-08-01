@@ -118,6 +118,16 @@
                                             </button>
                                         @endif
                                     </div>
+                                    <form action="{{ route('warga.laporan.destroy', $laporan->laporan_id) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?')"
+                                        class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-medium">
+                                            Hapus
+                                        </button>
+                                    </form>
                                     @if ($laporan->bukti_lampiran)
                                         <div class="flex items-center text-xs text-gray-500">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
@@ -189,7 +199,8 @@
                     <h3 class="text-lg font-semibold text-gray-900">Buat Laporan Baru</h3>
                     <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12">
                             </path>
                         </svg>
                     </button>

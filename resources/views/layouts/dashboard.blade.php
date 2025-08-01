@@ -17,6 +17,13 @@
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -90,6 +97,7 @@
             </main>
         </div>
     </div>
+    <script src="//unpkg.com/alpinejs" defer></script>
 
     @stack('scripts')
 </body>

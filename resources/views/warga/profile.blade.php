@@ -16,7 +16,7 @@
 
             <div class="p-6">
                 <!-- Profile Form -->
-                <form action="" method="POST" id="profileForm">
+                <form action="{{ route('warga.profile.update') }}" method="POST" id="profileForm">
                     @csrf
                     @method('PUT')
 
@@ -124,7 +124,7 @@
             </div>
         </div>
 
-        <!-- Change Password Card -->
+        {{-- <!-- Change Password Card -->
         <div class="bg-white rounded-lg shadow border border-gray-200">
             <div class="px-4 py-3 border-b border-gray-200">
                 <h3 class="text-base font-semibold text-gray-800">Ubah Password</h3>
@@ -163,9 +163,7 @@
                     </div>
                 </form>
             </div>
-        </div>
-
-        <!-- Activity Statistics -->
+        </div> --}}
     </div>
 
     <script>

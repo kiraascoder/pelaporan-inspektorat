@@ -21,8 +21,15 @@ Route::prefix('warga')->group(function () {
     Route::get('dashboard', [WargaController::class, 'dashboard'])->name('warga.dashboard');
     Route::get('laporan', [WargaController::class, 'laporanView'])->name('warga.laporan');
     Route::get('profile', [WargaController::class, 'profileView'])->name('warga.profile');
+
+    // Laporan Warga Route
+
     Route::post('laporan-store', [WargaController::class, 'store'])->name('warga.laporan.store');
     Route::get('laporan/{laporan}', [WargaController::class, 'show'])->name('warga.laporan.show');
+    Route::delete('laporan/{id}', [WargaController::class, 'deleteLaporan'])->name('warga.laporan.destroy');
+
+    // Update Profile
+    Route::put('update-profile', [WargaController::class, 'updateProfile'])->name('warga.profile.update');
 });
 
 Route::prefix('admin')->group(function () {
@@ -37,10 +44,21 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('ketua-investigasi')->group(function () {
     Route::get('dashboard', [KetuaBidangController::class, 'dashboard'])->name('ketua_bidang.dashboard');
+    Route::get('laporan-masuk', [KetuaBidangController::class, 'laporan'])->name('ketua_bidang.laporan');
+    Route::get('laporan/{laporan}', [KetuaBidangController::class, 'show'])->name('ketua_bidang.laporan.show');
+    Route::get('tim', [KetuaBidangController::class, 'tim'])->name('ketua_bidang.tim');
+    Route::post('store-tim', [KetuaBidangController::class, 'store'])->name('ketua_bidang.store-tim');
+    Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');
+    Route::get('surat', [KetuaBidangController::class, 'surat'])->name('ketua_bidang.surat');
+    Route::get('review', [KetuaBidangController::class, 'review'])->name('ketua_bidang.review');
 });
 
 Route::prefix('pegawai')->group(function () {
     Route::get('dashboard', [PegawaiController::class, 'dashboard'])->name('pegawai.dashboard');
+    Route::get('laporan', [PegawaiController::class, 'laporanTersedia'])->name('pegawai.laporan');
+    Route::get('laporan/{laporan}', [PegawaiController::class, 'showLaporan'])->name('pegawai.laporan.show');
+    Route::get('tim/{tim_id}', [PegawaiController::class, 'showTimInvestigasi'])->name('pegawai.tim.show');
+    Route::get('tim', [PegawaiController::class, 'tim'])->name('pegawai.tim');
 });
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

@@ -10,9 +10,6 @@
         </div>
 
         <div class="flex items-center space-x-4">
-
-
-
             <!-- User Menu -->
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open"

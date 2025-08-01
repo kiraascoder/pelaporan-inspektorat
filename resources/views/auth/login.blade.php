@@ -77,23 +77,6 @@
                         @enderror
                     </div>
                 </div>
-
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input id="remember-me" name="remember" type="checkbox"
-                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                        <label for="remember-me" class="ml-2 block text-sm text-gray-900">
-                            Ingat saya
-                        </label>
-                    </div>
-
-                    <div class="text-sm">
-                        <a href="#" class="font-medium text-primary-600 hover:text-primary-500">
-                            Lupa password?
-                        </a>
-                    </div>
-                </div>
-
                 <div>
                     <button type="submit" :disabled="loading"
                         class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
@@ -121,17 +104,6 @@
                     </p>
                 </div>
             </form>
-
-            <!-- Demo Accounts Info -->
-            <div class="mt-8 bg-gray-100 rounded-lg p-4">
-                <h3 class="text-sm font-medium text-gray-900 mb-2">Akun Demo:</h3>
-                <div class="space-y-1 text-xs text-gray-600">
-                    <p><strong>Admin:</strong> admin / password</p>
-                    <p><strong>Ketua Bidang:</strong> ketua / password</p>
-                    <p><strong>Pegawai:</strong> pegawai / password</p>
-                    <p><strong>Warga:</strong> warga / password</p>
-                </div>
-            </div>
         </div>
     </div>
 @endsection

@@ -43,32 +43,11 @@
                 </div>
             @endforeach
         </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white p-4 rounded-lg shadow border border-gray-200">
-            <h3 class="text-base font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <a href="#" class="flex flex-col p-4 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-300">
-                    <span class="text-sm font-medium text-gray-800">Buat Laporan Baru</span>
-                    <span class="text-xs text-gray-500 mt-1">Ajukan laporan pengaduan</span>
-                </a>
-                <a href=""
-                    class="flex flex-col p-4 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-300">
-                    <span class="text-sm font-medium text-gray-800">Lihat Semua Laporan</span>
-                    <span class="text-xs text-gray-500 mt-1">Pantau status laporan</span>
-                </a>
-                <a href="#" class="flex flex-col p-4 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-300">
-                    <span class="text-sm font-medium text-gray-800">Kelola Profil</span>
-                    <span class="text-xs text-gray-500 mt-1">Update informasi pribadi</span>
-                </a>
-            </div>
-        </div>
-
         <!-- Recent Reports -->
         <div class="bg-white rounded-lg shadow border border-gray-200">
             <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Laporan Terbaru</h3>
-                <a href="" class="text-sm text-green-600 hover:underline">Lihat Semua</a>
+                <a href="{{ route('warga.laporan') }}" class="text-sm text-green-600 hover:underline">Lihat Semua</a>
             </div>
             <div class="p-4">
                 @if ($laporanTerbaru->count() > 0)
@@ -83,8 +62,7 @@
                                 <div class="ml-4">
                                     <span
                                         class="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700">{{ ucfirst($laporan->status) }}</span>
-                                    <a href=""
-                                        class="ml-2 text-green-600 hover:underline text-sm">Lihat</a>
+                                    <a href="" class="ml-2 text-green-600 hover:underline text-sm">Lihat</a>
                                 </div>
                             </div>
                         @endforeach

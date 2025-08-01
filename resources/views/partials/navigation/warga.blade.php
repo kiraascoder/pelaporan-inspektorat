@@ -1,6 +1,6 @@
 <ul class="space-y-2">
     <li>
-        <a href=""
+        <a href="{{ route('warga.dashboard') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('warga.dashboard') ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

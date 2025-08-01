@@ -132,7 +132,7 @@ class AdminController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('admin.laporane', compact('laporan'));
+        return view('admin.laporan', compact('laporan'));
     }
 
     public function showLaporan(LaporanPengaduan $laporan)
