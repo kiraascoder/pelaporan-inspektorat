@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KetuaBidangController;
+use App\Http\Controllers\LaporanTugasController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\WargaController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +60,9 @@ Route::prefix('pegawai')->group(function () {
     Route::get('laporan/{laporan}', [PegawaiController::class, 'showLaporan'])->name('pegawai.laporan.show');
     Route::get('tim/{tim_id}', [PegawaiController::class, 'showTimInvestigasi'])->name('pegawai.tim.show');
     Route::get('tim', [PegawaiController::class, 'tim'])->name('pegawai.tim');
+    Route::get('laporan-tugas', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
+    Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');
+    Route::get('report-tugas/{id}/', [LaporanTugasController::class, 'show'])->name('pegawai.report.show');
 });
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

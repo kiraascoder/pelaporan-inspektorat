@@ -12,8 +12,7 @@ class LaporanTugas extends Model
     protected $table = 'laporan_tugas';
     protected $primaryKey = 'laporan_tugas_id';
 
-    protected $fillable = [
-        'surat_id',
+    protected $fillable = [        
         'pegawai_id',
         'judul_laporan',
         'isi_laporan',

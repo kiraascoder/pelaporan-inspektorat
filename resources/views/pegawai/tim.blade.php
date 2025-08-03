@@ -10,11 +10,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Tim Investigasi</h1>
                 <p class="text-gray-600">Kelola tim investigasi dan monitoring kinerja</p>
-            </div>
-            <button onclick="openModal()"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
-                Buat Tim Baru
-            </button>
+            </div>       
         </div>
 
         <!-- Key Metrics -->

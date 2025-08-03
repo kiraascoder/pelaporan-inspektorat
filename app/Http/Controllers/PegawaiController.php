@@ -108,57 +108,57 @@ class PegawaiController extends Controller
     }
 
     public function tim()
-{
-    try {
-        $pegawaiId = Auth::user()->user_id;
+    {
+        try {
+            $pegawaiId = Auth::user()->user_id;
 
-        // Ambil semua tim yang memiliki anggota aktif dengan pegawai_id = user login
-        $timList = TimInvestigasi::whereHas('anggotaAktif', function ($query) use ($pegawaiId) {
-            $query->where('pegawai_id', $pegawaiId);
-        })
-        ->with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])
-        ->latest()
-        ->get();
+            // Ambil semua tim yang memiliki anggota aktif dengan pegawai_id = user login
+            $timList = TimInvestigasi::whereHas('anggotaAktif', function ($query) use ($pegawaiId) {
+                $query->where('pegawai_id', $pegawaiId);
+            })
+                ->with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])
+                ->latest()
+                ->get();
 
-        // Hitung total dan statistik hanya dari tim yang diikuti
-        $totalTim = $timList->count();
-        $timAktif = $timList->where('is_active', true)->count();
+            // Hitung total dan statistik hanya dari tim yang diikuti
+            $totalTim = $timList->count();
+            $timAktif = $timList->where('is_active', true)->count();
 
-        // $dalamInvestigasi = $timList->filter(function ($tim) {
-        //     return $tim->laporanPengaduan->contains('status_tim', 'Dalam Investigasi');
-        // })->count();
+            // $dalamInvestigasi = $timList->filter(function ($tim) {
+            //     return $tim->laporanPengaduan->contains('status_tim', 'Dalam Investigasi');
+            // })->count();
 
-        // $kasusSelesai = $timList->filter(function ($tim) {
-        //     return $tim->laporanPengaduan->contains('status_tim', 'Selesai');
-        // })->count();
+            // $kasusSelesai = $timList->filter(function ($tim) {
+            //     return $tim->laporanPengaduan->contains('status_tim', 'Selesai');
+            // })->count();
 
-        // Pegawai list dan laporan hanya jika kamu perlu (misalnya untuk modal tambah tim)
-        $pegawaiList = User::where('role', 'Pegawai')->get()->map(function ($user) {
-            return [
-                'id' => $user->user_id,
-                'user_id' => $user->user_id,
-                'nama_lengkap' => $user->nama_lengkap,
-                'jabatan' => $user->jabatan
-            ];
-        });
+            // Pegawai list dan laporan hanya jika kamu perlu (misalnya untuk modal tambah tim)
+            $pegawaiList = User::where('role', 'Pegawai')->get()->map(function ($user) {
+                return [
+                    'id' => $user->user_id,
+                    'user_id' => $user->user_id,
+                    'nama_lengkap' => $user->nama_lengkap,
+                    'jabatan' => $user->jabatan
+                ];
+            });
 
-        $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
-            ->whereDoesntHave('timInvestigasi')
-            ->get(['laporan_id as id', 'judul_laporan']);
+            $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
+                ->whereDoesntHave('timInvestigasi')
+                ->get(['laporan_id as id', 'judul_laporan']);
 
-        return view('pegawai.tim', compact(
-            'totalTim',
-            'timAktif',
-            // 'dalamInvestigasi',
-            // 'kasusSelesai',
-            'timList',
-            'pegawaiList',
-            'laporanList'
-        ));
-    } catch (Exception $e) {
-        return back()->with('error', 'Terjadi kesalahan saat memuat data: ' . $e->getMessage());
+            return view('pegawai.tim', compact(
+                'totalTim',
+                'timAktif',
+                // 'dalamInvestigasi',
+                // 'kasusSelesai',
+                'timList',
+                'pegawaiList',
+                'laporanList'
+            ));
+        } catch (Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan saat memuat data: ' . $e->getMessage());
+        }
     }
-}
     public function timSaya()
     {
         $user = auth()->user();
@@ -204,12 +204,17 @@ class PegawaiController extends Controller
     {
         $user = auth()->user();
 
-        $laporanTugas = $user->laporanTugas()
-            ->with(['suratTugas.timInvestigasi', 'suratTugas.laporanPengaduan'])
+        
+        $laporanList = $user->laporanTugas()
+            ->with([
+                'suratTugas.timInvestigasi',
+                'suratTugas.laporanPengaduan'
+            ])
             ->latest()
             ->paginate(10);
 
-        return view('pegawai.laporan_tugas.index', compact('laporanTugas'));
+        // Kirim data ke view 'pegawai.report-tugas'
+        return view('pegawai.report-tugas', compact('laporanList'));
     }
 
     public function createLaporanTugas(SuratTugas $surat)

@@ -62,7 +62,8 @@
                                 <div class="ml-4">
                                     <span
                                         class="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700">{{ ucfirst($laporan->status) }}</span>
-                                    <a href="" class="ml-2 text-green-600 hover:underline text-sm">Lihat</a>
+                                    <a href="{{ route('warga.laporan.show', $laporan->laporan_id) }}"
+                                        class="ml-2 text-green-600 hover:underline text-sm">Lihat</a>
                                 </div>
                             </div>
                         @endforeach

@@ -117,7 +117,11 @@ class KetuaBidangController extends Controller
 
     public function review()
     {
-        return view('ketua_bidang.review');
+        $user = auth()->user();
+
+        $laporanList = LaporanTugas::all();
+
+        return view('ketua_bidang.review', compact('laporanList'));
     }
 
     public function show(LaporanPengaduan $laporan)
