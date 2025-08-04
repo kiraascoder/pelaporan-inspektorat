@@ -39,7 +39,7 @@
                         @guest
                             <a href=""
                                 class="bg-white text-primary-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors duration-200 text-center">
-                                Masuk Portal
+                                Masuk Kesini
                             </a>
                             <a href="#layanan"
                                 class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-700 transition-colors duration-200 text-center">
@@ -95,29 +95,65 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                 <div class="p-6">
-                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => { let target = 1500; let increment = target / 100; let timer = setInterval(() => { count += increment; if (count >= target) { count = target;
-                                clearInterval(timer); } }, 20); }, 200)">
+                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => {
+                        let target = 1500;
+                        let increment = target / 100;
+                        let timer = setInterval(() => {
+                            count += increment;
+                            if (count >= target) {
+                                count = target;
+                                clearInterval(timer);
+                            }
+                        }, 20);
+                    }, 200)">
                         <span x-text="Math.floor(count)"></span>+
                     </div>
                     <div class="text-gray-600 font-medium">Laporan Terproses</div>
                 </div>
                 <div class="p-6">
-                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => { let target = 95; let increment = target / 100; let timer = setInterval(() => { count += increment; if (count >= target) { count = target;
-                                clearInterval(timer); } }, 20); }, 400)">
+                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => {
+                        let target = 95;
+                        let increment = target / 100;
+                        let timer = setInterval(() => {
+                            count += increment;
+                            if (count >= target) {
+                                count = target;
+                                clearInterval(timer);
+                            }
+                        }, 20);
+                    }, 400)">
                         <span x-text="Math.floor(count)"></span>%
                     </div>
                     <div class="text-gray-600 font-medium">Tingkat Kepuasan</div>
                 </div>
                 <div class="p-6">
-                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => { let target = 24; let increment = target / 100; let timer = setInterval(() => { count += increment; if (count >= target) { count = target;
-                                clearInterval(timer); } }, 20); }, 600)">
+                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => {
+                        let target = 24;
+                        let increment = target / 100;
+                        let timer = setInterval(() => {
+                            count += increment;
+                            if (count >= target) {
+                                count = target;
+                                clearInterval(timer);
+                            }
+                        }, 20);
+                    }, 600)">
                         <span x-text="Math.floor(count)"></span>h
                     </div>
                     <div class="text-gray-600 font-medium">Waktu Respon</div>
                 </div>
                 <div class="p-6">
-                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => { let target = 50; let increment = target / 100; let timer = setInterval(() => { count += increment; if (count >= target) { count = target;
-                                clearInterval(timer); } }, 20); }, 800)">
+                    <div class="text-4xl font-bold text-primary-600 mb-2" x-data="{ count: 0 }" x-init="setTimeout(() => {
+                        let target = 50;
+                        let increment = target / 100;
+                        let timer = setInterval(() => {
+                            count += increment;
+                            if (count >= target) {
+                                count = target;
+                                clearInterval(timer);
+                            }
+                        }, 20);
+                    }, 800)">
                         <span x-text="Math.floor(count)"></span>+
                     </div>
                     <div class="text-gray-600 font-medium">Tim Ahli</div>
