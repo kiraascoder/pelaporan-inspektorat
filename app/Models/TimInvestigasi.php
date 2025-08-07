@@ -12,8 +12,7 @@ class TimInvestigasi extends Model
 
     protected $fillable = [
         'laporan_id',
-        'ketua_tim_id',
-        'nama_tim',
+        'ketua_tim_id',        
         'deskripsi_tim',
         'status_tim',
     ];

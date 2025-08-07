@@ -33,10 +33,9 @@
 
                             <!-- Username -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                                <input type="text" name="username" value="{{ auth()->user()->username }}"
-                                    class="profile-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                                    readonly>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
+                                <input type="text" value="{{ str_replace('_', ' ', auth()->user()->nik) }}"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
                             </div>
 
                             <!-- Email -->

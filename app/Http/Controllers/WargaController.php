@@ -52,17 +52,24 @@ class WargaController extends Controller
             'judul_laporan' => 'required|string|max:255',
             'isi_laporan' => 'required|string',
             'kategori' => 'required|string',
-            'prioritas' => 'required|in:Rendah,Sedang,Tinggi,Urgent',
             'lokasi_kejadian' => 'required|string',
             'tanggal_kejadian' => 'required|date',
             'bukti_dokumen.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ], [
+            'judul_laporan.required' => 'Judul laporan harus diisi.',
+            'isi_laporan.required' => 'Isi laporan harus diisi.',
+            'kategori.required' => 'Kategori harus diisi.',
+            'lokasi_kejadian.required' => 'Lokasi kejadian harus diisi.',
+            'tanggal_kejadian.required' => 'Tanggal kejadian harus diisi.',
+            'bukti_dokumen.*.file' => 'Bukti dokumen harus berupa file.',
+            'bukti_dokumen.*.mimes' => 'Bukti dokumen harus berupa file PDF, JPG, JPEG, atau PNG.',
+            'bukti_dokumen.*.max' => 'Bukti dokumen tidak boleh lebih dari 5MB.',
         ]);
 
         $data = $request->all();
         $data['user_id'] = auth()->id();
         $data['status'] = 'Pending';
 
-        // Handle file upload
         if ($request->hasFile('bukti_dokumen')) {
             $files = [];
             foreach ($request->file('bukti_dokumen') as $file) {

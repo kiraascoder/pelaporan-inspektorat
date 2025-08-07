@@ -41,11 +41,11 @@
                 @csrf
                 <div class="space-y-4">
                     <div>
-                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                        <input id="username" name="username" type="text" required value="{{ old('username') }}"
-                            class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('username') border-red-300 @enderror"
-                            placeholder="Masukkan email">
-                        @error('username')
+                        <label for="nik" class="block text-sm font-medium text-gray-700">nik</label>
+                        <input id="nik" name="nik" type="text" required value="{{ old('nik') }}"
+                            class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('nik') border-red-300 @enderror"
+                            placeholder="Masukkan NIK">
+                        @error('nik')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

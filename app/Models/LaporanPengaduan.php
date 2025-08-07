@@ -17,7 +17,6 @@ class LaporanPengaduan extends Model
         'judul_laporan',
         'isi_laporan',
         'kategori',
-        'prioritas',
         'status',
         'lokasi_kejadian',
         'tanggal_kejadian',
@@ -55,17 +54,6 @@ class LaporanPengaduan extends Model
     public function scopeSelesai($query)
     {
         return $query->where('status', 'Selesai');
-    }
-
-    // Scope untuk prioritas
-    public function scopeUrgent($query)
-    {
-        return $query->where('prioritas', 'Urgent');
-    }
-
-    public function scopeTinggi($query)
-    {
-        return $query->where('prioritas', 'Tinggi');
     }
 
     // Relationships

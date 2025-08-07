@@ -40,11 +40,7 @@
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Kategori</h3>
                     <p class="text-gray-900 capitalize">{{ str_replace('_', ' ', $laporan->kategori) }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Prioritas</h3>
-                    <p class="text-gray-900">{{ $laporan->prioritas }}</p>
-                </div>
+                </div>                
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Tanggal Kejadian</h3>
                     <p class="text-gray-900">

@@ -105,8 +105,7 @@
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center space-x-3">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">{{ $data->nama_tim }}</h3>
+                                <div>                                
                                     <p class="text-sm text-gray-600 capitalize">
                                         Kategori: {{ $data->laporanPengaduan->kategori ?? 'Tidak ada kategori' }}
                                     </p>
@@ -243,16 +242,7 @@
                 <!-- Modal Body -->
                 <form id="timForm" action="{{ route('ketua_bidang.store-tim') }}" method="POST">
                     @csrf
-                    <div class="px-6 py-4 space-y-6">
-                        <!-- Nama Tim -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tim <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" name="nama_tim" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Masukkan nama tim">
-                        </div>
-
+                    <div class="px-6 py-4 space-y-6">                        
                         <!-- Deskripsi Tim -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tim</label>

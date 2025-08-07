@@ -17,8 +17,8 @@ class KetuaBidangSeeder extends Seeder
         $users = [
             // Ketua Investigasi
             [
-                'user_id' => 3,
-                'username' => 'Ketua Investigasi',
+                'user_id' => 1,
+                'nik' => '1234567890',
                 'email' => 'ketuabidanginvestigasi@gmail.com',
                 'nama_lengkap' => 'Ketua Investigasi Inspektorat',
                 'password' => Hash::make('password123'),

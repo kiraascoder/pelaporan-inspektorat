@@ -241,23 +241,7 @@
                                 <option value="pelayanan_publik">Pelayanan Publik</option>
                                 <option value="lainnya">Lainnya</option>
                             </select>
-                        </div>
-
-
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas <span
-                                    class="text-red-500">*</span></label>
-                            <select name="prioritas" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                <option value="">Pilih Prioritas</option>
-                                <option value="Rendah">Rendah</option>
-                                <option value="Sedang">Sedang</option>
-                                <option value="Tinggi">Tinggi</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
-                        </div>
-
+                        </div>                        
                         <!-- Tanggal dan Waktu Kejadian -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>

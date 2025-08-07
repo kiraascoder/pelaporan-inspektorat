@@ -38,7 +38,7 @@ class KetuaBidangController extends Controller
         return view('ketua_bidang.dashboard', compact('stats', 'timDipimpin'));
     }
 
-    public function laporan()
+    public function laporan(Request $request)
     {
         $stats = [
             'laporan_pending' => LaporanPengaduan::pending()->count(),
@@ -49,10 +49,31 @@ class KetuaBidangController extends Controller
             'surat_tugas_aktif' => SuratTugas::where('status_surat', 'Aktif')->count(),
         ];
 
-        $laporan = LaporanPengaduan::with('user')
-            ->orderBy('created_at', 'desc')
-            ->limit(12) // Limit to show recent 12 reports
-            ->get();
+        $query = LaporanPengaduan::query();
+
+        // Filter berdasarkan tanggal kejadian
+        if ($request->filled('start_date')) {
+            $query->where('tanggal_kejadian', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('tanggal_kejadian', '<=', $request->end_date);
+        }
+
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter berdasarkan prioritas
+        if ($request->filled('prioritas')) {
+            $query->where('prioritas', $request->prioritas);
+        }
+
+        $laporan = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        // Preserve query parameters in pagination
+        $laporan->appends($request->query());
 
         return view('ketua_bidang.laporan', compact('stats', 'laporan'));
     }
@@ -188,17 +209,14 @@ class KetuaBidangController extends Controller
     public function store(Request $request)
     {
         // Validation rules
-        $validator = Validator::make($request->all(), [
-            'nama_tim' => 'required|string|max:255|unique:tim_investigasi,nama_tim',
+        $validator = Validator::make($request->all(), [            
             'deskripsi_tim' => 'nullable|string|max:1000',
             'pegawai_id' => 'required|array|min:1',
             'pegawai_id.*' => 'required|exists:users,user_id',
             'ketua_tim_id' => 'required|exists:users,user_id',
             'laporan_id' => 'nullable|exists:laporan_pengaduan,laporan_id',
             'status_tim' => 'required|in:aktif,nonaktif'
-        ], [
-            'nama_tim.required' => 'Nama tim harus diisi',
-            'nama_tim.unique' => 'Nama tim sudah digunakan',
+        ], [            
             'pegawai_id.required' => 'Minimal pilih satu anggota tim',
             'pegawai_id.min' => 'Minimal pilih satu anggota tim',
             'ketua_tim_id.required' => 'Ketua tim harus dipilih',
@@ -224,7 +242,7 @@ class KetuaBidangController extends Controller
         try {
             // Create tim investigasi
             $timInvestigasi = TimInvestigasi::create([
-                'nama_tim' => $request->nama_tim,
+                
                 'deskripsi_tim' => $request->deskripsi_tim,
                 'ketua_tim_id' => $request->ketua_tim_id,
                 'laporan_id' => $request->laporan_id,
