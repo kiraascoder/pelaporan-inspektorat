@@ -18,8 +18,8 @@ class UserSeeder extends Seeder
         $users = [
             // ADMIN
             [
-                'user_id' => 1,
-                'username' => 'admininspektorat',
+                'user_id' => 2,
+                'nik' => '1234567891',
                 'email' => 'admininspektorat@gmail.com',
                 'nama_lengkap' => 'Admin Inspektorat',
                 'password' => Hash::make('password123'),
