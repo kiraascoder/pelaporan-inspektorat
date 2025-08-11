@@ -12,7 +12,7 @@ class TimInvestigasi extends Model
 
     protected $fillable = [
         'laporan_id',
-        'ketua_tim_id',        
+        'ketua_tim_id',
         'deskripsi_tim',
         'status_tim',
     ];
@@ -57,17 +57,12 @@ class TimInvestigasi extends Model
     }
 
     // Relationship to laporan pengaduan (if applicable)
- 
+
     public function laporanPengaduan()
     {
         return $this->hasOne(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
-
-    // Relationship to surat tugas
-    public function suratTugas()
-    {
-        return $this->hasMany(SuratTugas::class, 'tim_id', 'tim_id');
-    }
+    
 
     // Helper methods
     public function isAktif()
@@ -83,5 +78,9 @@ class TimInvestigasi extends Model
     public function getJumlahAnggotaAktifAttribute()
     {
         return $this->anggotaAktif()->count();
+    }
+    public function suratTugas()
+    {
+        return $this->belongsTo(SuratTugas::class, 'surat_id', 'surat_id');
     }
 }

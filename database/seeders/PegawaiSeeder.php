@@ -19,6 +19,7 @@ class PegawaiSeeder extends Seeder
             [
                 'user_id' => 4,
                 'nik' => '1987654321',
+                'username' => 'pegawai04',
                 'email' => 'pegawai04@gmail.com',
                 'nama_lengkap' => 'Pegawai 04',
                 'password' => Hash::make('password123'),
@@ -33,6 +34,7 @@ class PegawaiSeeder extends Seeder
             ],
             [
                 'user_id' => 5,
+                'username' => 'pegawai05',
                 'nik' => '1987654322',
                 'email' => 'pegawai05@gmail.com',
                 'nama_lengkap' => 'Pegawai 05',
@@ -48,6 +50,7 @@ class PegawaiSeeder extends Seeder
             ],
             [
                 'user_id' => 6,
+                'username' => 'pegawai06',
                 'nik' => '1987654323',
                 'email' => 'pegawai06@gmail.com',
                 'nama_lengkap' => 'Pegawai 06',
@@ -63,6 +66,7 @@ class PegawaiSeeder extends Seeder
             ],
             [
                 'user_id' => 7,
+                'username' => 'pegawai07',
                 'nik' => '1987654324',
                 'email' => 'pegawai07@gmail.com',
                 'nama_lengkap' => 'Pegawai 07',

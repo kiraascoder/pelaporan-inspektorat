@@ -61,7 +61,7 @@ class SuratTugas extends Model
     // Relationships
     public function timInvestigasi()
     {
-        return $this->belongsTo(TimInvestigasi::class, 'tim_id', 'tim_id');
+        return $this->hasOne(TimInvestigasi::class, 'surat_id', 'surat_id');
     }
 
     public function laporanPengaduan()

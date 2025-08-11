@@ -145,7 +145,8 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">Tim yang Bertugas</h3>
-                    <a href="" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    <a href="{{ route('ketua_bidang.tim') }}"
+                        class="text-primary-600 hover:text-primary-700 text-sm font-medium">
                         Lihat Semua
                     </a>
                 </div>

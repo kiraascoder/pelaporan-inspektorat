@@ -1,11 +1,15 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('laporan_pengaduan', function (Blueprint $table) {
             $table->id('laporan_id');
@@ -13,20 +17,23 @@ return new class extends Migration
             $table->string('judul_laporan');
             $table->text('isi_laporan');
             $table->string('kategori');
-            $table->enum('prioritas', ['Rendah', 'Sedang', 'Tinggi', 'Urgent'])->default('Sedang');
             $table->enum('status', ['Pending', 'Diterima', 'Dalam_Investigasi', 'Selesai', 'Ditolak'])->default('Pending');
             $table->string('lokasi_kejadian');
-            $table->datetime('tanggal_kejadian');
+            $table->dateTime('tanggal_kejadian');
             $table->json('bukti_dokumen')->nullable();
             $table->text('keterangan_admin')->nullable();
             $table->timestamps();
 
-            $table->index(['status', 'prioritas']);
-            $table->index('user_id');
+            $table->index(['status'], 'laporan_pengaduan_status_prioritas_index');
+            $table->index(['user_id'], 'laporan_pengaduan_user_id_index');
         });
     }
 
-    public function down()
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('laporan_pengaduan');
     }

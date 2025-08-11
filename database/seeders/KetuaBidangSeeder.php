@@ -18,6 +18,7 @@ class KetuaBidangSeeder extends Seeder
             // Ketua Investigasi
             [
                 'user_id' => 1,
+                'username' => 'ketuainvestigasi',
                 'nik' => '1234567890',
                 'email' => 'ketuabidanginvestigasi@gmail.com',
                 'nama_lengkap' => 'Ketua Investigasi Inspektorat',
