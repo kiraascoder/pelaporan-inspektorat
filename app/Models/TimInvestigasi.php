@@ -62,7 +62,11 @@ class TimInvestigasi extends Model
     {
         return $this->hasOne(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
-    
+    public function ketua()
+    {
+        return $this->belongsTo(User::class, 'ketua_tim_id', 'user_id');
+    }
+
 
     // Helper methods
     public function isAktif()

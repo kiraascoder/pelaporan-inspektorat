@@ -47,7 +47,7 @@
         <div class="bg-white rounded-lg shadow border border-gray-200">
             <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Laporan Terbaru</h3>
-                <a href="" class="text-sm text-green-600 hover:underline">Lihat Semua</a>
+                <a href="{{ route('admin.laporan') }}" class="text-sm text-green-600 hover:underline">Lihat Semua</a>
             </div>
             <div class="p-4">
                 @if ($laporanTerbaru->count() > 0)

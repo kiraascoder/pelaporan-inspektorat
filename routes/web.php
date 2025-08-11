@@ -38,6 +38,7 @@ Route::prefix('admin')->group(function () {
     Route::get('users', [AdminController::class, 'users'])->name('admin.users');
     Route::get('laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
     Route::get('tim', [AdminController::class, 'tim'])->name('admin.tim');
+    Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('admin.tim.show');
     Route::get('surat-tugas', [AdminController::class, 'suratTugas'])->name('admin.surat_tugas');
     Route::get('reports', [AdminController::class, 'reports'])->name('admin.reports');
 });
@@ -51,7 +52,10 @@ Route::prefix('ketua-investigasi')->group(function () {
     Route::post('store-tim', [KetuaBidangController::class, 'store'])->name('ketua_bidang.store-tim');
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');
     Route::get('surat', [KetuaBidangController::class, 'surat'])->name('ketua_bidang.surat');
+    Route::get('surat-store', [KetuaBidangController::class, 'storeSuratTugas'])->name('ketua_bidang.surat.store');
     Route::get('review', [KetuaBidangController::class, 'review'])->name('ketua_bidang.review');
+    Route::get('/surat-tugas/{suratTugas}/download', [KetuaBidangController::class, 'downloadPdf'])
+        ->name('surat_tugas.download');
 });
 
 Route::prefix('pegawai')->group(function () {

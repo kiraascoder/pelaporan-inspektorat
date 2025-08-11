@@ -8,9 +8,12 @@ use App\Models\TimInvestigasi;
 use App\Models\SuratTugas;
 use App\Models\LaporanTugas;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class KetuaBidangController extends Controller
@@ -133,7 +136,8 @@ class KetuaBidangController extends Controller
 
     public function surat()
     {
-        return (view('ketua_bidang.surat'));
+        $tim = TimInvestigasi::aktif()->first();        
+        return (view('ketua_bidang.surat',));
     }
 
     public function review()
@@ -209,14 +213,14 @@ class KetuaBidangController extends Controller
     public function store(Request $request)
     {
         // Validation rules
-        $validator = Validator::make($request->all(), [            
+        $validator = Validator::make($request->all(), [
             'deskripsi_tim' => 'nullable|string|max:1000',
             'pegawai_id' => 'required|array|min:1',
             'pegawai_id.*' => 'required|exists:users,user_id',
             'ketua_tim_id' => 'required|exists:users,user_id',
             'laporan_id' => 'nullable|exists:laporan_pengaduan,laporan_id',
             'status_tim' => 'required|in:aktif,nonaktif'
-        ], [            
+        ], [
             'pegawai_id.required' => 'Minimal pilih satu anggota tim',
             'pegawai_id.min' => 'Minimal pilih satu anggota tim',
             'ketua_tim_id.required' => 'Ketua tim harus dipilih',
@@ -242,7 +246,7 @@ class KetuaBidangController extends Controller
         try {
             // Create tim investigasi
             $timInvestigasi = TimInvestigasi::create([
-                
+
                 'deskripsi_tim' => $request->deskripsi_tim,
                 'ketua_tim_id' => $request->ketua_tim_id,
                 'laporan_id' => $request->laporan_id,
@@ -296,6 +300,7 @@ class KetuaBidangController extends Controller
         }
     }
 
+
     public function storeTim(Request $request, LaporanPengaduan $laporan)
     {
         $request->validate([
@@ -303,6 +308,10 @@ class KetuaBidangController extends Controller
             'deskripsi_tim' => 'nullable|string',
             'anggota' => 'required|array|min:1',
             'anggota.*' => 'exists:users,user_id',
+        ], [
+            'anggota.required' => 'Minimal pilih satu anggota tim',
+            'anggota.min' => 'Minimal pilih satu anggota tim',
+            'anggota.*.exists' => 'Anggota tim tidak valid',
         ]);
 
         // Buat tim investigasi
@@ -360,17 +369,6 @@ class KetuaBidangController extends Controller
             ->with('success', 'Tim investigasi berhasil diperbarui.');
     }
 
-    public function suratTugas()
-    {
-        $user = auth()->user();
-
-        $suratTugas = SuratTugas::where('dibuat_oleh', $user->user_id)
-            ->with(['timInvestigasi', 'laporanPengaduan'])
-            ->latest()
-            ->paginate(10);
-
-        return view('ketua_bidang.surat_tugas.index', compact('suratTugas'));
-    }
 
     public function createSuratTugas(TimInvestigasi $tim)
     {
@@ -383,27 +381,98 @@ class KetuaBidangController extends Controller
 
     public function storeSuratTugas(Request $request, TimInvestigasi $tim)
     {
-        $request->validate([
-            'nomor_surat' => 'required|string|unique:surat_tugas,nomor_surat',
-            'perihal' => 'required|string|max:255',
-            'deskripsi_tugas' => 'required|string',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after:tanggal_mulai',
-            'catatan' => 'nullable|string',
+        $validated = $request->validate([
+            'nomor_surat'     => 'required|string|max:255|unique:surat_tugas,nomor_surat',
+            'tim_id'          => 'nullable|exists:tim_investigasi,tim_id',
+            'laporan_id'      => 'required|exists:laporan_pengaduan,laporan_id',
+            'dibuat_oleh'     => 'required|exists:users,user_id',
+            'perihal'         => 'required|string|max:255',
+            'deskripsi_tugas' => 'nullable|string',
+            'tanggal_mulai'   => 'nullable|date',
+            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
+            'status_surat'    => 'nullable|in:Draft,Diterbitkan,Dalam_Pelaksanaan,Selesai',
+            'catatan'         => 'nullable|string|max:5000',
+
+            // data tampilan surat
+            'tanggal_surat'   => 'required|date',
+            'kota_terbit'     => 'nullable|string|max:255',
+            'jabatan_ttd'     => 'nullable|string|max:255',
+            'nama_ttd'        => 'nullable|string|max:255',
+            'pangkat_ttd'     => 'nullable|string|max:255',
+            'nip_ttd'         => 'nullable|string|max:255',
+            'lokasi'          => 'nullable|string|max:255',
+
+            // list
+            'dasar'           => 'nullable|array',
+            'dasar.*'         => 'nullable|string',
+            'untuk'           => 'nullable|array',
+            'untuk.*'         => 'nullable|string',
+            'tembusan'        => 'nullable|array',
+            'tembusan.*'      => 'nullable|string',
+            'anggota'         => 'nullable|array',
+            'anggota.nama'    => 'nullable|array',
+            'anggota.jabatan' => 'nullable|array',
         ]);
 
-        $data = $request->all();
-        $data['tim_id'] = $tim->tim_id;
-        $data['laporan_id'] = $tim->laporan_id;
-        $data['dibuat_oleh'] = auth()->id();
-        $data['status_surat'] = 'Diterbitkan';
+        // Bersihkan array kosong
+        $dasar    = collect($request->input('dasar', []))->filter(fn($v) => filled($v))->values()->all();
+        $untuk    = collect($request->input('untuk', []))->filter(fn($v) => filled($v))->values()->all();
+        $tembusan = collect($request->input('tembusan', []))->filter(fn($v) => filled($v))->values()->all();
 
-        SuratTugas::create($data);
+        // Gabungkan anggota (nama & jabatan) per indeks
+        $anggotaIn = $request->input('anggota', []);
+        $namaList  = collect($anggotaIn['nama'] ?? []);
+        $jabList   = collect($anggotaIn['jabatan'] ?? []);
+        $max = max($namaList->count(), $jabList->count());
+        $anggota = ['nama' => [], 'jabatan' => []];
+        for ($i = 0; $i < $max; $i++) {
+            $nm = trim((string)($namaList[$i] ?? ''));
+            $jb = trim((string)($jabList[$i] ?? ''));
+            if ($nm !== '' || $jb !== '') {
+                $anggota['nama'][]    = $nm;
+                $anggota['jabatan'][] = $jb;
+            }
+        }
 
-        // Update status tim menjadi aktif
-        $tim->update(['status_tim' => 'Aktif']);
+        $surat = DB::transaction(function () use ($validated, $dasar, $untuk, $tembusan, $anggota) {
+            $surat = SuratTugas::create([
+                'nomor_surat'     => $validated['nomor_surat'],
+                'tim_id'          => $validated['tim_id'] ?? null,
+                'laporan_id'      => $validated['laporan_id'],
+                'dibuat_oleh'     => $validated['dibuat_oleh'],
+                'perihal'         => $validated['perihal'],
+                'deskripsi_tugas' => $validated['deskripsi_tugas'] ?? null,
+                'tanggal_mulai'   => $validated['tanggal_mulai'] ?? null,
+                'tanggal_selesai' => $validated['tanggal_selesai'] ?? null,
+                'status_surat'    => $validated['status_surat'] ?? 'Draft',
+                'catatan'         => $validated['catatan'] ?? null,
 
-        return redirect()->route('ketua_bidang.surat_tugas.index')
+                'tanggal_surat'   => $validated['tanggal_surat'],
+                'kota_terbit'     => $validated['kota_terbit'] ?? null,
+                'jabatan_ttd'     => $validated['jabatan_ttd'] ?? null,
+                'nama_ttd'        => $validated['nama_ttd'] ?? null,
+                'pangkat_ttd'     => $validated['pangkat_ttd'] ?? null,
+                'nip_ttd'         => $validated['nip_ttd'] ?? null,
+                'lokasi'          => $validated['lokasi'] ?? null,
+
+                'dasar'           => $dasar,
+                'untuk'           => $untuk,
+                'tembusan'        => $tembusan,
+                'anggota'         => $anggota,
+            ]);
+
+            // Opsional: kalau skema kamu punya tim_investigasi.surat_id dan tim dipilih, sync satu arah
+            if (!empty($validated['tim_id']) && Schema::hasColumn('tim_investigasi', 'surat_id')) {
+                TimInvestigasi::where('tim_id', $validated['tim_id'])
+                    ->whereNull('surat_id')
+                    ->update(['surat_id' => $surat->surat_id]);
+            }
+
+            return $surat;
+        });
+
+
+        return redirect()->route('ketua_bidang.surat', $surat->surat_id)
             ->with('success', 'Surat tugas berhasil dibuat.');
     }
 
@@ -446,5 +515,25 @@ class KetuaBidangController extends Controller
 
         return redirect()->route('ketua_bidang.laporan_tugas.review')
             ->with('success', $message);
+    }
+    public function downloadPdf(\App\Models\SuratTugas $suratTugas)
+    {
+
+        $suratTugas->load([
+            'timInvestigasi.ketua',    // pastikan relasi ketua didefinisikan di model TimInvestigasi
+            'laporan',
+            'pembuat',
+        ]);
+
+        // Atur locale tanggal Indonesia (opsional)
+        Carbon::setLocale('id');
+
+        $pdf = Pdf::loadView('template.surat_tugas', [
+            'surat' => $suratTugas,
+            'now'   => Carbon::now(),
+        ])->setPaper('A4', 'portrait');
+
+        $filename = 'Surat_Tugas_' . preg_replace('/[^A-Za-z0-9\-]/', '_', $suratTugas->nomor_surat) . '.pdf';
+        return $pdf->download($filename);
     }
 }
