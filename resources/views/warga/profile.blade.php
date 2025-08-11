@@ -38,10 +38,18 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
                             </div>
 
+
                             <!-- Email -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                 <input type="email" name="email" value="{{ auth()->user()->email }}"
+                                    class="profile-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                                    readonly>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                                <input type="username" name="username" value="{{ auth()->user()->username }}"
                                     class="profile-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
                                     readonly>
                             </div>

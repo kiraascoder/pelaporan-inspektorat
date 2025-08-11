@@ -33,15 +33,28 @@
                         @enderror
                     </div>
 
+                    {{-- username --}}
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" name="username" id="username" value="{{ old('username') }}" required
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                        @error('username')
+                            <p class="text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+
                     {{-- nik --}}
                     <div>
-                        <label for="nik" class="block text-sm font-medium text-gray-700">NIK</label>
+                        <label for="nik" class="block text-sm font-medium text-gray-700">Nik</label>
                         <input type="text" name="nik" id="nik" value="{{ old('nik') }}" required
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
                         @error('nik')
                             <p class="text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+
 
                     {{-- Email --}}
                     <div>

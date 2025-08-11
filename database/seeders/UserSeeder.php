@@ -19,6 +19,7 @@ class UserSeeder extends Seeder
             // ADMIN
             [
                 'user_id' => 2,
+                'username' => 'admin',
                 'nik' => '1234567891',
                 'email' => 'admininspektorat@gmail.com',
                 'nama_lengkap' => 'Admin Inspektorat',

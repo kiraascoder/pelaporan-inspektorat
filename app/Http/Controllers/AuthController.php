@@ -23,17 +23,17 @@ class AuthController extends Controller
     {
         $request->validate(
             [
-                'nik' => 'required|string',
+                'username' => 'required|string',
                 'password' => 'required|string',
             ],
             [
-                'nik.required' => 'NIK harus diisi.',
+                'username.required' => 'username harus diisi.',
                 'password.required' => 'Password harus diisi.',
-                'nik.numeric' => 'NIK harus berupa angka.',
+                'username.numeric' => 'username harus berupa angka.',
             ]
         );
 
-        $credentials = $request->only('nik', 'password');
+        $credentials = $request->only('username', 'password');
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
@@ -57,7 +57,7 @@ class AuthController extends Controller
             }
         }
 
-        return back()->with('error', 'NIK atau password salah.');
+        return back()->with('error', 'username atau password salah.');
     }
 
     public function logout(Request $request)
@@ -73,6 +73,7 @@ class AuthController extends Controller
         $validated = $request->validate(
             [
                 'nama_lengkap' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users',
                 'nik' => 'required|string|max:16|unique:users',
                 'email' => 'required|email|unique:users',
                 'no_telepon' => 'required|string|max:20',
@@ -80,17 +81,20 @@ class AuthController extends Controller
                 'password' => 'required|string|min:6|confirmed',
             ],
             [
-                'nik.unique' => 'NIK sudah terdaftar.',
+                'username.unique' => 'username sudah terdaftar.',
                 'email.unique' => 'Email sudah terdaftar.',
                 'password.confirmed' => 'Password tidak cocok.',
                 'password.min' => 'Password minimal 6 karakter.',
-                'nik.required' => 'NIK harus diisi.',
+                'username.required' => 'username harus diisi.',
                 'email.required' => 'Email harus diisi.',
                 'no_telepon.required' => 'No Telepon harus diisi.',
                 'alamat.required' => 'Alamat harus diisi.',
                 'password.required' => 'Password harus diisi.',
-                'nik.numeric' => 'NIK harus berupa angka.',
+                'username.numeric' => 'username harus berupa angka.',
                 'no_telepon.numeric' => 'No Telepon harus berupa angka.',
+                'nik.numeric' => 'NIK harus berupa angka.',
+                'nik.max' => 'NIK maksimal 16 karakter.',
+                'no_telepon.max' => 'No Telepon maksimal 20 karakter.',
             ]
         );
 

@@ -139,7 +139,7 @@ class WargaController extends Controller
             'password' => 'nullable|min:8|confirmed',
         ]);
 
-        $data = $request->only(['nama_lengkap', 'email', 'no_telepon', 'alamat']);
+        $data = $request->only(['nama_lengkap', 'email', 'no_telepon', 'alamat', 'username']);
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
