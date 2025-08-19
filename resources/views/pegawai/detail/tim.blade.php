@@ -78,11 +78,7 @@
                                     <label class="text-sm font-medium text-gray-600 block mb-1">Kategori</label>
                                     <p class="text-gray-900 font-medium capitalize">
                                         {{ str_replace('_', ' ', $tim->laporanPengaduan->kategori) }}</p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <label class="text-sm font-medium text-gray-600 block mb-1">Prioritas</label>
-                                    <p class="text-gray-900 font-medium">{{ $tim->laporanPengaduan->prioritas }}</p>
-                                </div>
+                                </div>                                
                                 <div class="bg-gray-50 p-4 rounded-lg">
                                     <label class="text-sm font-medium text-gray-600 block mb-1">Tanggal Kejadian</label>
                                     <p class="text-gray-900 font-medium">

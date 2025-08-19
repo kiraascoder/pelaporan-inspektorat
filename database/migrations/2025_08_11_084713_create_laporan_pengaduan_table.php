@@ -13,22 +13,30 @@ return new class extends Migration
     {
         Schema::create('laporan_pengaduan', function (Blueprint $table) {
             $table->id('laporan_id');
-            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->string('judul_laporan');
-            $table->text('isi_laporan');
-            $table->string('kategori');
+            $table->unsignedBigInteger('user_id');
+            $table->string('no_pengaduan')->nullable();
+            $table->date('tanggal_pengaduan')->nullable();
+            $table->string('pelapor_nama');
+            $table->string('pelapor_pekerjaan')->nullable();
+            $table->string('pelapor_alamat')->nullable();
+            $table->string('pelapor_telp')->nullable();
+            $table->string('terlapor_nama')->nullable();
+            $table->string('terlapor_pekerjaan')->nullable();
+            $table->string('terlapor_alamat')->nullable();
+            $table->string('terlapor_telp')->nullable();
+            $table->text('permasalahan');
+            $table->json('bukti_pendukung')->nullable();
+            $table->text('harapan')->nullable();
             $table->enum('status', ['Pending', 'Diterima', 'Dalam_Investigasi', 'Selesai', 'Ditolak'])->default('Pending');
-            $table->string('lokasi_kejadian');
-            $table->dateTime('tanggal_kejadian');
-            $table->json('bukti_dokumen')->nullable();
             $table->text('keterangan_admin')->nullable();
             $table->timestamps();
-
-            $table->index(['status'], 'laporan_pengaduan_status_prioritas_index');
-            $table->index(['user_id'], 'laporan_pengaduan_user_id_index');
+            $table->index('status', 'laporan_pengaduan_status_index');
+            $table->foreign('user_id')
+                ->references('user_id')->on('users')
+                ->onDelete('cascade');
+            $table->index('user_id', 'laporan_pengaduan_user_index');
         });
     }
-
 
     /**
      * Reverse the migrations.

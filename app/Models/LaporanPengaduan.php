@@ -9,26 +9,32 @@ class LaporanPengaduan extends Model
 {
     use HasFactory;
 
-    protected $table = 'laporan_pengaduan';
-    protected $primaryKey = 'laporan_id';
+protected $table = 'laporan_pengaduan';
+    protected $primaryKey = 'laporan_id'; 
 
     protected $fillable = [
         'user_id',
-        'judul_laporan',
-        'isi_laporan',
-        'kategori',
+        'no_pengaduan',
+        'tanggal_pengaduan',        
+        'pelapor_nama',
+        'pelapor_pekerjaan',
+        'pelapor_alamat',
+        'pelapor_telp',        
+        'terlapor_nama',
+        'terlapor_pekerjaan',
+        'terlapor_alamat',
+        'terlapor_telp',        
+        'permasalahan',
+        'bukti_pendukung',
+        'harapan',        
         'status',
-        'lokasi_kejadian',
-        'tanggal_kejadian',
-        'bukti_dokumen',
         'keterangan_admin',
     ];
 
     protected $casts = [
-        'tanggal_kejadian' => 'datetime',
-        'bukti_dokumen' => 'array',
+        'tanggal_pengaduan' => 'date',
+        'bukti_pendukung'   => 'array', // otomatis array
     ];
-
     // Scope untuk filter berdasarkan status
     public function scopePending($query)
     {

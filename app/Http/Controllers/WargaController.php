@@ -14,11 +14,16 @@ class WargaController extends Controller
     {
         $user = auth()->user();
 
+        $totalLaporan = LaporanPengaduan::where('user_id', auth()->id())->count();
+        $laporanPending = LaporanPengaduan::where('user_id', auth()->id())->where('status', 'Pending')->count();
+        $laporanDalamInvestigasi = LaporanPengaduan::where('user_id', auth()->id())->where('status', 'Dalam Investigasi')->count();
+        $laporanSelesai = LaporanPengaduan::where('user_id', auth()->id())->where('status', 'Selesai')->count();
+
         $stats = [
-            'total_laporan' => $user->laporanPengaduan()->count(),
-            'laporan_pending' => $user->laporanPengaduan()->pending()->count(),
-            'laporan_dalam_investigasi' => $user->laporanPengaduan()->dalamInvestigasi()->count(),
-            'laporan_selesai' => $user->laporanPengaduan()->selesai()->count(),
+            'total_laporan' => $totalLaporan,
+            'laporan_pending' => $laporanPending,
+            'laporan_dalam_investigasi' => $laporanDalamInvestigasi,
+            'laporan_selesai' => $laporanSelesai,
         ];
 
 
@@ -46,43 +51,82 @@ class WargaController extends Controller
         return view('warga.laporan.create');
     }
 
+
     public function store(Request $request)
     {
         $request->validate([
-            'judul_laporan' => 'required|string|max:255',
-            'isi_laporan' => 'required|string',
-            'kategori' => 'required|string',
-            'lokasi_kejadian' => 'required|string',
-            'tanggal_kejadian' => 'required|date',
-            'bukti_dokumen.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'no_pengaduan'       => 'nullable|string|max:100',
+            'tanggal_pengaduan'  => 'nullable|date',
+
+            // Data Pelapor
+            'pelapor_nama'       => 'required|string|max:255',
+            'pelapor_pekerjaan'  => 'nullable|string|max:255',
+            'pelapor_alamat'     => 'nullable|string|max:500',
+            'pelapor_telp'       => 'nullable|string|max:50',
+
+            // Data Terlapor
+            'terlapor_nama'      => 'nullable|string|max:255',
+            'terlapor_pekerjaan' => 'nullable|string|max:255',
+            'terlapor_alamat'    => 'nullable|string|max:500',
+            'terlapor_telp'      => 'nullable|string|max:50',
+
+            // Substansi
+            'permasalahan'       => 'required|string',
+            'harapan'            => 'nullable|string',
+
+            // File bukti (multiple)
+            'bukti_pendukung'    => 'nullable',
+            'bukti_pendukung.*'  => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // maks 10MB
         ], [
-            'judul_laporan.required' => 'Judul laporan harus diisi.',
-            'isi_laporan.required' => 'Isi laporan harus diisi.',
-            'kategori.required' => 'Kategori harus diisi.',
-            'lokasi_kejadian.required' => 'Lokasi kejadian harus diisi.',
-            'tanggal_kejadian.required' => 'Tanggal kejadian harus diisi.',
-            'bukti_dokumen.*.file' => 'Bukti dokumen harus berupa file.',
-            'bukti_dokumen.*.mimes' => 'Bukti dokumen harus berupa file PDF, JPG, JPEG, atau PNG.',
-            'bukti_dokumen.*.max' => 'Bukti dokumen tidak boleh lebih dari 5MB.',
+            'pelapor_nama.required'  => 'Nama pelapor wajib diisi.',
+            'permasalahan.required'  => 'Permasalahan wajib diisi.',
+            'bukti_pendukung.*.mimes' => 'Bukti harus PDF/JPG/JPEG/PNG/DOC/DOCX.',
+            'bukti_pendukung.*.max'  => 'Bukti maksimal 10MB per file.',
         ]);
 
-        $data = $request->all();
-        $data['user_id'] = auth()->id();
-        $data['status'] = 'Pending';
+        // Siapkan data
+        $userId = auth()->id(); // pastikan model User punya $primaryKey = 'user_id' jika kolomnya user_id
+        $today  = now()->toDateString();
 
-        if ($request->hasFile('bukti_dokumen')) {
-            $files = [];
-            foreach ($request->file('bukti_dokumen') as $file) {
-                $files[] = $file->store('bukti_dokumen', 'public');
+        // Auto generate no_pengaduan jika kosong (opsional)
+        $noPengaduan = $request->filled('no_pengaduan')
+            ? $request->string('no_pengaduan')->toString()
+            : 'PD-' . now()->format('Ymd-His') . '-' . str_pad((string)$userId, 4, '0', STR_PAD_LEFT);
+
+        // Upload bukti (bisa 0..n file)
+        $buktiPaths = [];
+        if ($request->hasFile('bukti_pendukung')) {
+            foreach ((array) $request->file('bukti_pendukung') as $file) {
+                if ($file && $file->isValid()) {
+                    $buktiPaths[] = $file->store('bukti_pendukung', 'public');
+                }
             }
-            $data['bukti_dokumen'] = $files;
         }
 
-        LaporanPengaduan::create($data);
+        // Simpan
+        LaporanPengaduan::create([
+            'user_id'            => $userId,
+            'no_pengaduan'       => $noPengaduan,
+            'tanggal_pengaduan'  => $request->date('tanggal_pengaduan')?->toDateString() ?? $today,
+            'pelapor_nama'       => $request->string('pelapor_nama'),
+            'pelapor_pekerjaan'  => $request->string('pelapor_pekerjaan'),
+            'pelapor_alamat'     => $request->string('pelapor_alamat'),
+            'pelapor_telp'       => $request->string('pelapor_telp'),
+            'terlapor_nama'      => $request->string('terlapor_nama'),
+            'terlapor_pekerjaan' => $request->string('terlapor_pekerjaan'),
+            'terlapor_alamat'    => $request->string('terlapor_alamat'),
+            'terlapor_telp'      => $request->string('terlapor_telp'),
+            'permasalahan'       => $request->input('permasalahan'),
+            'harapan'            => $request->input('harapan'),
+            'bukti_pendukung'    => $buktiPaths, // cast ke array di model            
+            'status'             => 'Pending',
+        ]);
 
-        return redirect()->route('warga.laporan')
+        return redirect()
+            ->route('warga.laporan')
             ->with('success', 'Laporan berhasil diajukan.');
     }
+
 
     public function show(LaporanPengaduan $laporan)
     {
@@ -155,17 +199,21 @@ class WargaController extends Controller
     {
         $user = auth()->user();
 
+        $totalLaporan = LaporanPengaduan::where('user_id', auth()->id())->count();
+        $laporanPending = LaporanPengaduan::where('user_id', auth()->id())->where('status', 'Pending')->count();
+        $laporanDalamInvestigasi = LaporanPengaduan::where('user_id', auth()->id())->where('status', 'Dalam Investigasi')->count();
+        $laporanSelesai = LaporanPengaduan::where('user_id', auth()->id())->where('status', 'Selesai')->count();
 
         $stats = [
-            'total_laporan' => $user->laporanPengaduan()->count(),
-            'laporan_pending' => $user->laporanPengaduan()->pending()->count(),
-            'laporan_dalam_investigasi' => $user->laporanPengaduan()->dalamInvestigasi()->count(),
-            'laporan_selesai' => $user->laporanPengaduan()->selesai()->count(),
+            'total_laporan' => $totalLaporan,
+            'laporan_pending' => $laporanPending,
+            'laporan_dalam_investigasi' => $laporanDalamInvestigasi,
+            'laporan_selesai' => $laporanSelesai,
         ];
 
 
-        $laporanTerbaru = $user->laporanPengaduan()
-            ->latest()
+        $laporanTerbaru = LaporanPengaduan::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
             ->paginate(5);
 
 
