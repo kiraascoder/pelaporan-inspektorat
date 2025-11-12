@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\KepalaInspektoratController;
 use App\Http\Controllers\KetuaBidangController;
+use App\Http\Controllers\LaporanPengaduanController;
 use App\Http\Controllers\LaporanTugasController;
 use App\Http\Controllers\PegawaiController;
+use App\Http\Controllers\SekretarisController;
 use App\Http\Controllers\WargaController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,7 +52,7 @@ Route::prefix('ketua-investigasi')->group(function () {
     Route::get('laporan-masuk', [KetuaBidangController::class, 'laporan'])->name('ketua_bidang.laporan');
     Route::get('laporan/{laporan}', [KetuaBidangController::class, 'show'])->name('ketua_bidang.laporan.show');
     Route::get('tim', [KetuaBidangController::class, 'tim'])->name('ketua_bidang.tim');
-    Route::post('store-tim', [KetuaBidangController::class, 'store'])->name('ketua_bidang.store-tim');
+    Route::post('store-tim', [KetuaBidangController::class, 'storeTim'])->name('ketua_bidang.store-tim');
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');
     Route::get('surat', [KetuaBidangController::class, 'surat'])->name('ketua_bidang.surat');
     Route::get('surat-store', [KetuaBidangController::class, 'storeSuratTugas'])->name('ketua_bidang.surat.store');
@@ -60,13 +63,41 @@ Route::prefix('ketua-investigasi')->group(function () {
 
 Route::prefix('pegawai')->group(function () {
     Route::get('dashboard', [PegawaiController::class, 'dashboard'])->name('pegawai.dashboard');
-    Route::get('laporan', [PegawaiController::class, 'laporanTersedia'])->name('pegawai.laporan');
+    Route::get('laporan', [PegawaiController::class, 'laporan'])->name('pegawai.laporan');
     Route::get('laporan/{laporan}', [PegawaiController::class, 'showLaporan'])->name('pegawai.laporan.show');
     Route::get('tim/{tim_id}', [PegawaiController::class, 'showTimInvestigasi'])->name('pegawai.tim.show');
+    Route::patch('/tim/{tim_id}/status', [PegawaiController::class, 'updateStatusLaporan'])->name('ketuaTim.tim.laporan.updateStatus');
     Route::get('tim', [PegawaiController::class, 'tim'])->name('pegawai.tim');
     Route::get('laporan-tugas', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
     Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');
-    Route::get('report-tugas/{id}/', [LaporanTugasController::class, 'show'])->name('pegawai.report.show');
+    Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('pegawai.report.show');
+    Route::put('/laporan/{laporan}/status', [LaporanPengaduanController::class, 'updateStatus'])->name('pegawai.laporan.updateStatus');
+});
+
+Route::prefix('sekretaris')->group(function () {
+    Route::get('dashboard', [SekretarisController::class, 'dashboard'])->name('sekretaris.dashboard');
+    Route::get('laporan', [SekretarisController::class, 'laporan'])->name('sekretaris.laporan');
+    Route::get('laporan/{laporan}', [SekretarisController::class, 'showLaporan'])->name('sekretaris.laporan.show');
+    Route::get('tim', [SekretarisController::class, 'tim'])->name('sekretaris.tim');
+    Route::get('tim/{tim_id}', [SekretarisController::class, 'showTimInvestigasi'])->name('sekretaris.tim.show');
+    Route::get('laporan-tugas', [SekretarisController::class, 'laporanTugas'])->name('sekretaris.laporan_tugas');
+    Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('sekretaris.report.show');
+    Route::get('/surat-tugas', [SekretarisController::class, 'suratTugas'])->name('sekretaris.surat_tugas');
+    Route::get('/surat-tugas/{suratTugas}', [SekretarisController::class, 'showSuratTugas'])->name('sekretaris.surat_tugas.show');
+    Route::get('/surat-tugas/{suratTugas}/download', [SekretarisController::class, 'downloadPdf']);
+});
+
+Route::prefix('kepala-inspektorat')->group(function () {
+    Route::get('dashboard', [KepalaInspektoratController::class, 'dashboard'])->name('kepala.dashboard');
+    Route::get('laporan', [KepalaInspektoratController::class, 'laporan'])->name('kepala.laporan');
+    Route::get('laporan/{laporan}', [KepalaInspektoratController::class, 'showLaporan'])->name('kepala.laporan.show');
+    Route::get('tim', [KepalaInspektoratController::class, 'tim'])->name('kepala.tim');
+    Route::get('tim/{tim_id}', [KepalaInspektoratController::class, 'showTimInvestigasi'])->name('kepala.tim.show');
+    Route::get('laporan-tugas', [KepalaInspektoratController::class, 'laporanTugas'])->name('kepala.review');
+    Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('kepala.report.show');
+    Route::get('/surat-tugas', [KepalaInspektoratController::class, 'suratTugas'])->name('kepala.surat_tugas');
+    Route::get('/surat-tugas/{suratTugas}', [KepalaInspektoratController::class, 'showSuratTugas'])->name('kepala.surat_tugas.show');
+    Route::get('/surat-tugas/{suratTugas}/store', [KepalaInspektoratController::class, 'downloadPdf']);
 });
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

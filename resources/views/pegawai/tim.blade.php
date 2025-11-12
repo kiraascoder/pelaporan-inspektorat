@@ -10,7 +10,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Tim Investigasi</h1>
                 <p class="text-gray-600">Kelola tim investigasi dan monitoring kinerja</p>
-            </div>       
+            </div>
         </div>
 
         <!-- Key Metrics -->
@@ -84,64 +84,133 @@
         </div>
 
         <!-- Filter & Search -->
-        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex flex-col sm:flex-row gap-4">
+        <!-- Filter & Search -->
+        <form action="{{ url()->current() }}" method="GET"
+            class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
-                    <input type="text" placeholder="Cari tim atau ketua tim..."
-                        class="w-full border-gray-300 rounded-md shadow-sm">
+                    <input type="text" name="q" value="{{ request('q') }}"
+                        placeholder="Cari nama tim / ketua tim / kategori…"
+                        class="w-full border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700">
+                        Cari
+                    </button>
+                    <a href="{{ url()->current() }}"
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">
+                        Reset
+                    </a>
                 </div>
             </div>
-        </div>
+        </form>
+
 
         <!-- Tim List -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Tim Alpha -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                @foreach ($timList as $data)
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">{{ $data->nama_tim }}</h3>
-                                    <p class="text-sm text-gray-600 capitalized">
-                                        Kategori: {{ $data->laporanPengaduan->kategori }} </p>
+        <!-- Tim List (Table) -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tim
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ketua
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggota
+                        </th>                        
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status
+                            Tim</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Dibuat
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @php
+                        $auth = auth()->user();
+                        $authId = $auth->user_id ?? ($auth->id ?? null);
+
+                        $badge = function ($status) {
+                            $map = [
+                                'aktif' => 'bg-green-100 text-green-800 ring-green-200',
+                                'nonaktif' => 'bg-gray-100 text-gray-800 ring-gray-200',
+                                'Aktif' => 'bg-green-100 text-green-800 ring-green-200',
+                                'Nonaktif' => 'bg-gray-100 text-gray-800 ring-gray-200',
+                            ];
+                            $cls = $map[$status] ?? 'bg-gray-100 text-gray-800 ring-gray-200';
+                            return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ' .
+                                $cls .
+                                '">' .
+                                e($status) .
+                                '</span>';
+                        };
+                    @endphp
+
+                    @forelse ($timList as $data)
+                        @php
+                            $ketua = $data->ketuaTim ?? null;
+                            $ketuaId = $ketua->user_id ?? ($ketua->id ?? null);
+                            $isAndaKetua = $authId && $ketuaId && $authId === $ketuaId;
+
+                            $kategori = optional($data->laporanPengaduan)->kategori;
+                            if ($kategori) {
+                                $kategori = str_replace('_', ' ', $kategori);
+                            }
+
+                            $anggotaCount = method_exists($data->anggotaAktif, 'count')
+                                ? $data->anggotaAktif->count()
+                                : (is_countable($data->anggotaAktif ?? [])
+                                    ? count($data->anggotaAktif)
+                                    : 0);
+                        @endphp
+
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900">{{ $data->nama_tim }}</div>
+                                <div class="text-xs text-gray-500">#{{ $data->tim_id }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">
+                                    {{ $ketua->nama_lengkap ?? '—' }}
+                                    @if ($isAndaKetua)
+                                        <span class="text-xs text-gray-500">(Anda)</span>
+                                    @endif
                                 </div>
-                            </div>
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {{ $data->status_tim }}
-                            </span>
-                        </div>
-
-                        <div class="mb-4">
-                            <div class="flex items-center space-x-2">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                <span class="text-sm text-gray-600"><strong>Ketua:</strong>
-                                    {{ $data->ketuaTim->nama_lengkap }}</span>
-                            </div>
-                            <div class="flex items-center space-x-2 mt-1">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <span class="text-sm text-gray-600"><strong>Anggota:</strong>
-                                    {{ $data->anggotaAktif->count() }} Anggota</span>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-end">
-                            <button class="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                                <a href="{{ route('pegawai.tim.show', $data->tim_id) }}">
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">{{ $anggotaCount }} orang</div>
+                            </td>
+                        
+                            <td class="px-6 py-4">
+                                {!! $badge($data->status_tim) !!}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                {{ $data->created_at?->format('d M Y') ?? '—' }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{{ route('pegawai.tim.show', $data->tim_id) }}"
+                                    class="text-primary-600 hover:text-primary-800 text-sm font-medium">
                                     Detail →
                                 </a>
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">
+                                Belum ada tim investigasi.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            @if (method_exists($timList, 'links'))
+                <div class="px-6 py-4 border-t border-gray-200">
+                    {{ $timList->withQueryString()->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -210,7 +279,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                 <option value="">Pilih laporan (jika ada)</option>
                                 @foreach ($laporanList as $laporan)
-                                    <option value="{{ $laporan->id }}">{{ $laporan->judul_laporan }}</option>
+                                    <option value="{{ $laporan->id }}">{{ $laporan->permasalahan }}</option>
                                 @endforeach
                             </select>
                         </div>

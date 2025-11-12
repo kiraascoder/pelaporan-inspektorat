@@ -119,7 +119,7 @@
                             </option>
                             <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak
                             </option>
-                        </select>                        
+                        </select>
                         <div class="flex space-x-2">
                             <button type="button" id="apply_filter"
                                 class="bg-primary-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
@@ -195,7 +195,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('ketua_bidang.laporan.show', $report->laporan_id) }}"
+                                            <a href="{{ route('kepala.laporan.show', $report->laporan_id) }}"
                                                 class="text-primary-600 hover:text-primary-900">
                                                 Lihat
                                             </a>

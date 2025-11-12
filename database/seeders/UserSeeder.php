@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         $users = [
             // ADMIN
             [
-                'user_id' => 2,
+                'user_id' => 1,
                 'username' => 'admin',
                 'nik' => '1234567891',
                 'email' => 'admininspektorat@gmail.com',
@@ -29,6 +29,22 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
                 'nip' => '1234567890',
                 'jabatan' => 'Admin Inspektorat',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'user_id' => 2,
+                'username' => 'sekretaris',
+                'nik' => '12345678910',
+                'email' => 'sekretarisinspektorat@gmail.com',
+                'nama_lengkap' => 'Sekretaris Inspektorat',
+                'password' => Hash::make('password123'),
+                'no_telepon' => '1234567890',
+                'alamat' => 'Jl. Contoh, Kota Contoh',
+                'role' => 'Sekretaris',
+                'nip' => '1234567890',
+                'jabatan' => 'Sekretaris Inspektorat',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),

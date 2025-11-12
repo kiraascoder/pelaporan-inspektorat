@@ -213,8 +213,7 @@
                 <!-- Modal Header -->
                 <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">Buat Tim Investigasi</h3>
-                    <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600"
-                        aria-label="Tutup">
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
@@ -226,18 +225,7 @@
                 <form id="timForm" action="{{ route('ketua_bidang.store-tim') }}" method="POST">
                     @csrf
                     <div class="px-6 py-4 space-y-6">
-
-                        {{-- Nama Tim --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Tim <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="nama_tim" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Misal: Tim Investigasi Drainase RW 05">
-                        </div>
-
-                        {{-- Deskripsi Tim --}}
+                        <!-- Deskripsi Tim -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tim</label>
                             <textarea name="deskripsi_tim" rows="3"
@@ -245,29 +233,11 @@
                                 placeholder="Jelaskan tugas atau fokus tim ini (opsional)"></textarea>
                         </div>
 
-                        {{-- Laporan Terkait (tetap tampil) --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Laporan Terkait</label>
-                            <select name="laporan_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                <option value="">Pilih laporan (jika ada)</option>
-                                @foreach ($laporanList as $lp)
-                                    @php
-                                        $lpId = $lp->laporan_id ?? $lp->id;
-                                        $lpText = $lp->permasalahan ?? ($lp->judul ?? 'Laporan #' . $lpId);
-                                    @endphp
-                                    <option value="{{ $lpId }}">{{ $lpText }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Opsional. Jika halaman sudah konteks 1 laporan, biarkan
-                                terpilih.</p>
-                        </div>
-
-                        {{-- Anggota Tim --}}
+                        <!-- Anggota Tim -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Anggota Tim</label>
 
-                            {{-- Select untuk memilih pegawai (value = user_id) --}}
+                            <!-- Select untuk memilih pegawai -->
                             <div class="mb-4">
                                 <select id="pegawaiSelect"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
@@ -275,35 +245,45 @@
                                 </select>
                             </div>
 
-                            {{-- Daftar anggota yang dipilih --}}
+                            <!-- Container untuk anggota yang dipilih -->
                             <div id="selectedAnggota" class="space-y-2">
                                 <p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>
                             </div>
 
-                            {{-- Hidden inputs untuk submit (anggota_ids[] & anggota_roles[]) --}}
+                            <!-- Hidden inputs untuk form submission -->
                             <div id="hiddenInputs"></div>
                         </div>
 
-                        {{-- Ketua Tim (harus dari anggota yang dipilih) --}}
+                        <!-- Laporan Terkait -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Ketua Tim <span class="text-red-500">*</span>
-                            </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Laporan Terkait</label>
+                            <select name="laporan_id"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="">Pilih laporan (jika ada)</option>
+                                @foreach ($laporanList as $laporan)
+                                    <option value="{{ $laporan->id }}">{{ $laporan->permasalahan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Ketua Tim -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ketua Tim <span
+                                    class="text-red-500">*</span></label>
                             <select name="ketua_tim_id" id="ketuaSelect" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                 <option value="">Pilih Ketua Tim</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Hanya anggota yang sudah dipilih yang bisa menjadi ketua.
+                            <p class="text-xs text-gray-500 mt-1">Hanya anggota yang sudah dipilih yang bisa menjadi ketua
                             </p>
                         </div>
 
-                        {{-- Status Tim (default Dibentuk) --}}
-                        <input type="hidden" name="status_tim" value="Dibentuk">
+                        <input type="hidden" name="status_tim" value="Aktif">
                         <div class="text-sm">
                             <span class="text-gray-700 font-medium">Status Tim</span>
                             <div
                                 class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ring-1 bg-green-100 text-green-800 ring-green-200">
-                                Dibentuk
+                                Aktif
                             </div>
                         </div>
                     </div>
@@ -326,212 +306,256 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // ================== CONFIG / DATA DARI BACKEND ==================
-        // Pastikan tiap item punya { user_id, name }.
-        const PEGAWAI_LIST = @json($pegawaiList ?? []); // contoh: [{user_id: 3, name: "Budi"}, ...]
-        const ROLE_OPTIONS = ['Ketua', 'Anggota', 'Penanggung_Jawab', 'Wakil_Penanggung_Jawab', 'Pengendali_Teknis'];
+        // Data pegawai dari backend
+        const pegawaiList = @json($pegawaiList ?? []);
+        let selectedAnggotaList = [];
 
-        // ================== DOM ELEMEN ==================
-        const modalEl = document.getElementById('timModal');
-        const formEl = document.getElementById('timForm');
-        const pegawaiSel = document.getElementById('pegawaiSelect');
-        const selectedWrap = document.getElementById('selectedAnggota');
-        const hiddenWrap = document.getElementById('hiddenInputs');
-        const ketuaSel = document.getElementById('ketuaSelect');
-
-        // ================== STATE ==================
-        // { user_id: "7", name: "Nama", role: "Anggota" }
-        const selected = [];
-
-        // ================== MODAL CONTROL ==================
-        function openModal() {
-            modalEl.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-            initForm();
+        // Initialize modal
+        function initModal() {
+            selectedAnggotaList = []; // Reset selected list
+            populatePegawaiSelect();
+            updateAnggotaDisplay();
+            updateKetuaOptions();
         }
 
-        function closeModal(e) {
-            if (e && e.target && e.currentTarget && e.target !== e.currentTarget) return; // klik luar saja
-            modalEl.classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-            formEl.reset();
-            selected.length = 0;
-            initForm();
-        }
-        window.openModal = openModal;
-        window.closeModal = closeModal;
+        // Populate select dengan data pegawai
+        function populatePegawaiSelect() {
+            const select = document.getElementById('pegawaiSelect');
+            if (!select) return;
 
-        // ================== INIT ==================
-        function initForm() {
-            renderPegawaiOptions();
-            redrawSelected();
-            redrawHiddenInputs();
-            redrawKetuaOptions();
-        }
+            select.innerHTML = '<option value="">Pilih Pegawai untuk ditambahkan</option>';
 
-        // Render opsi pegawai (value = user_id)
-        function renderPegawaiOptions() {
-            pegawaiSel.innerHTML = '<option value="">Pilih Pegawai untuk ditambahkan</option>';
-            (PEGAWAI_LIST || []).forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.user_id; // WAJIB user_id untuk lolos exists:users,user_id
-                opt.textContent = p.name ?? ('User #' + p.user_id);
-                pegawaiSel.appendChild(opt);
+            pegawaiList.forEach(pegawai => {
+                // Check if pegawai is already selected
+                const isSelected = selectedAnggotaList.some(selected =>
+                    parseInt(selected.id) === parseInt(pegawai.id)
+                );
+
+                if (!isSelected) {
+                    const option = document.createElement('option');
+                    option.value = pegawai.id;
+                    option.textContent = `${pegawai.nama_lengkap} - ${pegawai.jabatan || 'Tidak ada jabatan'}`;
+                    option.dataset.userId = pegawai.user_id || pegawai.id;
+                    option.dataset.nama = pegawai.nama_lengkap;
+                    option.dataset.jabatan = pegawai.jabatan || 'Tidak ada jabatan';
+                    select.appendChild(option);
+                }
             });
         }
 
-        // Tambah anggota
-        pegawaiSel.addEventListener('change', () => {
-            const userId = pegawaiSel.value;
-            if (!userId) return;
-            if (selected.some(s => String(s.user_id) === String(userId))) {
-                pegawaiSel.value = '';
-                return;
-            }
+        // Handle pegawai selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const pegawaiSelect = document.getElementById('pegawaiSelect');
 
-            const peg = (PEGAWAI_LIST || []).find(p => String(p.user_id) === String(userId));
-            selected.push({
-                user_id: String(userId),
-                name: peg?.name || ('User #' + userId),
-                role: 'Anggota'
-            });
+            if (pegawaiSelect) {
+                pegawaiSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        const selectedOption = this.options[this.selectedIndex];
+                        const pegawai = {
+                            id: parseInt(this.value),
+                            user_id: selectedOption.dataset.userId,
+                            nama: selectedOption.dataset.nama,
+                            jabatan: selectedOption.dataset.jabatan
+                        };
 
-            pegawaiSel.value = '';
-            redrawSelected();
-            redrawHiddenInputs();
-            redrawKetuaOptions();
-        });
-
-        // Gambar daftar anggota + kontrol rolenya
-        function redrawSelected() {
-            selectedWrap.innerHTML = '';
-            if (selected.length === 0) {
-                selectedWrap.innerHTML = '<p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>';
-                return;
-            }
-
-            selected.forEach((s) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center justify-between gap-3 border rounded-lg px-3 py-2';
-
-                const left = document.createElement('div');
-                left.className = 'flex items-center gap-3';
-                left.innerHTML = `
-        <div class="font-medium text-gray-900">${s.name}</div>
-        <div class="text-xs text-gray-500">#${s.user_id}</div>
-      `;
-
-                const roleSel = document.createElement('select');
-                roleSel.className =
-                    'px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
-                ROLE_OPTIONS.forEach(r => {
-                    const o = document.createElement('option');
-                    o.value = r;
-                    o.textContent = r.replaceAll('_', ' ');
-                    if (r === s.role) o.selected = true;
-                    roleSel.appendChild(o);
-                });
-                roleSel.addEventListener('change', () => {
-                    s.role = roleSel.value;
-                    if (s.role === 'Ketua') {
-                        // hanya satu Ketua
-                        selected.forEach(x => {
-                            if (x !== s && x.role === 'Ketua') x.role = 'Anggota';
-                        });
-                        ketuaSel.value = String(s.user_id);
+                        addAnggota(pegawai);
+                        this.value = ''; // Reset select
                     }
-                    redrawSelected();
-                    redrawHiddenInputs();
                 });
-
-                const rm = document.createElement('button');
-                rm.type = 'button';
-                rm.className = 'text-red-600 hover:text-red-700 text-sm';
-                rm.textContent = 'Hapus';
-                rm.addEventListener('click', () => {
-                    const i = selected.findIndex(x => String(x.user_id) === String(s.user_id));
-                    if (i !== -1) selected.splice(i, 1);
-                    if (String(ketuaSel.value) === String(s.user_id)) ketuaSel.value = '';
-                    redrawSelected();
-                    redrawHiddenInputs();
-                    redrawKetuaOptions();
-                });
-
-                const right = document.createElement('div');
-                right.className = 'flex items-center gap-3';
-                right.appendChild(roleSel);
-                right.appendChild(rm);
-
-                row.appendChild(left);
-                row.appendChild(right);
-                selectedWrap.appendChild(row);
-            });
-        }
-
-        // Hidden inputs untuk submit (harus cocok dengan controller)
-        function redrawHiddenInputs() {
-            hiddenWrap.innerHTML = '';
-            selected.forEach(s => {
-                const inId = document.createElement('input');
-                inId.type = 'hidden';
-                inId.name = 'anggota_ids[]';
-                inId.value = s.user_id; // HARUS user_id
-
-                const inRole = document.createElement('input');
-                inRole.type = 'hidden';
-                inRole.name = 'anggota_roles[]';
-                inRole.value = s.role;
-
-                hiddenWrap.appendChild(inId);
-                hiddenWrap.appendChild(inRole);
-            });
-        }
-
-        // Ketua options: hanya anggota terpilih (value = user_id)
-        function redrawKetuaOptions() {
-            const curr = ketuaSel.value;
-            ketuaSel.innerHTML = '<option value="">Pilih Ketua Tim</option>';
-            selected.forEach(s => {
-                const o = document.createElement('option');
-                o.value = s.user_id;
-                o.textContent = s.name;
-                ketuaSel.appendChild(o);
-            });
-            if (selected.some(s => String(s.user_id) === String(curr))) {
-                ketuaSel.value = curr;
-            } else {
-                ketuaSel.value = '';
             }
-        }
 
-        // Saat ketua dipilih manual → role jadi 'Ketua', yang lain bukan 'Ketua'
-        ketuaSel.addEventListener('change', () => {
-            const ketuaId = ketuaSel.value;
-            if (!ketuaId) return;
-            selected.forEach(s => {
-                if (String(s.user_id) === String(ketuaId)) s.role = 'Ketua';
-                else if (s.role === 'Ketua') s.role = 'Anggota';
-            });
-            redrawSelected();
-            redrawHiddenInputs();
+            // Initialize modal when DOM is ready
+            initModal();
         });
 
-        // Validasi ringan di client
-        formEl.addEventListener('submit', function(e) {
-            if (selected.length === 0) {
+        // Add anggota to selected list
+        function addAnggota(pegawai) {
+            // Check if already selected using parseInt for comparison
+            const isAlreadySelected = selectedAnggotaList.some(selected =>
+                parseInt(selected.id) === parseInt(pegawai.id)
+            );
+
+            if (isAlreadySelected) {
+                console.log('Pegawai sudah dipilih:', pegawai.nama);
+                return;
+            }
+
+            selectedAnggotaList.push(pegawai);
+            console.log('Added anggota:', pegawai.nama, 'Total:', selectedAnggotaList.length);
+
+            updateAnggotaDisplay();
+            updateKetuaOptions();
+            populatePegawaiSelect(); // Refresh available options
+        }
+
+        // Remove anggota from selected list
+        function removeAnggota(pegawaiId) {
+            console.log('Removing pegawai with ID:', pegawaiId);
+
+            const initialLength = selectedAnggotaList.length;
+            selectedAnggotaList = selectedAnggotaList.filter(anggota =>
+                parseInt(anggota.id) !== parseInt(pegawaiId)
+            );
+
+            console.log('Removed. Before:', initialLength, 'After:', selectedAnggotaList.length);
+
+            updateAnggotaDisplay();
+            updateKetuaOptions();
+            populatePegawaiSelect(); // Refresh available options
+        }
+
+        // Update display of selected anggota
+        function updateAnggotaDisplay() {
+            const container = document.getElementById('selectedAnggota');
+            const hiddenInputs = document.getElementById('hiddenInputs');
+
+            if (!container || !hiddenInputs) return;
+
+            if (selectedAnggotaList.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>';
+                hiddenInputs.innerHTML = '';
+                return;
+            }
+
+            // Create display for each selected anggota
+            let html = '';
+            let hiddenInputsHtml = '';
+
+            selectedAnggotaList.forEach(anggota => {
+                html += `
+                <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div class="flex-1">
+                        <div class="font-medium text-gray-900">${anggota.nama}</div>
+                        <div class="text-sm text-gray-600">${anggota.jabatan}</div>
+                    </div>
+                    <button type="button" onclick="removeAnggota(${anggota.id})"
+                        class="ml-3 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                `;
+
+                // Add hidden input for form submission
+                hiddenInputsHtml += `<input type="hidden" name="pegawai_id[]" value="${anggota.user_id}">`;
+            });
+
+            container.innerHTML = html;
+            hiddenInputs.innerHTML = hiddenInputsHtml;
+        }
+
+        // Update ketua options based on selected anggota
+        function updateKetuaOptions() {
+            const ketuaSelect = document.getElementById('ketuaSelect');
+            if (!ketuaSelect) return;
+
+            const currentValue = ketuaSelect.value;
+            ketuaSelect.innerHTML = '<option value="">Pilih Ketua Tim</option>';
+
+            selectedAnggotaList.forEach(anggota => {
+                const option = document.createElement('option');
+                option.value = anggota.id;
+                option.textContent = anggota.nama;
+                if (currentValue == anggota.id) {
+                    option.selected = true;
+                }
+                ketuaSelect.appendChild(option);
+            });
+        }
+
+        function openModal() {
+            document.getElementById('timModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            initModal();
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('timModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+
+            // Reset form dan state
+            document.getElementById('timForm').reset();
+            selectedAnggotaList = [];
+            initModal(); // Reinitialize everything
+        }
+
+        // Team Performance Chart
+        if (document.getElementById('teamPerformanceChart')) {
+            const teamPerformanceCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+            new Chart(teamPerformanceCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Kecepatan', 'Kualitas', 'Komunikasi', 'Kepatuhan', 'Inovasi'],
+                    datasets: [{
+                        label: 'Tim Alpha',
+                        data: [85, 90, 88, 92, 75],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(59, 130, 246)'
+                    }, {
+                        label: 'Tim Beta',
+                        data: [78, 85, 90, 87, 82],
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                        pointBackgroundColor: 'rgb(34, 197, 94)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(34, 197, 94)'
+                    }, {
+                        label: 'Tim Gamma',
+                        data: [92, 88, 85, 95, 88],
+                        borderColor: 'rgb(147, 51, 234)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                        pointBackgroundColor: 'rgb(147, 51, 234)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(147, 51, 234)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('timForm').addEventListener('submit', function(e) {
+            // Validate anggota
+            if (selectedAnggotaList.length === 0) {
                 e.preventDefault();
                 alert('Pilih minimal satu anggota tim!');
                 return;
             }
-            if (!ketuaSel.value) {
+
+            // Validate ketua
+            const ketuaId = document.getElementById('ketuaSelect').value;
+            if (!ketuaId) {
                 e.preventDefault();
                 alert('Pilih ketua tim!');
                 return;
             }
-        });
 
-        // Init awal
-        document.addEventListener('DOMContentLoaded', initForm);
+            // Form valid, allow submission
+            return true;
+        });
     </script>
 @endpush

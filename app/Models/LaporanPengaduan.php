@@ -9,24 +9,24 @@ class LaporanPengaduan extends Model
 {
     use HasFactory;
 
-protected $table = 'laporan_pengaduan';
-    protected $primaryKey = 'laporan_id'; 
+    protected $table = 'laporan_pengaduan';
+    protected $primaryKey = 'laporan_id';
 
     protected $fillable = [
         'user_id',
         'no_pengaduan',
-        'tanggal_pengaduan',        
+        'tanggal_pengaduan',
         'pelapor_nama',
         'pelapor_pekerjaan',
         'pelapor_alamat',
-        'pelapor_telp',        
+        'pelapor_telp',
         'terlapor_nama',
         'terlapor_pekerjaan',
         'terlapor_alamat',
-        'terlapor_telp',        
+        'terlapor_telp',
         'permasalahan',
         'bukti_pendukung',
-        'harapan',        
+        'harapan',
         'status',
         'keterangan_admin',
     ];
@@ -76,5 +76,9 @@ protected $table = 'laporan_pengaduan';
     public function suratTugas()
     {
         return $this->hasMany(SuratTugas::class, 'laporan_id', 'laporan_id');
+    }
+    public function getRouteKeyName()
+    {
+        return 'laporan_id';
     }
 }

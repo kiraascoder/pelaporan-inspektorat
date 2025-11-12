@@ -52,6 +52,10 @@ class AuthController extends Controller
                     return redirect()->route('pegawai.dashboard');
                 case 'Warga':
                     return redirect()->route('warga.dashboard');
+                case 'Sekretaris':
+                    return redirect()->route('sekretaris.dashboard');
+                case 'Kepala_Inspektorat':
+                    return redirect()->route('kepala.dashboard');
                 default:
                     return redirect()->route('home');
             }

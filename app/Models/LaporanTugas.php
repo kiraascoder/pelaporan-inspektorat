@@ -12,20 +12,22 @@ class LaporanTugas extends Model
     protected $table = 'laporan_tugas';
     protected $primaryKey = 'laporan_tugas_id';
 
-    protected $fillable = [        
+    protected $fillable = [
         'pegawai_id',
         'judul_laporan',
         'isi_laporan',
         'temuan',
         'rekomendasi',
+        'temuan_pemeriksaan',
         'bukti_pendukung',
         'status_laporan',
         'tanggal_submit',
     ];
 
     protected $casts = [
-        'tanggal_submit' => 'datetime',
-        'bukti_pendukung' => 'array',
+        'bukti_pendukung'   => 'array',
+        'temuan_pemeriksaan' => 'array', 
+        'tanggal_submit'    => 'datetime',
     ];
 
     // Scope berdasarkan status

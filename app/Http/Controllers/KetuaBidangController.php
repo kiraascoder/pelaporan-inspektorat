@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class KetuaBidangController extends Controller
 {
@@ -44,42 +45,68 @@ class KetuaBidangController extends Controller
     public function laporan(Request $request)
     {
         $stats = [
-            'laporan_pending' => LaporanPengaduan::pending()->count(),
-            'laporan_diterima' => LaporanPengaduan::diterima()->count(),
-            'laporan_dalam_investigasi' => LaporanPengaduan::dalamInvestigasi()->count(),
-            'laporan_selesai' => LaporanPengaduan::selesai()->count(),
-            'semuaTim' => TimInvestigasi::count(),
-            'surat_tugas_aktif' => SuratTugas::where('status_surat', 'Aktif')->count(),
+            'laporan_pending'            => LaporanPengaduan::where('status', 'Pending')->count(),
+            'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
+            'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
+            'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
+            'semuaTim'                   => TimInvestigasi::count(),
+            'surat_tugas_aktif'          => SuratTugas::where('status_surat', 'Aktif')->count(),
         ];
-
-        $query = LaporanPengaduan::query();
-
-        // Filter berdasarkan tanggal kejadian
-        if ($request->filled('start_date')) {
-            $query->where('tanggal_kejadian', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $query->where('tanggal_kejadian', '<=', $request->end_date);
-        }
-
-        // Filter berdasarkan status
+        $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $raw = $request->string('status')->toString();
+            $key = strtolower(str_replace(['_', '-'], ' ', $raw));
+            $map = [
+                'pending'             => 'Pending',
+                'diterima'            => 'Diterima',
+                'dalam investigasi'   => 'Dalam_Investigasi',
+                'selesai'             => 'Selesai',
+                'ditolak'             => 'Ditolak',
+            ];
+            if (isset($map[$key])) {
+                $query->where('status', $map[$key]);
+            }
         }
+        $start = $request->date('start_date'); // Carbon|null
+        $end   = $request->date('end_date');   // Carbon|null
 
-        // Filter berdasarkan prioritas
-        if ($request->filled('prioritas')) {
-            $query->where('prioritas', $request->prioritas);
+        if ($start && $end) {
+            $startDate = $start->copy()->startOfDay()->toDateTimeString();
+            $endDate   = $end->copy()->endOfDay()->toDateTimeString();
+
+            $query->where(function ($q) use ($start, $end, $startDate, $endDate) {
+                // 1) record yang punya tanggal_pengaduan
+                $q->whereBetween('tanggal_pengaduan', [$start->toDateString(), $end->toDateString()])
+                    // 2) ATAU record tanpa tanggal_pengaduan -> pakai created_at
+                    ->orWhere(function ($qq) use ($startDate, $endDate) {
+                        $qq->whereNull('tanggal_pengaduan')
+                            ->whereBetween('created_at', [$startDate, $endDate]);
+                    });
+            });
+        } elseif ($start) {
+            $startDate = $start->copy()->startOfDay()->toDateTimeString();
+            $query->where(function ($q) use ($start, $startDate) {
+                $q->whereDate('tanggal_pengaduan', '>=', $start->toDateString())
+                    ->orWhere(function ($qq) use ($startDate) {
+                        $qq->whereNull('tanggal_pengaduan')
+                            ->where('created_at', '>=', $startDate);
+                    });
+            });
+        } elseif ($end) {
+            $endDate = $end->copy()->endOfDay()->toDateTimeString();
+            $query->where(function ($q) use ($end, $endDate) {
+                $q->whereDate('tanggal_pengaduan', '<=', $end->toDateString())
+                    ->orWhere(function ($qq) use ($endDate) {
+                        $qq->whereNull('tanggal_pengaduan')
+                            ->where('created_at', '<=', $endDate);
+                    });
+            });
         }
-
-        $laporan = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        // Preserve query parameters in pagination
-        $laporan->appends($request->query());
+        $laporan = $query->paginate(12)->withQueryString();
 
         return view('ketua_bidang.laporan', compact('stats', 'laporan'));
     }
+
 
     public function tim()
     {
@@ -113,11 +140,9 @@ class KetuaBidangController extends Controller
                     'jabatan' => $user->jabatan
                 ];
             });;
-
-            // Get laporan list for modal
             $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
                 ->whereDoesntHave('timInvestigasi')
-                ->get(['laporan_id as id', 'judul_laporan']);
+                ->get(['laporan_id as id', 'permasalahan']);
 
             return view('ketua_bidang.tim', compact(
                 'totalTim',
@@ -136,7 +161,7 @@ class KetuaBidangController extends Controller
 
     public function surat()
     {
-        $tim = TimInvestigasi::aktif()->first();        
+        $tim = TimInvestigasi::aktif()->first();
         return (view('ketua_bidang.surat',));
     }
 
@@ -210,80 +235,93 @@ class KetuaBidangController extends Controller
         return view('ketua_bidang.tim.create', compact('laporan', 'pegawai'));
     }
 
-    public function store(Request $request)
+    public function storeTim(Request $request, LaporanPengaduan $laporan)
     {
-        // Validation rules
+        $roles = ['Ketua', 'Anggota', 'Penanggung_Jawab', 'Wakil_Penanggung_Jawab', 'Pengendali_Teknis'];
+
         $validator = Validator::make($request->all(), [
-            'deskripsi_tim' => 'nullable|string|max:1000',
-            'pegawai_id' => 'required|array|min:1',
-            'pegawai_id.*' => 'required|exists:users,user_id',
-            'ketua_tim_id' => 'required|exists:users,user_id',
-            'laporan_id' => 'nullable|exists:laporan_pengaduan,laporan_id',
-            'status_tim' => 'required|in:aktif,nonaktif'
+            'nama_tim'         => 'required|string|max:255',
+            'deskripsi_tim'    => 'nullable|string',
+
+            // Wajib: anggota_ids[] berisi user_id dari tabel users.user_id
+            'anggota_ids'      => 'required|array|min:1',
+            'anggota_ids.*'    => ['required', 'distinct', 'integer', 'exists:users,user_id'],
+
+            // Wajib: anggota_roles[] sejajar index dengan anggota_ids[]
+            'anggota_roles'    => 'required|array',
+            'anggota_roles.*'  => ['required', Rule::in($roles)],
+
+            // Ketua harus dipilih
+            'ketua_tim_id'     => ['required', 'integer'],
+
+            // Opsional jika memilih dari dropdown "Laporan Terkait"
+            'laporan_id'       => 'nullable|exists:laporan_pengaduan,laporan_id',
         ], [
-            'pegawai_id.required' => 'Minimal pilih satu anggota tim',
-            'pegawai_id.min' => 'Minimal pilih satu anggota tim',
-            'ketua_tim_id.required' => 'Ketua tim harus dipilih',
-            'ketua_tim_id.exists' => 'Ketua tim tidak valid'
+            'anggota_ids.required'    => 'Minimal pilih satu anggota tim.',
+            'anggota_ids.min'         => 'Minimal pilih satu anggota tim.',
+            'anggota_ids.*.exists'    => 'Anggota tim tidak valid.',
+            'anggota_ids.*.distinct'  => 'Anggota tim ada yang duplikat.',
+            'anggota_roles.required'  => 'Role untuk setiap anggota wajib diisi.',
+            'anggota_roles.*.in'      => 'Role anggota tidak valid.',
+            'ketua_tim_id.required'   => 'Ketua tim wajib dipilih.',
         ]);
 
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan validasi data');
-        }
+        // Cek hubungan antar field setelah rule dasar lolos
+        $validator->after(function ($v) use ($request) {
+            $ids   = (array) $request->input('anggota_ids', []);
+            $roles = (array) $request->input('anggota_roles', []);
 
-
-        if (!in_array($request->ketua_tim_id, $request->pegawai_id)) {
-            return back()
-                ->withInput()
-                ->with('error', 'Ketua tim harus dipilih dari anggota tim');
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Create tim investigasi
-            $timInvestigasi = TimInvestigasi::create([
-
-                'deskripsi_tim' => $request->deskripsi_tim,
-                'ketua_tim_id' => $request->ketua_tim_id,
-                'laporan_id' => $request->laporan_id,
-                'status_tim' => ucfirst($request->status_tim)
-            ]);
-
-            // Add anggota tim
-            foreach ($request->pegawai_id as $pegawaiId) {
-                $roleInTeam = ($pegawaiId == $request->ketua_tim_id) ? 'Ketua' : 'Anggota';
-
-                AnggotaTim::create([
-                    'tim_id' => $timInvestigasi->tim_id,
-                    'pegawai_id' => $pegawaiId,
-                    'role_dalam_tim' => $roleInTeam,
-                    'tanggal_bergabung' => now(),
-                    'is_active' => true
-                ]);
+            // jumlah harus sama
+            if (count($ids) !== count($roles)) {
+                $v->errors()->add('anggota_roles', 'Jumlah role harus sama dengan jumlah anggota.');
             }
 
-            if ($request->laporan_id) {
-                $laporan = LaporanPengaduan::find($request->laporan_id);
-                if ($laporan && $laporan->status_laporan !== 'Dalam Investigasi') {
-                    $laporan->update(['status_laporan' => 'Dalam Investigasi']);
-                }
+            // ketua harus salah satu dari anggota
+            $ketua = $request->input('ketua_tim_id');
+            if (!in_array((string)$ketua, array_map('strval', $ids), true)) {
+                $v->errors()->add('ketua_tim_id', 'Ketua tim harus berasal dari anggota yang dipilih.');
             }
+        });
 
-            DB::commit();
+        $validator->validate();
 
-            return redirect()->route('ketua_bidang.tim')
-                ->with('success', 'Tim investigasi berhasil dibuat');
-        } catch (Exception $e) {
-            DB::rollback();
-            return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
+        // --- Buat tim ---
+        $tim = TimInvestigasi::create([
+            'laporan_id'    => $request->input('laporan_id', $laporan->laporan_id),
+            'ketua_tim_id'  => $request->ketua_tim_id,
+            'nama_tim'      => $request->nama_tim,
+            'deskripsi_tim' => $request->deskripsi_tim,
+            'status_tim'    => $request->input('status_tim', 'Dibentuk'),
+        ]);
+
+        // --- Siapkan & attach pivot ---
+        $ids        = $request->anggota_ids;       // array of user_id (users.user_id)
+        $rolesInput = $request->anggota_roles;     // array of role sejajar index
+
+        // pastikan hanya satu 'Ketua' (yang dipilih di ketua_tim_id)
+        $attachData = [];
+        foreach ($ids as $i => $userId) {
+            $role = $rolesInput[$i] ?? 'Anggota';
+            if ((string)$userId === (string)$request->ketua_tim_id) {
+                $role = 'Ketua';
+            }
+            $attachData[$userId] = [
+                'role_dalam_tim'   => $role,
+                'tanggal_bergabung' => now(),
+                'is_active'        => true,
+            ];
         }
+
+        // Relasi harus sesuai (lihat catatan B)
+        $tim->anggota()->attach($attachData);
+
+        // Update status laporan
+        $laporan->update(['status' => 'Dalam_Investigasi']);
+
+        return redirect()->route('ketua_bidang.tim.show', $tim)
+            ->with('success', 'Tim investigasi berhasil dibentuk.');
     }
+
     public function showTimInvestigasi($tim_id)
     {
         try {
@@ -299,45 +337,7 @@ class KetuaBidangController extends Controller
             return back()->with('error', 'Tim tidak ditemukan');
         }
     }
-
-
-    public function storeTim(Request $request, LaporanPengaduan $laporan)
-    {
-        $request->validate([
-            'nama_tim' => 'required|string|max:255',
-            'deskripsi_tim' => 'nullable|string',
-            'anggota' => 'required|array|min:1',
-            'anggota.*' => 'exists:users,user_id',
-        ], [
-            'anggota.required' => 'Minimal pilih satu anggota tim',
-            'anggota.min' => 'Minimal pilih satu anggota tim',
-            'anggota.*.exists' => 'Anggota tim tidak valid',
-        ]);
-
-        // Buat tim investigasi
-        $tim = TimInvestigasi::create([
-            'laporan_id' => $laporan->laporan_id,
-            'ketua_tim_id' => auth()->id(),
-            'nama_tim' => $request->nama_tim,
-            'deskripsi_tim' => $request->deskripsi_tim,
-            'status_tim' => 'Dibentuk',
-        ]);
-
-        // Tambahkan anggota tim
-        foreach ($request->anggota as $pegawaiId) {
-            $tim->anggota()->attach($pegawaiId, [
-                'role_dalam_tim' => 'Anggota',
-                'tanggal_bergabung' => now(),
-                'is_active' => true,
-            ]);
-        }
-
-        // Update status laporan
-        $laporan->update(['status' => 'Dalam_Investigasi']);
-
-        return redirect()->route('ketua_bidang.tim.show', $tim)
-            ->with('success', 'Tim investigasi berhasil dibentuk.');
-    }
+    
 
     public function showTim(TimInvestigasi $tim)
     {

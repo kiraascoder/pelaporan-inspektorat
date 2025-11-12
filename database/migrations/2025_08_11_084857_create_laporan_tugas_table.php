@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('temuan')->nullable();
             $table->text('rekomendasi')->nullable();
             $table->json('bukti_pendukung')->nullable();
-            $table->enum('status_laporan', ['Draft', 'Submitted', 'Reviewed', 'Approved'])->default('Draft');
+            $table->enum('status_laporan', ['Draft', 'Submitted', 'Approved', 'Rejected'])->default('Draft');
             $table->dateTime('tanggal_submit')->nullable();
             $table->timestamps();
             $table->index(['status_laporan', 'tanggal_submit'], 'laporan_tugas_status_laporan_tanggal_submit_index');

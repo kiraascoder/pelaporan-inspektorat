@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::table('tim_investigasi', function (Blueprint $table) {
-            // tambah kolom nullable agar data lama aman
+        Schema::table('tim_investigasi', function (Blueprint $table) {            
             $table->foreignId('surat_id')
                 ->nullable()                
                 ->constrained('surat_tugas', 'surat_id')

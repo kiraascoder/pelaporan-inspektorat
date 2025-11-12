@@ -7,7 +7,7 @@
         <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
             <div class="mb-4 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
-                <a href="{{ route('ketua_bidang.laporan') }}" class="text-sm text-green-600 hover:underline">← Kembali ke
+                <a href="{{ route('kepala.laporan') }}" class="text-sm text-green-600 hover:underline">← Kembali ke
                     Daftar laporan</a>
             </div>
 

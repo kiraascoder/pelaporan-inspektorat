@@ -7,31 +7,30 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class KetuaBidangSeeder extends Seeder
+class WargaSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $users = [
-            // Ketua Investigasi
+        $users = [            
             [
-                'user_id' => 3,
-                'username' => 'ketuainvestigasi',
-                'nik' => '1234567890',
-                'email' => 'ketuabidanginvestigasi@gmail.com',
-                'nama_lengkap' => 'Ketua Investigasi Inspektorat',
+                'user_id' => 8,
+                'username' => 'dewix',
+                'nik' => '312093021930',
+                'email' => 'dewinibos@gmail.com',
+                'nama_lengkap' => 'Dewi Ang',
                 'password' => Hash::make('password123'),
                 'no_telepon' => '1234567890',
                 'alamat' => 'Jl. Contoh, Kota Contoh',
-                'role' => 'Ketua_Bidang_Investigasi',
+                'role' => 'Warga',
                 'nip' => '1234567890',
-                'jabatan' => 'Ketua Bidang Investigasi',
+                'jabatan' => 'Warga',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],     
         ];
 
         DB::table('users')->insert($users);

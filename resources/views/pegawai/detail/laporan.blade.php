@@ -7,79 +7,126 @@
         <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
             <div class="mb-4 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
-                <a href="{{ route('pegawai.laporan') }}" class="text-sm text-green-600 hover:underline">← Kembali ke
-                    Daftar laporan</a>
+                <a href="{{ route('pegawai.laporan') }}" class="text-sm text-green-600 hover:underline">
+                    ← Kembali ke Daftar laporan
+                </a>
             </div>
 
-            <!-- Status -->
+            {{-- Status --}}
             <div class="mb-4">
                 @php
                     $statusColors = [
-                        'pending' => 'bg-yellow-100 text-yellow-800',
-                        'dalam_investigasi' => 'bg-blue-100 text-blue-800',
-                        'selesai' => 'bg-green-100 text-green-800',
-                        'ditolak' => 'bg-red-100 text-red-800',
+                        'Pending' => 'bg-yellow-100 text-yellow-800',
+                        'Dalam_Investigasi' => 'bg-blue-100 text-blue-800',
+                        'Selesai' => 'bg-green-100 text-green-800',
+                        'Ditolak' => 'bg-red-100 text-red-800',
                     ];
                     $statusColor = $statusColors[$laporan->status] ?? 'bg-gray-100 text-gray-800';
                 @endphp
                 <span class="inline-block px-3 py-1 rounded-full text-sm {{ $statusColor }}">
-                    {{ ucfirst(str_replace('_', ' ', $laporan->status)) }}
+                    {{ str_replace('_', ' ', $laporan->status) }}
                 </span>
             </div>
 
-            <!-- Informasi Laporan -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- Info ringkas --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Nama Pelapor</h3>
-                    <p class="text-gray-900">{{ $laporan->user->nama_lengkap }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Judul Laporan</h3>
-                    <p class="text-gray-900">{{ $laporan->judul_laporan }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Kategori</h3>
-                    <p class="text-gray-900 capitalize">{{ str_replace('_', ' ', $laporan->kategori) }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Prioritas</h3>
-                    <p class="text-gray-900">{{ $laporan->prioritas }}</p>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Tanggal Kejadian</h3>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Tanggal Pengaduan</h3>
                     <p class="text-gray-900">
-                        {{ $laporan->tanggal_kejadian ? \Carbon\Carbon::parse($laporan->tanggal_kejadian)->format('d M Y') : '-' }}
-                        {{ $laporan->waktu_kejadian ? '| ' . $laporan->waktu_kejadian : '' }}
+                        {{ optional($laporan->tanggal_pengaduan)->format('d M Y') ?? $laporan->created_at->format('d M Y') }}
                     </p>
                 </div>
-                <div class="md:col-span-2">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Lokasi Kejadian</h3>
-                    <p class="text-gray-900">{{ $laporan->lokasi_kejadian ?? '-' }}</p>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">No. Pengaduan</h3>
+                    <p class="text-gray-900">{{ $laporan->no_pengaduan ?? '-' }}</p>
                 </div>
-                <div class="md:col-span-2">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Isi Laporan</h3>
-                    <p class="text-gray-900 whitespace-pre-line">{{ $laporan->isi_laporan }}</p>
+            </div>
+
+            {{-- Data Pelapor & Terlapor --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="border border-gray-200 rounded-lg">
+                    <div class="bg-gray-50 px-4 py-2 text-sm font-semibold">DATA PELAPOR</div>
+                    <div class="p-4 space-y-2 text-sm">
+                        <div><span class="text-gray-500">Nama:</span> <span
+                                class="text-gray-900">{{ $laporan->pelapor_nama }}</span></div>
+                        <div><span class="text-gray-500">Pekerjaan/Jabatan:</span> <span
+                                class="text-gray-900">{{ $laporan->pelapor_pekerjaan ?? '-' }}</span></div>
+                        <div><span class="text-gray-500">Alamat:</span> <span
+                                class="text-gray-900">{{ $laporan->pelapor_alamat ?? '-' }}</span></div>
+                        <div><span class="text-gray-500">Telp/HP:</span> <span
+                                class="text-gray-900">{{ $laporan->pelapor_telp ?? '-' }}</span></div>
+                    </div>
                 </div>
-                @if ($laporan->pihak_terlibat)
-                    <div class="md:col-span-2">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-1">Pihak Yang Terlibat</h3>
-                        <p class="text-gray-900 whitespace-pre-line">{{ $laporan->pihak_terlibat }}</p>
+                <div class="border border-gray-200 rounded-lg">
+                    <div class="bg-gray-50 px-4 py-2 text-sm font-semibold">DATA TERLAPOR</div>
+                    <div class="p-4 space-y-2 text-sm">
+                        <div><span class="text-gray-500">Nama:</span> <span
+                                class="text-gray-900">{{ $laporan->terlapor_nama ?? '-' }}</span></div>
+                        <div><span class="text-gray-500">Pekerjaan/Jabatan:</span> <span
+                                class="text-gray-900">{{ $laporan->terlapor_pekerjaan ?? '-' }}</span></div>
+                        <div><span class="text-gray-500">Alamat:</span> <span
+                                class="text-gray-900">{{ $laporan->terlapor_alamat ?? '-' }}</span></div>
+                        <div><span class="text-gray-500">Telp/HP:</span> <span
+                                class="text-gray-900">{{ $laporan->terlapor_telp ?? '-' }}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Substansi Pengaduan --}}
+            <div class="space-y-5">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Permasalahan yang Diadukan</h3>
+                    <p class="text-gray-900 whitespace-pre-line">{{ $laporan->permasalahan }}</p>
+                </div>
+
+                @if (!empty($laporan->harapan))
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-1">Harapan</h3>
+                        <p class="text-gray-900 whitespace-pre-line">{{ $laporan->harapan }}</p>
                     </div>
                 @endif
-                @if ($laporan->bukti_lampiran)
-                    <div class="md:col-span-2">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-1">Bukti Lampiran</h3>
-                        <a href="{{ asset('storage/' . $laporan->bukti_lampiran) }}" target="_blank"
-                            class="text-blue-600 hover:underline text-sm">Lihat/Lampiran</a>
+
+                {{-- Lampiran (multiple) --}}
+                @php
+                    $lampiran = $laporan->bukti_pendukung;
+                    if (is_string($lampiran)) {
+                        // jika tersimpan sebagai JSON string
+                        $decoded = json_decode($lampiran, true);
+                        $lampiran = is_array($decoded) ? $decoded : ($lampiran ? [$lampiran] : []);
+                    } elseif (!is_array($lampiran)) {
+                        $lampiran = $lampiran ? (array) $lampiran : [];
+                    }
+                @endphp
+                @if (count($lampiran) > 0)
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Bukti Pendukung</h3>
+                        <ul class="list-disc pl-5 space-y-1 text-sm">
+                            @foreach ($lampiran as $i => $path)
+                                <li>
+                                    <a href="{{ asset('storage/' . $path) }}" target="_blank"
+                                        class="text-blue-600 hover:underline">
+                                        Lampiran {{ $i + 1 }}
+                                    </a>
+                                    <span class="text-gray-400 ml-1">({{ basename($path) }})</span>
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
                 @endif
             </div>
 
-            <!-- Created at -->
+            {{-- Keterangan Admin (opsional) --}}
+            @if (!empty($laporan->keterangan_admin))
+                <div class="mt-6">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Keterangan Admin</h3>
+                    <p class="text-gray-900 whitespace-pre-line text-sm">{{ $laporan->keterangan_admin }}</p>
+                </div>
+            @endif
+
+            {{-- Created at --}}
             <div class="mt-6 text-xs text-gray-500">
-                Dibuat pada {{ $laporan->created_at ? \Carbon\Carbon::parse($laporan->created_at)->format('d M Y') : '-' }}
-
-            </div>
+                Dibuat pada {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
+            </div>                        
         </div>
     </div>
 @endsection

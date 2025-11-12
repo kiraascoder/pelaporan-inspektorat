@@ -28,6 +28,10 @@
             @include('partials.navigation.pegawai')
         @elseif(auth()->user()->role === 'Warga')
             @include('partials.navigation.warga')
+        @elseif(auth()->user()->role === 'Sekretaris')
+            @include('partials.navigation.sekretaris')
+        @elseif(auth()->user()->role === 'Kepala_Inspektorat')
+            @include('partials.navigation.kepala-inspektorat')
         @endif
     </nav>
 
@@ -57,4 +61,3 @@
     x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
 </div>
-

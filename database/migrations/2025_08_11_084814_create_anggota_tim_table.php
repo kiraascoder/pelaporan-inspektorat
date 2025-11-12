@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('anggota_id');
             $table->foreignId('tim_id')->constrained('tim_investigasi', 'tim_id')->onDelete('cascade');
             $table->foreignId('pegawai_id')->constrained('users', 'user_id')->onDelete('cascade');
-            $table->enum('role_dalam_tim', ['Ketua', 'Anggota', 'Koordinator'])->default('Anggota');
+            $table->enum('role_dalam_tim', ['Ketua', 'Anggota', 'Penanggung_Jawab', 'Wakil_Penanggung_Jawab', 'Pengendali_Teknis'])->default('Anggota');
             $table->dateTime('tanggal_bergabung')->default('2025-07-08 13:10:27');
             $table->boolean('is_active')->default(1);
             $table->timestamps();

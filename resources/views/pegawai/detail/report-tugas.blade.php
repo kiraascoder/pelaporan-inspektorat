@@ -338,6 +338,23 @@
                     </div>
                 </div>
 
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Temuan Pemeriksaan</h3>
+                    @if (!empty($laporan->temuan_pemeriksaan) && is_array($laporanTugas->temuan_pemeriksaan))
+                        <div class="mt-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Temuan Pemeriksaan</h4>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($laporan->temuan_pemeriksaan as $t)
+                                    <span
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-blue-200">
+                                        {{ $t }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 <!-- File Bukti Pendukung -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">File Bukti Pendukung</h3>

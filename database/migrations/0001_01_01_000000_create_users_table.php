@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('nama_lengkap');
             $table->string('no_telepon')->nullable();
             $table->text('alamat')->nullable();
-            $table->enum('role', ['Admin', 'Pegawai', 'Warga', 'Ketua_Bidang_Investigasi']);
+            $table->enum('role', ['Admin', 'Pegawai', 'Warga', 'Ketua_Bidang_Investigasi', 'Sekretaris','Kepala_Inspektorat']);
             $table->string('nip')->nullable();
             $table->string('jabatan')->nullable();
             $table->boolean('is_active')->default(1);

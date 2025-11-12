@@ -7,59 +7,15 @@ use Illuminate\Http\Request;
 
 class LaporanPengaduanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function updateStatus(Request $request, LaporanPengaduan $laporan)
     {
-        //
-    }
+        $validated = $request->validate([
+            'status' => 'required|in:Pending,Diterima,Dalam_Investigasi,Selesai,Ditolak',
+            'keterangan_admin' => 'nullable|string|max:1000',
+        ]);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        $laporan->update($validated);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(LaporanPengaduan $laporanPengaduan)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(LaporanPengaduan $laporanPengaduan)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, LaporanPengaduan $laporanPengaduan)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(LaporanPengaduan $laporanPengaduan)
-    {
-        //
+        return back()->with('success', 'Status laporan berhasil diperbarui.');
     }
 }
