@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\LaporanPengaduan;
 use App\Models\TimInvestigasi;
 use App\Models\SuratTugas;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -130,34 +131,7 @@ class AdminController extends Controller
     public function editUser(User $user)
     {
         return view('admin.users.edit', compact('user'));
-    }
-
-    public function updateUser(Request $request, User $user)
-    {
-        $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $user->user_id . ',user_id',
-            'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
-            'nama_lengkap' => 'required|string|max:255',
-            'no_telepon' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
-            'role' => 'required|in:Admin,Pegawai,Warga,Ketua_Bidang_Investigasi',
-            'nip' => 'nullable|string|max:50',
-            'jabatan' => 'nullable|string|max:100',
-            'is_active' => 'required|boolean',
-            'password' => 'nullable|min:8|confirmed',
-        ]);
-
-        $data = $request->except(['password', 'password_confirmation']);
-
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
-        }
-
-        $user->update($data);
-
-        return redirect()->route('admin.users.show', $user)
-            ->with('success', 'User berhasil diperbarui.');
-    }
+    }    
 
     public function destroyUser(User $user)
     {
@@ -245,10 +219,10 @@ class AdminController extends Controller
                 ];
             });;
 
-            // Get laporan list for modal
+
             $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
                 ->whereDoesntHave('timInvestigasi')
-                ->get(['laporan_id as id', 'judul_laporan']);
+                ->get(['laporan_id as id', 'no_pengaduan']);
 
             return view('admin.tim', compact(
                 'totalTim',
@@ -334,5 +308,100 @@ class AdminController extends Controller
         ];
 
         return view('admin.reports.bulanan', compact('data', 'bulan', 'tahun'));
+    }
+
+    public function userDestroy($user)
+    {
+        try {
+            User::destroy($user);
+            return back()->with('success', 'User berhasil dihapus');
+        } catch (Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan saat menghapus user: ' . $e->getMessage());
+        }
+    }
+    public function userToggle(User $user)
+    {
+        try {
+            $user->update([
+                'is_active' => $user->is_active ? 0 : 1
+            ]);
+
+            return back()->with('success', 'Status user berhasil diubah.');
+        } catch (Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function buatUser(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required|string|max:16|unique:users,nik',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+            'nama_lengkap' => 'required|string|max:255',
+            'no_telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'role' => 'required|in:Admin,Pegawai,Warga,Ketua_Bidang_Investigasi',
+            'nip' => 'nullable|string|max:50',
+            'jabatan' => 'nullable|string|max:100',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $user = User::create([
+            'nik' => $request->nik,
+            'username' => $request->username,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'nama_lengkap' => $request->nama_lengkap,
+            'no_telepon' => $request->no_telepon,
+            'alamat' => $request->alamat,
+            'role' => $request->role,
+            'nip' => $request->nip,
+            'jabatan' => $request->jabatan,
+            'is_active' => $request->has('is_active') ? (bool)$request->is_active : true,
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User berhasil dibuat');
+    }
+    public function updateUser(Request $request, User $user)
+    {        
+        $rules = [
+            'username' => 'required|string|max:255|unique:users,username,' . $user->user_id . ',user_id',
+            'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
+            'nama_lengkap' => 'required|string|max:255',
+            'no_telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'role' => 'required|in:Admin,Pegawai,Warga,Ketua_Bidang_Investigasi',
+            'nip' => 'nullable|string|max:50',
+            'jabatan' => 'nullable|string|max:100',
+            'is_active' => 'nullable|boolean',
+        ];
+     
+        if ($request->filled('password')) {
+            $rules['password'] = 'required|min:8|confirmed';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Update data user        
+        $user->username = $request->username;
+        $user->email = $request->email;
+        $user->nama_lengkap = $request->nama_lengkap;
+        $user->no_telepon = $request->no_telepon;
+        $user->alamat = $request->alamat;
+        $user->role = $request->role;
+        $user->nip = $request->nip;
+        $user->jabatan = $request->jabatan;
+        $user->is_active = $request->has('is_active') ? (bool)$request->is_active : false;
+
+        // Update password hanya jika diisi
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.users')->with('success', 'User berhasil diupdate');
     }
 }

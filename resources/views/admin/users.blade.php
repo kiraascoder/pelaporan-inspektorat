@@ -4,15 +4,22 @@
 
 @section('content')
     <div class="space-y-6">
+        {{-- Success/Error Messages --}}
+        @if (session('success'))
+            <div class="rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             @php
-                $colors = [
-                    'bg-blue-100 text-blue-800',
-                    'bg-yellow-100 text-yellow-800',
-                    'bg-purple-100 text-purple-800',
-                    'bg-green-100 text-green-800',
-                ];
                 $titles = ['Total Users', 'User Aktif', 'User Non Aktif'];
                 $values = [$stats['total_user'], $stats['user_aktif'], $stats['user_nonaktif']];
             @endphp
@@ -25,44 +32,47 @@
             @endforeach
         </div>
 
-        <!-- Recent Reports -->
-        <!-- Kelola User (Table + Navigation + Modal Create) -->
+        <!-- Kelola User (Table + Modal Create) -->
         <div class="bg-white rounded-lg shadow border border-gray-200">
             <!-- Header -->
             <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-base font-semibold text-gray-800">Kelola User</h3>
-                <button id="openCreateUserModal"
-                    class="text-sm px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700">
-                    + Buat User
+
+                {{-- Tombol Buat User --}}
+                <button id="openCreateUserModal" type="button"
+                    class="inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500">
+                    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                    </svg>
+                    <span>Tambah User</span>
                 </button>
             </div>
 
             @php
-                $tabs = [
-                    ['label' => 'Semua', 'val' => null],
-                    ['label' => 'Aktif', 'val' => '1'],
-                    ['label' => 'Nonaktif', 'val' => '0'],
-                ];
                 $roles = ['Admin', 'Pegawai', 'Warga', 'Ketua_Bidang_Investigasi'];
                 $currentStatus = request('status');
                 $currentRole = request('role');
                 $q = request('q');
             @endphp
-            
-            <div class="flex px-4 pt-3 ">
-                <div class="flex flex-wrap items-center gap-2">                                    
-                    <form method="GET" action="{{ route('admin.users') }}" class="ml-auto flex gap-2 items-center">
+
+            <!-- Filter -->
+            <div class="flex px-4 pt-3">
+                <div class="flex flex-wrap items-center gap-2 w-full justify-end">
+                    <form method="GET" action="{{ route('admin.users') }}" class="flex gap-2 items-center">
                         <input type="hidden" name="status" value="{{ $currentStatus }}">
                         <select name="role" class="border-gray-300 rounded-md shadow-sm text-sm">
                             <option value="">Semua Role</option>
                             @foreach ($roles as $r)
                                 <option value="{{ $r }}" {{ $currentRole === $r ? 'selected' : '' }}>
-                                    {{ $r }}</option>
+                                    {{ str_replace('_', ' ', $r) }}
+                                </option>
                             @endforeach
                         </select>
-                        <input name="q" value="{{ $q }}" placeholder="Cari nama/email/NIP…"
+                        <input name="q" value="{{ $q }}" placeholder="Cari nama / email / NIP"
                             class="border-gray-300 rounded-md shadow-sm text-sm" />
-                        <button class="px-3 py-1.5 rounded-md bg-gray-800 text-white text-sm">Filter</button>
+                        <button class="px-3 py-1.5 rounded-md bg-gray-800 text-white text-sm hover:bg-gray-900">
+                            Filter
+                        </button>
                     </form>
                 </div>
             </div>
@@ -102,8 +112,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                         {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
@@ -113,20 +122,30 @@
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm">
                                     <div class="inline-flex items-center gap-2">
-                                        <a href=""
-                                            class="text-yellow-600 hover:text-yellow-800">Edit</a>
+                                        <button type="button" onclick="" class="text-gray-600 hover:text-gray-800">
+                                            Detail
+                                        </button>
+                                        <button type="button"
+                                            onclick="openEditModal({{ $user->user_id }}, '{{ addslashes($user->nik) }}', '{{ addslashes($user->nama_lengkap) }}', '{{ addslashes($user->username) }}', '{{ addslashes($user->email) }}', '{{ $user->role }}', '{{ addslashes($user->nip ?? '') }}', '{{ addslashes($user->jabatan ?? '') }}', '{{ addslashes($user->no_telepon ?? '') }}', '{{ addslashes($user->alamat ?? '') }}', {{ $user->is_active ? 'true' : 'false' }})"
+                                            class="text-yellow-600 hover:text-yellow-800">
+                                            Edit
+                                        </button>
 
-                                        <form method="POST" action=""
-                                            onsubmit="return confirm('Hapus user {{ $user->nama_lengkap }}?')"
+                                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
                                             class="inline">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800">Hapus</button>
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                onclick="return confirm('Yakin ingin menghapus user ini?')"
+                                                class="text-red-600 hover:text-red-800">
+                                                Hapus
+                                            </button>
                                         </form>
 
-                                        {{-- Toggle aktif/nonaktif (opsional) --}}
-                                        <form method="POST" action=""
+                                        <form method="POST" action="{{ route('admin.users.toggle', $user) }}"
                                             class="inline">
-                                            @csrf @method('PATCH')
+                                            @csrf
+                                            @method('PATCH')
                                             <button type="submit" class="text-gray-600 hover:text-gray-900"
                                                 title="Ubah status">
                                                 {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
@@ -144,21 +163,26 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>            
+            </div>
+
             <div class="px-4 py-3 border-t border-gray-200">
                 {{ $users->onEachSide(1)->links() }}
             </div>
         </div>
 
-        {{-- Modal: Buat User --}}
-        <div id="createUserModal" class="fixed inset-0 z-50 hidden">
-            <div id="createUserBackdrop" class="absolute inset-0 bg-black/50"></div>
-            <div class="absolute inset-0 flex items-start md:items-center justify-center p-4 md:p-6">
+        <!-- Modal Buat User -->
+        <div id="createUserModal" class="fixed inset-0 z-50 hidden bg-black/50" style="display: none;">
+            <div class="flex items-start md:items-center justify-center min-h-screen px-4 pt-10 pb-20">
                 <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">Buat User</h3>
-                        <button id="closeCreateUserModal" class="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-                            aria-label="Tutup">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Buat User Baru</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                Lengkapi data user sesuai dengan informasi pegawai / warga.
+                            </p>
+                        </div>
+                        <button id="closeCreateUserModal" type="button"
+                            class="p-2 rounded-full hover:bg-gray-100 text-gray-500" aria-label="Tutup">
                             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
@@ -166,83 +190,267 @@
                         </button>
                     </div>
 
-                    <form action="" method="POST" class="px-6 py-5 space-y-5">
+                    <form action="{{ route('admin.users.store') }}" method="POST" class="px-6 py-5 space-y-5">
                         @csrf
+
+                        {{-- Error validation --}}
+                        @if ($errors->any())
+                            <div class="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+                                <div class="font-semibold mb-1">Terjadi kesalahan:</div>
+                                <ul class="list-disc pl-4 space-y-0.5">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                                <input name="nama_lengkap" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    value="{{ old('nama_lengkap') }}">
+                                <label class="block text-sm font-medium text-gray-700">NIK <span
+                                        class="text-red-500">*</span></label>
+                                <input name="nik" required maxlength="16"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="16 digit NIK" value="{{ old('nik') }}">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Username</label>
-                                <input name="username" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    value="{{ old('username') }}">
+                                <label class="block text-sm font-medium text-gray-700">Nama Lengkap <span
+                                        class="text-red-500">*</span></label>
+                                <input name="nama_lengkap" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Nama sesuai identitas" value="{{ old('nama_lengkap') }}">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Username <span
+                                        class="text-red-500">*</span></label>
+                                <input name="username" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="username login" value="{{ old('username') }}">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Email</label>
+                                <label class="block text-sm font-medium text-gray-700">Email <span
+                                        class="text-red-500">*</span></label>
                                 <input type="email" name="email" required
-                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ old('email') }}">
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="contoh: user@domain.com" value="{{ old('email') }}">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Password <span
+                                        class="text-red-500">*</span></label>
+                                <input type="password" name="password" required minlength="8"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Minimal 8 karakter">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Password</label>
-                                <input type="password" name="password" required
-                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                <label class="block text-sm font-medium text-gray-700">Konfirmasi Password <span
+                                        class="text-red-500">*</span></label>
+                                <input type="password" name="password_confirmation" required minlength="8"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Ulangi password">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Role</label>
-                                <select name="role" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                    <option value="" disabled selected>Pilih Role</option>
+                                <label class="block text-sm font-medium text-gray-700">Role <span
+                                        class="text-red-500">*</span></label>
+                                <select name="role" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm">
+                                    <option value="" disabled {{ old('role') ? '' : 'selected' }}>Pilih Role
+                                    </option>
                                     @foreach ($roles as $r)
                                         <option value="{{ $r }}" {{ old('role') === $r ? 'selected' : '' }}>
-                                            {{ $r }}</option>
+                                            {{ str_replace('_', ' ', $r) }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">NIP</label>
-                                <input name="nip" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    value="{{ old('nip') }}">
+                                <input name="nip" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Opsional" value="{{ old('nip') }}">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jabatan</label>
-                                <input name="jabatan" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    value="{{ old('jabatan') }}">
+                                <input name="jabatan" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Opsional" value="{{ old('jabatan') }}">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
-                                <input name="no_telepon" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    value="{{ old('no_telepon') }}">
+                                <input name="no_telepon" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="contoh: 08xxxx" value="{{ old('no_telepon') }}">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">NIK (opsional)</label>
-                                <input name="nik" maxlength="16"
-                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ old('nik') }}">
+                                <label class="block text-sm font-medium text-gray-700">Alamat</label>
+                                <input name="alamat" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Alamat lengkap" value="{{ old('alamat') }}">
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Alamat</label>
-                            <textarea name="alamat" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('alamat') }}</textarea>
-                        </div>
-
-                        <div class="flex items-center justify-between border-t pt-4">
+                        <div class="flex items-center justify-between border-t pt-4 mt-2">
                             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                                <input type="checkbox" name="is_active" value="1" class="rounded"
-                                    {{ old('is_active', 1) ? 'checked' : '' }}>
+                                <input type="hidden" name="is_active" value="0">
+                                <input type="checkbox" name="is_active" value="1" class="rounded border-gray-300"
+                                    {{ old('is_active', '1') == '1' ? 'checked' : '' }}>
                                 Aktifkan User
                             </label>
                             <div class="space-x-2">
                                 <button type="button" id="cancelCreateUser"
-                                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Batal</button>
+                                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">
+                                    Batal
+                                </button>
                                 <button type="submit"
-                                    class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Simpan</button>
+                                    class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm">
+                                    Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit User -->
+        <div id="editUserModal" class="fixed inset-0 z-50 hidden bg-black/50" style="display: none;">
+            <div class="flex items-start md:items-center justify-center min-h-screen px-4 pt-10 pb-20">
+                <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Edit User</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                Perbarui data user sesuai kebutuhan.
+                            </p>
+                        </div>
+                        <button id="closeEditUserModal" type="button"
+                            class="p-2 rounded-full hover:bg-gray-100 text-gray-500" aria-label="Tutup">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form id="editUserForm" method="POST" class="px-6 py-5 space-y-5">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NIK</label>
+                                <input id="edit_nik" name="nik" maxlength="16"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="16 digit NIK">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Lengkap <span
+                                        class="text-red-500">*</span></label>
+                                <input id="edit_nama_lengkap" name="nama_lengkap" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Nama sesuai identitas">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Username <span
+                                        class="text-red-500">*</span></label>
+                                <input id="edit_username" name="username" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="username login">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Email <span
+                                        class="text-red-500">*</span></label>
+                                <input id="edit_email" type="email" name="email" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="contoh: user@domain.com">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Password Baru</label>
+                                <input id="edit_password" type="password" name="password" minlength="8"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Kosongkan jika tidak diubah">
+                                <p class="mt-1 text-xs text-gray-500">Minimal 8 karakter, kosongkan jika tidak ingin
+                                    mengubah password</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+                                <input id="edit_password_confirmation" type="password" name="password_confirmation"
+                                    minlength="8" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Ulangi password baru">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Role <span
+                                        class="text-red-500">*</span></label>
+                                <select id="edit_role" name="role" required
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm">
+                                    <option value="" disabled>Pilih Role</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Pegawai">Pegawai</option>
+                                    <option value="Warga">Warga</option>
+                                    <option value="Ketua_Bidang_Investigasi">Ketua Bidang Investigasi</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NIP</label>
+                                <input id="edit_nip" name="nip"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Opsional">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jabatan</label>
+                                <input id="edit_jabatan" name="jabatan"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Opsional">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
+                                <input id="edit_no_telepon" name="no_telepon"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="contoh: 08xxxx">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Alamat</label>
+                                <input id="edit_alamat" name="alamat"
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                                    placeholder="Alamat lengkap">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between border-t pt-4 mt-2">
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+                                <input type="hidden" name="is_active" value="0">
+                                <input id="edit_is_active" type="checkbox" name="is_active" value="1"
+                                    class="rounded border-gray-300">
+                                Aktifkan User
+                            </label>
+                            <div class="space-x-2">
+                                <button type="button" id="cancelEditUser"
+                                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">
+                                    Batal
+                                </button>
+                                <button type="submit"
+                                    class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm">
+                                    Update
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -251,7 +459,7 @@
         </div>
 
         <!-- Tips Section -->
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-2">
             <div class="flex items-start">
                 <svg class="h-5 w-5 text-green-600 mt-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd"
@@ -259,141 +467,153 @@
                         clip-rule="evenodd" />
                 </svg>
                 <div class="ml-3">
-                    <h4 class="text-sm font-semibold text-green-800">Tips Laporan Efektif</h4>
+                    <h4 class="text-sm font-semibold text-green-800">Tips Pengelolaan User</h4>
                     <ul class="list-disc pl-4 text-sm text-green-700 mt-1 space-y-1">
-                        <li>Detail kejadian secara lengkap</li>
-                        <li>Tambahkan bukti jika tersedia</li>
-                        <li>Tentukan waktu & lokasi</li>
-                        <li>Gunakan bahasa sopan dan jelas</li>
+                        <li>Pastikan role sesuai dengan tugas dan wewenang.</li>
+                        <li>Gunakan email yang aktif untuk keperluan notifikasi.</li>
+                        <li>Nonaktifkan user yang sudah tidak bertugas.</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-    <div id="createUserModal" class="fixed inset-0 z-50 hidden">
-        <div id="createUserBackdrop" class="absolute inset-0 bg-black/50"></div>
-        <div class="absolute inset-0 flex items-start md:items-center justify-center p-4 md:p-6">
-            <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-900">Buat User</h3>
-                    <button id="closeCreateUserModal" class="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-                        aria-label="Tutup">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <form action="" method="POST" class="px-6 py-5 space-y-5">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                            <input name="nama_lengkap" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('nama_lengkap') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Username</label>
-                            <input name="username" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('username') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Email</label>
-                            <input type="email" name="email" required
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm" value="{{ old('email') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Password</label>
-                            <input type="password" name="password" required
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Role</label>
-                            <select name="role" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="" disabled selected>Pilih Role</option>
-                                @foreach ($roles as $r)
-                                    <option value="{{ $r }}" {{ old('role') === $r ? 'selected' : '' }}>
-                                        {{ $r }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">NIP</label>
-                            <input name="nip" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('nip') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Jabatan</label>
-                            <input name="jabatan" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('jabatan') }}">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
-                            <input name="no_telepon" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('no_telepon') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">NIK (opsional)</label>
-                            <input name="nik" maxlength="16" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('nik') }}">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Alamat</label>
-                        <textarea name="alamat" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('alamat') }}</textarea>
-                    </div>
-
-                    <div class="flex items-center justify-between border-t pt-4">
-                        <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                            <input type="checkbox" name="is_active" value="1" class="rounded"
-                                {{ old('is_active', 1) ? 'checked' : '' }}>
-                            Aktifkan User
-                        </label>
-                        <div class="space-x-2">
-                            <button type="button" id="cancelCreateUser"
-                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Batal</button>
-                            <button type="submit"
-                                class="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Simpan</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-@endsection
-@push('script')
-    {{-- JS modal --}}
     <script>
-        (function() {
-            const modal = document.getElementById('createUserModal');
-            const openBtn = document.getElementById('openCreateUserModal');
-            const closeBtn = document.getElementById('closeCreateUserModal');
-            const cancelBtn = document.getElementById('cancelCreateUser');
-            const backdrop = document.getElementById('createUserBackdrop');
-            const open = () => {
-                modal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-            };
-            const close = () => {
-                modal.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            };
-            openBtn?.addEventListener('click', open);
-            closeBtn?.addEventListener('click', close);
-            cancelBtn?.addEventListener('click', close);
-            backdrop?.addEventListener('click', close);
-            window.addEventListener('keydown', e => {
-                if (e.key === 'Escape') close();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create Modal Elements
+            const createModal = document.getElementById('createUserModal');
+            const openCreateBtn = document.getElementById('openCreateUserModal');
+            const closeCreateBtn = document.getElementById('closeCreateUserModal');
+            const cancelCreateBtn = document.getElementById('cancelCreateUser');
+
+            // Edit Modal Elements
+            const editModal = document.getElementById('editUserModal');
+            const closeEditBtn = document.getElementById('closeEditUserModal');
+            const cancelEditBtn = document.getElementById('cancelEditUser');
+            const editForm = document.getElementById('editUserForm');
+
+            // Create Modal Functions
+            function openCreateModal() {
+                if (!createModal) return;
+                createModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeCreateModal() {
+                if (!createModal) return;
+                createModal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            if (openCreateBtn) {
+                openCreateBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openCreateModal();
+                });
+            }
+
+            if (closeCreateBtn) {
+                closeCreateBtn.addEventListener('click', closeCreateModal);
+            }
+
+            if (cancelCreateBtn) {
+                cancelCreateBtn.addEventListener('click', closeCreateModal);
+            }
+
+            if (createModal) {
+                createModal.addEventListener('click', function(e) {
+                    if (e.target === createModal) {
+                        closeCreateModal();
+                    }
+                });
+            }
+
+            // Edit Modal Functions
+            function closeEditModal() {
+                if (!editModal) return;
+                editModal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            if (closeEditBtn) {
+                closeEditBtn.addEventListener('click', closeEditModal);
+            }
+
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', closeEditModal);
+            }
+
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === editModal) {
+                        closeEditModal();
+                    }
+                });
+            }
+
+            // Close on Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (createModal && createModal.style.display === 'block') {
+                        closeCreateModal();
+                    }
+                    if (editModal && editModal.style.display === 'block') {
+                        closeEditModal();
+                    }
+                }
             });
-        })();
+
+            // Auto-open create modal if there are validation errors
+            @if ($errors->any())
+                openCreateModal();
+            @endif
+
+            // Fungsi global untuk membuka modal edit dan isi data
+            window.openEditModal = function(
+                id,
+                nik,
+                nama_lengkap,
+                username,
+                email,
+                role,
+                nip,
+                jabatan,
+                no_telepon,
+                alamat,
+                is_active
+            ) {
+                if (!editModal || !editForm) return;
+
+                // Set action form update (ganti :id dengan id sebenarnya)
+                let actionUrl = "{{ route('admin.users.update', ['user' => ':id']) }}";
+                actionUrl = actionUrl.replace(':id', id);
+                editForm.action = actionUrl;
+
+                // Isi field
+                document.getElementById('edit_nik').value = nik || '';
+                document.getElementById('edit_nama_lengkap').value = nama_lengkap || '';
+                document.getElementById('edit_username').value = username || '';
+                document.getElementById('edit_email').value = email || '';
+                document.getElementById('edit_role').value = role || '';
+                document.getElementById('edit_nip').value = nip || '';
+                document.getElementById('edit_jabatan').value = jabatan || '';
+                document.getElementById('edit_no_telepon').value = no_telepon || '';
+                document.getElementById('edit_alamat').value = alamat || '';
+
+                const isActiveCheckbox = document.getElementById('edit_is_active');
+                if (isActiveCheckbox) {
+                    isActiveCheckbox.checked = !!is_active;
+                }
+
+                // Kosongkan password
+                const editPassword = document.getElementById('edit_password');
+                const editPasswordConf = document.getElementById('edit_password_confirmation');
+                if (editPassword) editPassword.value = '';
+                if (editPasswordConf) editPasswordConf.value = '';
+
+                // Tampilkan modal
+                editModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            };
+        });
     </script>
-@endpush
+@endsection

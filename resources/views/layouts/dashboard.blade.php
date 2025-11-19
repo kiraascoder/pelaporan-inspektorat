@@ -49,7 +49,7 @@
             }
         }
     </script>
-
+    @stack('script')
     @stack('styles')
 </head>
 

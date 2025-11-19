@@ -44,6 +44,12 @@ Route::prefix('admin')->group(function () {
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('admin.tim.show');
     Route::get('surat-tugas', [AdminController::class, 'suratTugas'])->name('admin.surat_tugas');
     Route::get('reports', [AdminController::class, 'reports'])->name('admin.reports');
+    Route::delete('users/{user}/delete', [AdminController::class, 'userDestroy'])
+        ->name('admin.users.destroy');
+    Route::patch('users/{user}/toggle', [AdminController::class, 'userToggle'])
+        ->name('admin.users.toggle');
+    Route::post('buat-user', [AdminController::class, 'buatUser'])->name('admin.users.store');
+    Route::put('edit-user/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update');
 });
 
 
