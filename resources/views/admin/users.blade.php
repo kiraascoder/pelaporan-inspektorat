@@ -122,7 +122,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm">
                                     <div class="inline-flex items-center gap-2">
-                                        <button type="button" onclick="" class="text-gray-600 hover:text-gray-800">
+                                        <button type="button"
+                                            onclick="window.location.href='{{ route('admin.detail.user', $user) }}'"
+                                            class="text-gray-600 hover:text-gray-800">
                                             Detail
                                         </button>
                                         <button type="button"

@@ -11,10 +11,6 @@
                 <h1 class="text-2xl font-bold text-gray-900">Tim Investigasi</h1>
                 <p class="text-gray-600">Kelola tim investigasi dan monitoring kinerja</p>
             </div>
-            <button onclick="openModal()"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
-                Buat Tim Baru
-            </button>
         </div>
 
         <!-- Key Metrics -->
@@ -25,7 +21,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Tim</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $totalTim }}</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 2 tim baru bulan ini <b>Statis</b></p>
+                        <p class="text-xs text-green-600 mt-1">↑ 2 tim baru bulan ini</p>
                     </div>
                     <div class="p-2 bg-blue-100 rounded-lg">
                         <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,7 +38,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Tim Aktif</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $timAktif }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Sedang menangani kasus <b>Statis</b></p>
+                        <p class="text-xs text-gray-500 mt-1">Sedang menangani kasus</p>
                     </div>
                     <div class="p-2 bg-green-100 rounded-lg">
                         <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,7 +55,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Dalam Penanganan</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $dalamInvestigasi }}</p>
-                        <p class="text-xs text-orange-600 mt-1">↓ 3 hari dari target <b>Statis</b></p>
+                        <p class="text-xs text-orange-600 mt-1">↓ 3 hari dari target</p>
                     </div>
                     <div class="p-2 bg-orange-100 rounded-lg">
                         <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,7 +72,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Kasus Selesai</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $kasusSelesai }}</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 12% dari bulan lalu <b>Statis</b></p>
+                        <p class="text-xs text-green-600 mt-1">↑ 12% dari bulan lalu</p>
                     </div>
                     <div class="p-2 bg-purple-100 rounded-lg">
                         <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -90,218 +86,235 @@
 
         <!-- Filter & Search -->
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex flex-col sm:flex-row gap-4">
+            <form method="GET" action="{{ route('admin.tim') }}" class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <input type="text" placeholder="Cari tim atau ketua tim..."
-                        class="w-full border-gray-300 rounded-md shadow-sm">
+                    <input type="text" name="search" placeholder="Cari tim, ketua tim, atau kategori..."
+                        value="{{ request('search') }}"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
-            </div>
-        </div>
-
-        <!-- Tim List - Fixed Layout -->
-        <!-- Tim List (Table) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tim
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ketua
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Anggota
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status
-                            Tim</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Dibuat
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
-                    @php
-                        $auth = auth()->user();
-                        $authId = $auth->user_id ?? ($auth->id ?? null);
-
-                        $badge = function ($status) {
-                            $map = [
-                                'aktif' => 'bg-green-100 text-green-800 ring-green-200',
-                                'nonaktif' => 'bg-gray-100 text-gray-800 ring-gray-200',
-                                'Aktif' => 'bg-green-100 text-green-800 ring-green-200',
-                                'Nonaktif' => 'bg-gray-100 text-gray-800 ring-gray-200',
-                            ];
-                            $cls = $map[$status] ?? 'bg-gray-100 text-gray-800 ring-gray-200';
-                            return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ' .
-                                $cls .
-                                '">' .
-                                e($status) .
-                                '</span>';
-                        };
-                    @endphp
-
-                    @forelse ($timList as $data)
-                        @php
-                            $ketua = $data->ketuaTim ?? null;
-                            $ketuaId = $ketua->user_id ?? ($ketua->id ?? null);
-                            $isAndaKetua = $authId && $ketuaId && $authId === $ketuaId;
-
-                            $kategori = optional($data->laporanPengaduan)->kategori;
-                            if ($kategori) {
-                                $kategori = str_replace('_', ' ', $kategori);
-                            }
-
-                            $anggotaCount = method_exists($data->anggotaAktif, 'count')
-                                ? $data->anggotaAktif->count()
-                                : (is_countable($data->anggotaAktif ?? [])
-                                    ? count($data->anggotaAktif)
-                                    : 0);
-                        @endphp
-
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $data->nama_tim }}</div>
-                                <div class="text-xs text-gray-500">#{{ $data->tim_id }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">
-                                    {{ $ketua->nama_lengkap ?? '—' }}
-                                    @if ($isAndaKetua)
-                                        <span class="text-xs text-gray-500">(Anda)</span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $anggotaCount }} orang</div>
-                            </td>
-
-                            <td class="px-6 py-4">
-                                {!! $badge($data->status_tim) !!}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ $data->created_at?->format('d M Y') ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <a href="{{ route('ketua_bidang.tim.show', $data->tim_id) }}"
-                                    class="text-primary-600 hover:text-primary-800 text-sm font-medium">
-                                    Detail →
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">
-                                Belum ada tim investigasi.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
-            @if (method_exists($timList, 'links'))
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $timList->withQueryString()->links() }}
+                <div class="w-full sm:w-48">
+                    <select name="status_tim"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Semua Status Tim</option>
+                        <option value="aktif" {{ request('status_tim') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif" {{ request('status_tim') == 'nonaktif' ? 'selected' : '' }}>Nonaktif
+                        </option>
+                    </select>
                 </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Modal Tambah Tim -->
-    <div id="timModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50" onclick="closeModal(event)">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                onclick="event.stopPropagation()">
-                <!-- Modal Header -->
-                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-900">Buat Tim Investigasi</h3>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-full sm:w-48">
+                    <select name="status_laporan"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Semua Status Laporan</option>
+                        <option value="diproses" {{ request('status_laporan') == 'diproses' ? 'selected' : '' }}>Diproses
+                        </option>
+                        <option value="dalam_investigasi"
+                            {{ request('status_laporan') == 'dalam_investigasi' ? 'selected' : '' }}>Dalam Investigasi
+                        </option>
+                        <option value="ditunda" {{ request('status_laporan') == 'ditunda' ? 'selected' : '' }}>Ditunda
+                        </option>
+                        <option value="selesai" {{ request('status_laporan') == 'selesai' ? 'selected' : '' }}>Selesai
+                        </option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </button>
+                    @if (request()->hasAny(['search', 'status_tim', 'status_laporan']))
+                        <a href="{{ route('admin.tim') }}"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <!-- Active Filters Info -->
+        @if (request()->hasAny(['search', 'status_tim', 'status_laporan']))
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-medium text-blue-900">Filter Aktif:</span>
+                        <div class="flex flex-wrap gap-2">
+                            @if (request('search'))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Pencarian: "{{ request('search') }}"
+                                </span>
+                            @endif
+                            @if (request('status_tim'))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Status Tim: {{ ucfirst(request('status_tim')) }}
+                                </span>
+                            @endif
+                            @if (request('status_laporan'))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Status Laporan: {{ ucfirst(str_replace('_', ' ', request('status_laporan'))) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <span class="text-sm text-blue-700">
+                        Menampilkan {{ $dataTim->total() }} hasil
+                    </span>
+                </div>
+            </div>
+        @endif
+
+        <!-- Tim List Table -->
+        @if ($dataTim->isEmpty())
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada tim investigasi</h3>
+                <p class="mt-2 text-sm text-gray-500">Mulai dengan membuat tim investigasi pertama Anda.</p>
+            </div>
+        @else
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Kategori / Laporan
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Ketua Tim
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Anggota
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status Tim
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status Laporan
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Dibuat
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Aksi
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach ($dataTim as $data)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    {{-- Kategori / Laporan --}}
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">
+                                            {{ $data->laporanPengaduan->judul ?? 'Tanpa judul' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Kategori: {{ $data->laporanPengaduan->kategori ?? 'Tidak ada kategori' }}
+                                        </div>
+                                    </td>
+
+                                    {{-- Ketua Tim --}}
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">
+                                            {{ optional($data->ketuaTim)->nama_lengkap ?? 'Belum ditentukan' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {{ optional($data->ketuaTim)->jabatan ?? '—' }}
+                                        </div>
+                                    </td>
+
+                                    {{-- Anggota --}}
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $data->anggotaAktif->count() ?? 0 }} Anggota
+                                        </span>
+                                    </td>
+
+                                    {{-- Status Tim --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $statusTim = $data->status_tim ?? 'tidak_diketahui';
+                                        @endphp
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @if ($statusTim === 'aktif') bg-green-100 text-green-800
+                                            @elseif($statusTim === 'nonaktif') bg-gray-100 text-gray-800
+                                            @else bg-yellow-100 text-yellow-800 @endif">
+                                            {{ ucfirst($statusTim) }}
+                                        </span>
+                                    </td>
+
+                                    {{-- Status Laporan --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if ($data->laporanPengaduan)
+                                            @php
+                                                $statusLap = $data->laporanPengaduan->status ?? 'tidak_diketahui';
+                                            @endphp
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                @if ($statusLap === 'selesai') bg-green-100 text-green-800
+                                                @elseif($statusLap === 'diproses' || $statusLap === 'dalam_investigasi') bg-blue-100 text-blue-800
+                                                @elseif($statusLap === 'ditunda') bg-orange-100 text-orange-800
+                                                @else bg-gray-100 text-gray-800 @endif">
+                                                {{ ucfirst(str_replace('_', ' ', $statusLap)) }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">Tidak ada data</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Dibuat --}}
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        <div>{{ $data->created_at ? $data->created_at->format('d M Y') : '—' }}</div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {{ $data->created_at ? $data->created_at->format('H:i') : '' }}
+                                        </div>
+                                    </td>
+
+                                    {{-- Aksi --}}
+                                    <td class="px-6 py-4 text-right text-sm">
+                                        <a href="{{ route('sekretaris.tim.show', $data->tim_id) }}"
+                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                            Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Modal Body -->
-                <form id="timForm" action="{{ route('ketua_bidang.store-tim') }}" method="POST">
-                    @csrf
-                    <div class="px-6 py-4 space-y-6">
-                        <!-- Deskripsi Tim -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tim</label>
-                            <textarea name="deskripsi_tim" rows="3"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Jelaskan tugas atau fokus tim ini (opsional)"></textarea>
-                        </div>
-
-                        <!-- Anggota Tim -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Anggota Tim</label>
-
-                            <!-- Select untuk memilih pegawai -->
-                            <div class="mb-4">
-                                <select id="pegawaiSelect"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                    <option value="">Pilih Pegawai untuk ditambahkan</option>
-                                </select>
-                            </div>
-
-                            <!-- Container untuk anggota yang dipilih -->
-                            <div id="selectedAnggota" class="space-y-2">
-                                <p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>
-                            </div>
-
-                            <!-- Hidden inputs untuk form submission -->
-                            <div id="hiddenInputs"></div>
-                        </div>
-
-                        <!-- Laporan Terkait -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Laporan Terkait</label>
-                            <select name="laporan_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                <option value="">Pilih laporan (jika ada)</option>
-                                @foreach ($laporanList as $laporan)
-                                    <option value="{{ $laporan->id }}">{{ $laporan->permasalahan }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Ketua Tim -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ketua Tim <span
-                                    class="text-red-500">*</span></label>
-                            <select name="ketua_tim_id" id="ketuaSelect" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                <option value="">Pilih Ketua Tim</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Hanya anggota yang sudah dipilih yang bisa menjadi ketua
-                            </p>
-                        </div>
-
-                        <input type="hidden" name="status_tim" value="Aktif">
-                        <div class="text-sm">
-                            <span class="text-gray-700 font-medium">Status Tim</span>
-                            <div
-                                class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ring-1 bg-green-100 text-green-800 ring-green-200">
-                                Aktif
-                            </div>
-                        </div>
+                {{-- Pagination --}}
+                @if ($dataTim->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        {{ $dataTim->links() }}
                     </div>
-
-                    <!-- Modal Footer -->
-                    <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                        <button type="button" onclick="closeModal()"
-                            class="px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors">
-                            Batal
-                        </button>
-                        <button type="submit"
-                            class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
-                            Simpan Tim
-                        </button>
-                    </div>
-                </form>
+                @endif
             </div>
-        </div>
+        @endif
     </div>
 @endsection
 
@@ -314,7 +327,7 @@
 
         // Initialize modal
         function initModal() {
-            selectedAnggotaList = []; // Reset selected list
+            selectedAnggotaList = [];
             populatePegawaiSelect();
             updateAnggotaDisplay();
             updateKetuaOptions();
@@ -328,7 +341,6 @@
             select.innerHTML = '<option value="">Pilih Pegawai untuk ditambahkan</option>';
 
             pegawaiList.forEach(pegawai => {
-                // Check if pegawai is already selected
                 const isSelected = selectedAnggotaList.some(selected =>
                     parseInt(selected.id) === parseInt(pegawai.id)
                 );
@@ -361,18 +373,16 @@
                         };
 
                         addAnggota(pegawai);
-                        this.value = ''; // Reset select
+                        this.value = '';
                     }
                 });
             }
 
-            // Initialize modal when DOM is ready
             initModal();
         });
 
         // Add anggota to selected list
         function addAnggota(pegawai) {
-            // Check if already selected using parseInt for comparison
             const isAlreadySelected = selectedAnggotaList.some(selected =>
                 parseInt(selected.id) === parseInt(pegawai.id)
             );
@@ -383,27 +393,20 @@
             }
 
             selectedAnggotaList.push(pegawai);
-            console.log('Added anggota:', pegawai.nama, 'Total:', selectedAnggotaList.length);
-
             updateAnggotaDisplay();
             updateKetuaOptions();
-            populatePegawaiSelect(); // Refresh available options
+            populatePegawaiSelect();
         }
 
         // Remove anggota from selected list
         function removeAnggota(pegawaiId) {
-            console.log('Removing pegawai with ID:', pegawaiId);
-
-            const initialLength = selectedAnggotaList.length;
             selectedAnggotaList = selectedAnggotaList.filter(anggota =>
                 parseInt(anggota.id) !== parseInt(pegawaiId)
             );
 
-            console.log('Removed. Before:', initialLength, 'After:', selectedAnggotaList.length);
-
             updateAnggotaDisplay();
             updateKetuaOptions();
-            populatePegawaiSelect(); // Refresh available options
+            populatePegawaiSelect();
         }
 
         // Update display of selected anggota
@@ -414,12 +417,11 @@
             if (!container || !hiddenInputs) return;
 
             if (selectedAnggotaList.length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>';
+                container.innerHTML = '<p class="text-sm text-gray-500">Belum ada anggota dipilih</p>';
                 hiddenInputs.innerHTML = '';
                 return;
             }
 
-            // Create display for each selected anggota
             let html = '';
             let hiddenInputsHtml = '';
 
@@ -436,10 +438,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
-                </div>
-                `;
+                </div>`;
 
-                // Add hidden input for form submission
                 hiddenInputsHtml += `<input type="hidden" name="pegawai_id[]" value="${anggota.user_id}">`;
             });
 
@@ -477,10 +477,9 @@
             document.getElementById('timModal').classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
 
-            // Reset form dan state
             document.getElementById('timForm').reset();
             selectedAnggotaList = [];
-            initModal(); // Reinitialize everything
+            initModal();
         }
 
         // Team Performance Chart
@@ -538,24 +537,24 @@
         }
 
         // Handle form submission
-        document.getElementById('timForm').addEventListener('submit', function(e) {
-            // Validate anggota
-            if (selectedAnggotaList.length === 0) {
-                e.preventDefault();
-                alert('Pilih minimal satu anggota tim!');
-                return;
-            }
+        const timForm = document.getElementById('timForm');
+        if (timForm) {
+            timForm.addEventListener('submit', function(e) {
+                if (selectedAnggotaList.length === 0) {
+                    e.preventDefault();
+                    alert('Pilih minimal satu anggota tim!');
+                    return;
+                }
 
-            // Validate ketua
-            const ketuaId = document.getElementById('ketuaSelect').value;
-            if (!ketuaId) {
-                e.preventDefault();
-                alert('Pilih ketua tim!');
-                return;
-            }
+                const ketuaId = document.getElementById('ketuaSelect').value;
+                if (!ketuaId) {
+                    e.preventDefault();
+                    alert('Pilih ketua tim!');
+                    return;
+                }
 
-            // Form valid, allow submission
-            return true;
-        });
+                return true;
+            });
+        }
     </script>
 @endpush

@@ -10,7 +10,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Tim Investigasi</h1>
                 <p class="text-gray-600">Kelola tim investigasi dan monitoring kinerja</p>
-            </div>            
+            </div>
         </div>
 
         <!-- Key Metrics -->
@@ -21,7 +21,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Tim</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $totalTim }}</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 2 tim baru bulan ini <b>Statis</b></p>
+                        <p class="text-xs text-green-600 mt-1">↑ 2 tim baru bulan ini</p>
                     </div>
                     <div class="p-2 bg-blue-100 rounded-lg">
                         <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,7 +38,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Tim Aktif</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $timAktif }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Sedang menangani kasus <b>Statis</b></p>
+                        <p class="text-xs text-gray-500 mt-1">Sedang menangani kasus</p>
                     </div>
                     <div class="p-2 bg-green-100 rounded-lg">
                         <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,7 +55,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Dalam Penanganan</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $dalamInvestigasi }}</p>
-                        <p class="text-xs text-orange-600 mt-1">↓ 3 hari dari target <b>Statis</b></p>
+                        <p class="text-xs text-orange-600 mt-1">↓ 3 hari dari target</p>
                     </div>
                     <div class="p-2 bg-orange-100 rounded-lg">
                         <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,7 +72,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Kasus Selesai</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $kasusSelesai }}</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 12% dari bulan lalu <b>Statis</b></p>
+                        <p class="text-xs text-green-600 mt-1">↑ 12% dari bulan lalu</p>
                     </div>
                     <div class="p-2 bg-purple-100 rounded-lg">
                         <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,129 +86,236 @@
 
         <!-- Filter & Search -->
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div class="flex flex-col sm:flex-row gap-4">
+            <form method="GET" action="{{ route('admin.tim') }}" class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <input type="text" placeholder="Cari tim atau ketua tim..."
-                        class="w-full border-gray-300 rounded-md shadow-sm">
+                    <input type="text" name="search" placeholder="Cari tim, ketua tim, atau kategori..."
+                        value="{{ request('search') }}"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="w-full sm:w-48">
+                    <select name="status_tim"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Semua Status Tim</option>
+                        <option value="aktif" {{ request('status_tim') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif" {{ request('status_tim') == 'nonaktif' ? 'selected' : '' }}>Nonaktif
+                        </option>
+                    </select>
+                </div>
+                <div class="w-full sm:w-48">
+                    <select name="status_laporan"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Semua Status Laporan</option>
+                        <option value="diproses" {{ request('status_laporan') == 'diproses' ? 'selected' : '' }}>Diproses
+                        </option>
+                        <option value="dalam_investigasi"
+                            {{ request('status_laporan') == 'dalam_investigasi' ? 'selected' : '' }}>Dalam Investigasi
+                        </option>
+                        <option value="ditunda" {{ request('status_laporan') == 'ditunda' ? 'selected' : '' }}>Ditunda
+                        </option>
+                        <option value="selesai" {{ request('status_laporan') == 'selesai' ? 'selected' : '' }}>Selesai
+                        </option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                    @if (request()->hasAny(['search', 'status_tim', 'status_laporan']))
+                        <a href="{{ route('admin.tim') }}"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <!-- Active Filters Info -->
+        @if (request()->hasAny(['search', 'status_tim', 'status_laporan']))
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-medium text-blue-900">Filter Aktif:</span>
+                        <div class="flex flex-wrap gap-2">
+                            @if (request('search'))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Pencarian: "{{ request('search') }}"
+                                </span>
+                            @endif
+                            @if (request('status_tim'))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Status Tim: {{ ucfirst(request('status_tim')) }}
+                                </span>
+                            @endif
+                            @if (request('status_laporan'))
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Status Laporan: {{ ucfirst(str_replace('_', ' ', request('status_laporan'))) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <span class="text-sm text-blue-700">
+                        Menampilkan {{ $dataTim->total() }} hasil
+                    </span>
                 </div>
             </div>
-        </div>
+        @endif
 
-        <!-- Tim List - Fixed Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            @foreach ($dataTim as $data)
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <div>
-                                    <p class="text-sm text-gray-600 capitalize">
-                                        Kategori: {{ $data->laporanPengaduan->kategori ?? 'Tidak ada kategori' }}
-                                    </p>
-                                </div>
-                            </div>
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-                                {{ $data->status_tim == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ ucfirst($data->status_tim) }}
-                            </span>
-                        </div>
+        <!-- Tim List Table -->
+        @if ($dataTim->isEmpty())
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada tim investigasi</h3>
+                <p class="mt-2 text-sm text-gray-500">Mulai dengan membuat tim investigasi pertama Anda.</p>
+            </div>
+        @else
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Kategori / Laporan
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Ketua Tim
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Anggota
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status Tim
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Status Laporan
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Dibuat
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Aksi
+                                </th>
+                            </tr>
+                        </thead>
 
-                        <div class="mb-4">
-                            <div class="flex items-center space-x-2">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                <span class="text-sm text-gray-600">
-                                    <strong>Ketua:</strong> {{ $data->ketuaTim->nama_lengkap ?? 'Belum ditentukan' }}
-                                </span>
-                            </div>
-                            <div class="flex items-center space-x-2 mt-1">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <span class="text-sm text-gray-600">
-                                    <strong>Anggota:</strong> {{ $data->anggotaAktif->count() ?? 0 }} Anggota
-                                </span>
-                            </div>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach ($dataTim as $data)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    {{-- Kategori / Laporan --}}
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">
+                                            {{ $data->laporanPengaduan->judul ?? 'Tanpa judul' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            Kategori: {{ $data->laporanPengaduan->kategori ?? 'Tidak ada kategori' }}
+                                        </div>
+                                    </td>
 
-                            <!-- Tanggal Dibuat -->
-                            <div class="flex items-center space-x-2 mt-1">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 7V3a4 4 0 118 0v4m-4 6v6m0-6a4 4 0 100-8 4 4 0 000 8zm0 0v4a4 4 0 100 8 4 4 0 000-8z" />
-                                </svg>
-                                <span class="text-sm text-gray-600">
-                                    <strong>Dibuat:</strong>
-                                    {{ $data->created_at ? $data->created_at->format('d M Y') : 'Tidak diketahui' }}
-                                </span>
-                            </div>
-                        </div>
+                                    {{-- Ketua Tim --}}
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">
+                                            {{ optional($data->ketuaTim)->nama_lengkap ?? 'Belum ditentukan' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {{ optional($data->ketuaTim)->jabatan ?? '—' }}
+                                        </div>
+                                    </td>
 
-                        <!-- Progress/Status Info (jika ada) -->
-                        @if (isset($data->progress_kasus))
-                            <div class="mb-4">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-xs font-medium text-gray-700">Progress Kasus</span>
-                                    <span class="text-xs text-gray-600">{{ $data->progress_kasus }}%</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full"
-                                        style="width: {{ $data->progress_kasus }}%"></div>
-                                </div>
-                            </div>
-                        @endif
+                                    {{-- Anggota --}}
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $data->anggotaAktif->count() ?? 0 }} Anggota
+                                        </span>
+                                    </td>
 
-                        <!-- Action Button -->
-                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                            <div class="flex items-center space-x-2 text-xs text-gray-500">
-                                @if ($data->laporanPengaduan)
-                                    <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                        {{ $data->laporanPengaduan->status ?? 'Status tidak dikenal' }}
-                                    </span>
-                                @endif
-                            </div>
+                                    {{-- Status Tim --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $statusTim = $data->status_tim ?? 'tidak_diketahui';
+                                        @endphp
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            @if ($statusTim === 'aktif') bg-green-100 text-green-800
+                                            @elseif($statusTim === 'nonaktif') bg-gray-100 text-gray-800
+                                            @else bg-yellow-100 text-yellow-800 @endif">
+                                            {{ ucfirst($statusTim) }}
+                                        </span>
+                                    </td>
 
-                            <div class="flex items-center space-x-2">
-                                <button
-                                    class="text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors">
-                                    <a href="{{ route('admin.tim.show', $data->tim_id) }}"
-                                        class="flex items-center">
-                                        Detail
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </a>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                    {{-- Status Laporan --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if ($data->laporanPengaduan)
+                                            @php
+                                                $statusLap = $data->laporanPengaduan->status ?? 'tidak_diketahui';
+                                            @endphp
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                @if ($statusLap === 'selesai') bg-green-100 text-green-800
+                                                @elseif($statusLap === 'diproses' || $statusLap === 'dalam_investigasi') bg-blue-100 text-blue-800
+                                                @elseif($statusLap === 'ditunda') bg-orange-100 text-orange-800
+                                                @else bg-gray-100 text-gray-800 @endif">
+                                                {{ ucfirst(str_replace('_', ' ', $statusLap)) }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">Tidak ada data</span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Dibuat --}}
+                                    <td class="px-6 py-4 text-sm text-gray-700">
+                                        <div>{{ $data->created_at ? $data->created_at->format('d M Y') : '—' }}</div>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {{ $data->created_at ? $data->created_at->format('H:i') : '' }}
+                                        </div>
+                                    </td>
+
+                                    {{-- Aksi --}}
+                                    <td class="px-6 py-4 text-right text-sm">
+                                        <a href="{{ route('admin.tim.show', $data->tim_id) }}"
+                                            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                            Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-            @endforeach
 
-            <!-- Empty State jika tidak ada tim -->
-            @if ($dataTim->isEmpty())
-                <div class="col-span-full">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada tim investigasi</h3>
-                        <p class="mt-2 text-sm text-gray-500">Mulai dengan membuat tim investigasi pertama Anda.</p>
-                        <div class="mt-6">                            
-                        </div>
+                {{-- Pagination --}}
+                @if ($dataTim->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        {{ $dataTim->links() }}
                     </div>
-                </div>
-            @endif
-        </div>
-    </div>    
+                @endif
+            </div>
+        @endif
+    </div>
 @endsection
 
 @push('scripts')
@@ -220,7 +327,7 @@
 
         // Initialize modal
         function initModal() {
-            selectedAnggotaList = []; // Reset selected list
+            selectedAnggotaList = [];
             populatePegawaiSelect();
             updateAnggotaDisplay();
             updateKetuaOptions();
@@ -234,7 +341,6 @@
             select.innerHTML = '<option value="">Pilih Pegawai untuk ditambahkan</option>';
 
             pegawaiList.forEach(pegawai => {
-                // Check if pegawai is already selected
                 const isSelected = selectedAnggotaList.some(selected =>
                     parseInt(selected.id) === parseInt(pegawai.id)
                 );
@@ -267,18 +373,16 @@
                         };
 
                         addAnggota(pegawai);
-                        this.value = ''; // Reset select
+                        this.value = '';
                     }
                 });
             }
 
-            // Initialize modal when DOM is ready
             initModal();
         });
 
         // Add anggota to selected list
         function addAnggota(pegawai) {
-            // Check if already selected using parseInt for comparison
             const isAlreadySelected = selectedAnggotaList.some(selected =>
                 parseInt(selected.id) === parseInt(pegawai.id)
             );
@@ -289,27 +393,20 @@
             }
 
             selectedAnggotaList.push(pegawai);
-            console.log('Added anggota:', pegawai.nama, 'Total:', selectedAnggotaList.length);
-
             updateAnggotaDisplay();
             updateKetuaOptions();
-            populatePegawaiSelect(); // Refresh available options
+            populatePegawaiSelect();
         }
 
         // Remove anggota from selected list
         function removeAnggota(pegawaiId) {
-            console.log('Removing pegawai with ID:', pegawaiId);
-
-            const initialLength = selectedAnggotaList.length;
             selectedAnggotaList = selectedAnggotaList.filter(anggota =>
                 parseInt(anggota.id) !== parseInt(pegawaiId)
             );
 
-            console.log('Removed. Before:', initialLength, 'After:', selectedAnggotaList.length);
-
             updateAnggotaDisplay();
             updateKetuaOptions();
-            populatePegawaiSelect(); // Refresh available options
+            populatePegawaiSelect();
         }
 
         // Update display of selected anggota
@@ -320,12 +417,11 @@
             if (!container || !hiddenInputs) return;
 
             if (selectedAnggotaList.length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>';
+                container.innerHTML = '<p class="text-sm text-gray-500">Belum ada anggota dipilih</p>';
                 hiddenInputs.innerHTML = '';
                 return;
             }
 
-            // Create display for each selected anggota
             let html = '';
             let hiddenInputsHtml = '';
 
@@ -342,10 +438,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
-                </div>
-                `;
+                </div>`;
 
-                // Add hidden input for form submission
                 hiddenInputsHtml += `<input type="hidden" name="pegawai_id[]" value="${anggota.user_id}">`;
             });
 
@@ -383,10 +477,9 @@
             document.getElementById('timModal').classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
 
-            // Reset form dan state
             document.getElementById('timForm').reset();
             selectedAnggotaList = [];
-            initModal(); // Reinitialize everything
+            initModal();
         }
 
         // Team Performance Chart
@@ -444,24 +537,24 @@
         }
 
         // Handle form submission
-        document.getElementById('timForm').addEventListener('submit', function(e) {
-            // Validate anggota
-            if (selectedAnggotaList.length === 0) {
-                e.preventDefault();
-                alert('Pilih minimal satu anggota tim!');
-                return;
-            }
+        const timForm = document.getElementById('timForm');
+        if (timForm) {
+            timForm.addEventListener('submit', function(e) {
+                if (selectedAnggotaList.length === 0) {
+                    e.preventDefault();
+                    alert('Pilih minimal satu anggota tim!');
+                    return;
+                }
 
-            // Validate ketua
-            const ketuaId = document.getElementById('ketuaSelect').value;
-            if (!ketuaId) {
-                e.preventDefault();
-                alert('Pilih ketua tim!');
-                return;
-            }
+                const ketuaId = document.getElementById('ketuaSelect').value;
+                if (!ketuaId) {
+                    e.preventDefault();
+                    alert('Pilih ketua tim!');
+                    return;
+                }
 
-            // Form valid, allow submission
-            return true;
-        });
+                return true;
+            });
+        }
     </script>
 @endpush

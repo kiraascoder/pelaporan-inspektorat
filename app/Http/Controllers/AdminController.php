@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LaporanTugas;
 use App\Models\User;
 use App\Models\LaporanPengaduan;
 use App\Models\TimInvestigasi;
@@ -128,10 +129,6 @@ class AdminController extends Controller
         return view('admin.users.show', compact('user'));
     }
 
-    public function editUser(User $user)
-    {
-        return view('admin.users.edit', compact('user'));
-    }    
 
     public function destroyUser(User $user)
     {
@@ -186,29 +183,135 @@ class AdminController extends Controller
         return view('ketua_bidang.laporan', compact('stats', 'laporan'));
     }
 
-    public function tim()
+    public function reportPegawai(Request $request)
+    {
+        $stats = [
+            'laporan_pending' => LaporanPengaduan::pending()->count(),
+            'laporan_diterima' => LaporanPengaduan::diterima()->count(),
+            'laporan_dalam_investigasi' => LaporanPengaduan::dalamInvestigasi()->count(),
+            'laporan_selesai' => LaporanPengaduan::selesai()->count(),
+            'semuaTim' => TimInvestigasi::count(),
+            'surat_tugas_aktif' => SuratTugas::where('status_surat', 'Aktif')->count(),
+        ];
+
+        $query = LaporanPengaduan::query();
+
+        // Filter berdasarkan tanggal kejadian
+        if ($request->filled('start_date')) {
+            $query->where('tanggal_kejadian', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('tanggal_kejadian', '<=', $request->end_date);
+        }
+
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter berdasarkan prioritas
+        if ($request->filled('prioritas')) {
+            $query->where('prioritas', $request->prioritas);
+        }
+
+        $laporan = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        // Preserve query parameters in pagination
+        $laporan->appends($request->query());
+
+        return view('admin.reports.index', compact('stats', 'laporan'));
+    }
+
+    public function reviewLaporanTugas(Request $request, LaporanTugas $laporanTugas)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,revise',
+            'catatan' => 'nullable|string',
+        ]);
+
+        $status = $request->action === 'approve' ? 'Approved' : 'Reviewed';
+
+        $laporanTugas->update(['status_laporan' => $status]);
+
+        $message = $request->action === 'approve' ?
+            'Laporan tugas berhasil disetujui.' :
+            'Laporan tugas perlu direvisi.';
+
+        return redirect()->route('ketua_bidang.laporan_tugas.review')
+            ->with('success', $message);
+    }
+
+    public function review()
+    {
+        $user = auth()->user();
+
+        $laporanList = LaporanTugas::all();
+
+        return view('admin.reports.index', compact('laporanList'));
+    }
+
+    public function tim(Request $request)
     {
         try {
+            // Query dasar dengan relasi
+            $query = TimInvestigasi::with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan']);
 
-            $dataTim = TimInvestigasi::with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])->latest()->get();
+            // Filter pencarian
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    // Cari di judul laporan
+                    $q->whereHas('laporanPengaduan', function ($subQ) use ($search) {
+                        $subQ->where('judul', 'like', "%{$search}%")
+                            ->orWhere('kategori', 'like', "%{$search}%")
+                            ->orWhere('no_pengaduan', 'like', "%{$search}%");
+                    })
+                        // Cari di nama ketua tim
+                        ->orWhereHas('ketuaTim', function ($subQ) use ($search) {
+                            $subQ->where('nama_lengkap', 'like', "%{$search}%")
+                                ->orWhere('jabatan', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter status tim
+            if ($request->filled('status_tim')) {
+                $query->where('status_tim', $request->status_tim);
+            }
+
+            // Filter status laporan
+            if ($request->filled('status_laporan')) {
+                $query->whereHas('laporanPengaduan', function ($q) use ($request) {
+                    $q->where('status', $request->status_laporan);
+                });
+            }
+
+            // Data untuk tabel dengan pagination
+            $dataTim = $query->latest()->paginate(10)->withQueryString();
+
+            // Statistik
             $totalTim = TimInvestigasi::count();
+
             $timAktif = TimInvestigasi::aktif()->count();
+
             $dalamInvestigasi = TimInvestigasi::aktif()
                 ->whereHas('laporanPengaduan', function ($query) {
-                    $query->where('status_tim', 'Dalam Investigasi');
+                    $query->where('status', 'dalam_investigasi');
                 })->count();
+
             $kasusSelesai = TimInvestigasi::whereHas('laporanPengaduan', function ($query) {
-                $query->where('status_tim', 'Selesai');
+                $query->where('status', 'selesai');
             })->count();
 
-
+            // List untuk form/modal
             $timList = TimInvestigasi::with([
                 'ketuaTim',
                 'anggotaAktif',
                 'laporanPengaduan'
-            ])->latest()->get();
-
-
+            ])
+                ->latest()
+                ->get();
 
             $pegawaiList = User::where('role', 'Pegawai')->get()->map(function ($user) {
                 return [
@@ -217,10 +320,9 @@ class AdminController extends Controller
                     'nama_lengkap' => $user->nama_lengkap,
                     'jabatan' => $user->jabatan
                 ];
-            });;
+            });
 
-
-            $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
+            $laporanList = LaporanPengaduan::where('status', '!=', 'selesai')
                 ->whereDoesntHave('timInvestigasi')
                 ->get(['laporan_id as id', 'no_pengaduan']);
 
@@ -238,6 +340,7 @@ class AdminController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat memuat data: ' . $e->getMessage());
         }
     }
+
 
     public function showTimInvestigasi($tim_id)
     {
@@ -260,6 +363,7 @@ class AdminController extends Controller
 
         return view('admin.laporan.show', compact('laporan'));
     }
+
 
     public function showTim(TimInvestigasi $tim)
     {
@@ -365,7 +469,7 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User berhasil dibuat');
     }
     public function updateUser(Request $request, User $user)
-    {        
+    {
         $rules = [
             'username' => 'required|string|max:255|unique:users,username,' . $user->user_id . ',user_id',
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
@@ -377,7 +481,7 @@ class AdminController extends Controller
             'jabatan' => 'nullable|string|max:100',
             'is_active' => 'nullable|boolean',
         ];
-     
+
         if ($request->filled('password')) {
             $rules['password'] = 'required|min:8|confirmed';
         }
@@ -403,5 +507,10 @@ class AdminController extends Controller
         $user->save();
 
         return redirect()->route('admin.users')->with('success', 'User berhasil diupdate');
+    }
+
+    public function detailUser(User $user)
+    {
+        return view('admin.detail.user', compact('user'));
     }
 }

@@ -112,29 +112,67 @@ class SekretarisController extends Controller
     }
 
 
-    public function tim()
+    public function tim(Request $request)
     {
         try {
+            // Query dasar dengan relasi
+            $query = TimInvestigasi::with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan']);
 
-            $dataTim = TimInvestigasi::with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])->latest()->get();
+            // Filter pencarian
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    // Cari di judul laporan
+                    $q->whereHas('laporanPengaduan', function ($subQ) use ($search) {
+                        $subQ->where('judul', 'like', "%{$search}%")
+                            ->orWhere('kategori', 'like', "%{$search}%")
+                            ->orWhere('no_pengaduan', 'like', "%{$search}%");
+                    })
+                        // Cari di nama ketua tim
+                        ->orWhereHas('ketuaTim', function ($subQ) use ($search) {
+                            $subQ->where('nama_lengkap', 'like', "%{$search}%")
+                                ->orWhere('jabatan', 'like', "%{$search}%");
+                        });
+                });
+            }
+
+            // Filter status tim
+            if ($request->filled('status_tim')) {
+                $query->where('status_tim', $request->status_tim);
+            }
+
+            // Filter status laporan
+            if ($request->filled('status_laporan')) {
+                $query->whereHas('laporanPengaduan', function ($q) use ($request) {
+                    $q->where('status', $request->status_laporan);
+                });
+            }
+
+            // Data untuk tabel dengan pagination
+            $dataTim = $query->latest()->paginate(10)->withQueryString();
+
+            // Statistik
             $totalTim = TimInvestigasi::count();
+
             $timAktif = TimInvestigasi::aktif()->count();
+
             $dalamInvestigasi = TimInvestigasi::aktif()
                 ->whereHas('laporanPengaduan', function ($query) {
-                    $query->where('status_tim', 'Dalam Investigasi');
+                    $query->where('status', 'dalam_investigasi');
                 })->count();
+
             $kasusSelesai = TimInvestigasi::whereHas('laporanPengaduan', function ($query) {
-                $query->where('status_tim', 'Selesai');
+                $query->where('status', 'selesai');
             })->count();
 
-
+            // List untuk form/modal
             $timList = TimInvestigasi::with([
                 'ketuaTim',
                 'anggotaAktif',
                 'laporanPengaduan'
-            ])->latest()->get();
-
-
+            ])
+                ->latest()
+                ->get();
 
             $pegawaiList = User::where('role', 'Pegawai')->get()->map(function ($user) {
                 return [
@@ -143,10 +181,11 @@ class SekretarisController extends Controller
                     'nama_lengkap' => $user->nama_lengkap,
                     'jabatan' => $user->jabatan
                 ];
-            });;
-            $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
+            });
+
+            $laporanList = LaporanPengaduan::where('status', '!=', 'selesai')
                 ->whereDoesntHave('timInvestigasi')
-                ->get(['laporan_id as id', 'permasalahan']);
+                ->get(['laporan_id as id', 'no_pengaduan']);
 
             return view('sekretaris.investigasi', compact(
                 'totalTim',
@@ -233,12 +272,12 @@ class SekretarisController extends Controller
                 'suratTugas'
             ])->findOrFail($tim_id);
 
-            return view('sekretaris.detail.tim', compact('tim'));
+            return view('sekretaris.detail.investigasi', compact('tim'));
         } catch (Exception $e) {
             return back()->with('error', 'Tim tidak ditemukan');
         }
     }
-  
+
     public function suratTugas()
     {
         $tim = TimInvestigasi::aktif()->first();
