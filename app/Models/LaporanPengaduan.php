@@ -81,4 +81,8 @@ class LaporanPengaduan extends Model
     {
         return 'laporan_id';
     }
+    public function pengajuanSuratTugas()
+    {
+        return $this->hasOne(\App\Models\PengajuanSuratTugas::class, 'laporan_id', 'laporan_id');
+    }
 }

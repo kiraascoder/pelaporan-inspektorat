@@ -29,6 +29,8 @@ class PengajuanSuratTugas extends Model
         'status',
         'nama_ditugaskan',
         'deskripsi_umum',
+        'surat_tugas_path',
+        'surat_tugas_uploaded_at',
     ];
 
 
@@ -54,6 +56,7 @@ class PengajuanSuratTugas extends Model
     {
         return $this->belongsTo(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
+    
 
 
     public function laporan()

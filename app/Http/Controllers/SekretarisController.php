@@ -10,6 +10,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SekretarisController extends Controller
 {
@@ -30,15 +31,28 @@ class SekretarisController extends Controller
     }
     public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
     {
-     
         $pengajuanSurat->load(['laporan', 'penandatangan']);
+
         if ($pengajuanSurat->status !== 'Selesai') {
             return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');
         }
+
+        // 1. Generate view menjadi PDF
         $pdf = Pdf::loadView('sekretaris.surat-tugas.pdf', [
             'pengajuan' => $pengajuanSurat,
         ])->setPaper('A4', 'portrait');
+
+        // 2. Simpan ke storage
         $filename = 'Surat_Tugas_' . ($pengajuanSurat->nomor_surat ?? $pengajuanSurat->pengajuan_surat_id) . '.pdf';
+        $path = 'surat_tugas/' . $filename; // disimpan di storage/app/public/surat_tugas
+
+        Storage::disk('public')->put($path, $pdf->output());
+
+        // 3. Update pengajuan dengan path file
+        $pengajuanSurat->update([
+            'surat_tugas_path' => $path,
+            'surat_tugas_uploaded_at' => now(),
+        ]);
         return $pdf->download($filename);
     }
 

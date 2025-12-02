@@ -99,6 +99,7 @@ Route::prefix('sekretaris')->group(function () {
         'sekretaris/surat-tugas/{pengajuanSurat}/cetak-pdf',
         [SekretarisController::class, 'generatePdf']
     )->name('sekretaris-surat.cetak-pdf');
+    
 });
 
 Route::prefix('kepala-inspektorat')->group(function () {
