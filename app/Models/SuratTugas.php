@@ -22,9 +22,7 @@ class SuratTugas extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status_surat',
-        'catatan',
-
-        // metadata surat (tampilan & penandatangan)
+        'catatan',        
         'tanggal_surat',
         'kota_terbit',
         'jabatan_ttd',

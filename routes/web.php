@@ -7,6 +7,7 @@ use App\Http\Controllers\KetuaBidangController;
 use App\Http\Controllers\LaporanPengaduanController;
 use App\Http\Controllers\LaporanTugasController;
 use App\Http\Controllers\PegawaiController;
+use App\Http\Controllers\PengajuanSuratController;
 use App\Http\Controllers\SekretarisController;
 use App\Http\Controllers\WargaController;
 use Illuminate\Support\Facades\Route;
@@ -91,8 +92,13 @@ Route::prefix('sekretaris')->group(function () {
     Route::get('laporan-tugas', [SekretarisController::class, 'laporanTugas'])->name('sekretaris.laporan_tugas');
     Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('sekretaris.report.show');
     Route::get('/surat-tugas', [SekretarisController::class, 'suratTugas'])->name('sekretaris.surat_tugas');
-    Route::get('/surat-tugas/{suratTugas}', [SekretarisController::class, 'showSuratTugas'])->name('sekretaris.surat_tugas.show');
-    Route::get('/surat-tugas/{suratTugas}/download', [SekretarisController::class, 'downloadPdf']);
+    Route::get('/surat-tugas/{pengajuanSurat}/detail', [SekretarisController::class, 'show'])->name('sekretaris-surat.show');
+    Route::delete('/surat-tugas/{pengajuanSurat}/destroy', [SekretarisController::class, 'destroy'])->name('sekretaris-surat.destroy');
+    Route::put('/surat-tugas/{pengajuanSurat}/update-status', [SekretarisController::class, 'setNomorDanSelesai'])->name('sekretaris-surat.update-status');
+    Route::get(
+        'sekretaris/surat-tugas/{pengajuanSurat}/cetak-pdf',
+        [SekretarisController::class, 'generatePdf']
+    )->name('sekretaris-surat.cetak-pdf');
 });
 
 Route::prefix('kepala-inspektorat')->group(function () {
@@ -104,8 +110,10 @@ Route::prefix('kepala-inspektorat')->group(function () {
     Route::get('laporan-tugas', [KepalaInspektoratController::class, 'laporanTugas'])->name('kepala.review');
     Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('kepala.report.show');
     Route::get('/surat-tugas', [KepalaInspektoratController::class, 'suratTugas'])->name('kepala.surat_tugas');
-    Route::get('/surat-tugas/{suratTugas}', [KepalaInspektoratController::class, 'showSuratTugas'])->name('kepala.surat_tugas.show');
-    Route::get('/surat-tugas/{suratTugas}/store', [KepalaInspektoratController::class, 'downloadPdf']);
+    Route::post('/surat-tugas', [PengajuanSuratController::class, 'store'])->name('pengajuan-surat.store');
+    Route::get('/surat-tugas/{pengajuanSurat}/detail', [KepalaInspektoratController::class, 'show'])->name('pengajuan-surat.show');
+    Route::delete('/surat-tugas/{pengajuanSurat}/destroy', [PengajuanSuratController::class, 'destroy'])->name('pengajuan-surat.destroy');
+    // Route::get('/surat-tugas/{suratTugas}/store', [KepalaInspektoratController::class, 'downloadPdf']);
 });
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

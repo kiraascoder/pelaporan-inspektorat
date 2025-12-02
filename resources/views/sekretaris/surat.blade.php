@@ -1,28 +1,20 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Surat Tugas')
+@section('title', 'Pengajuan Surat Tugas')
 
 @section('content')
     <div class="space-y-6">
-        <!-- Header Actions -->
+
+        {{-- Header + Tombol Kembali --}}
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Surat Tugas</h1>
-                <p class="text-gray-600">Kelola dan monitoring surat tugas investigasi</p>
+                <h1 class="text-2xl font-bold text-gray-900">Pengajuan Surat Tugas</h1>
+                <p class="text-gray-600">Kelola dan monitoring Pengajuan Surat Tgas investigasi</p>
             </div>
-            <button id="openCreateSuratModal"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
-                + Buat Surat Tugas
-            </button>
+
         </div>
 
-        <!-- Key Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- (4 Kartu Statistik Seperti Sebelumnya) -->
-            <!-- ... kode yang sudah kamu tulis di atas ... -->
-        </div>
-
-        <!-- Filter & Search -->
+        {{-- Filter & Search --}}
         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
@@ -49,328 +41,159 @@
             </div>
         </div>
 
-        <!-- Surat Tugas Table -->
+        {{-- Table Pengajuan Surat --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Daftar Surat Tugas</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Daftar Pengajuan Surat Tugas</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
-                        <!-- Header Table -->
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.
-                                Surat & Tim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul
-                                Kasus</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Prioritas</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Progress</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
-                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Laporan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penandatangan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- ... baris 1 - 4 ... -->
-
-                        <!-- Baris 5 (Lengkap) -->
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-gray-900">ST/2024/005</div>
-                                    <div class="text-sm text-gray-500">Tim Beta</div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">Review Sistem Informasi Pelayanan</div>
-                                <div class="text-sm text-gray-500">Diskominfo</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    Sedang
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">05 Feb 2024</div>
-                                <div class="text-sm text-gray-500">Deadline: 05 Mar 2024</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Aktif
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="w-full bg-gray-200 rounded-full h-2 mr-2">
-                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
-                                    </div>
-                                    <span class="text-sm text-gray-600">60%</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </button>
-                                    <button class="text-gray-600 hover:text-gray-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-900">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        @forelse($suratList ?? [] as $s)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ $s->nomor_surat ?? 'Belum Ditentukan' }}
+                                </td>
+                                <td class="px-6 py-4">{{ $s->laporan?->judul ?? ($s->laporan?->permasalahan ?? '-') }}</td>
+                                <td class="px-6 py-4">{{ $s->penandatangan?->nama_lengkap ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="px-2.5 py-1 rounded-full text-xs font-medium
+                                    @if ($s->status === 'Pending') bg-yellow-100 text-yellow-800
+                                    @elseif($s->status === 'Dibuat') bg-blue-100 text-blue-800
+                                    @elseif($s->status === 'Selesai') bg-green-100 text-green-800
+                                    @else bg-gray-100 text-gray-700 @endif">
+                                        {{ $s->status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ $s->created_at?->format('d M Y H:i') ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-right space-x-3 text-sm">
+                                    <a href="{{ route('sekretaris-surat.show', $s->pengajuan_surat_id) }}"
+                                        class="text-blue-600 hover:text-blue-800">Lihat</a>                                    
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada pengajuan surat
+                                    tugas.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+
+        
     </div>
+
+    {{-- === MODAL CREATE SURAT TUGAS === --}}
     <div id="createSuratModal" class="fixed inset-0 z-50 hidden">
         <div id="createSuratBackdrop" class="absolute inset-0 bg-black/50"></div>
-        <div class="absolute inset-0 flex items-start md:items-center justify-center p-4 md:p-6">
+        <div class="absolute inset-0 flex items-start md:items-center justify-center p-6">
             <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+
                 {{-- Header --}}
-                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Buat Surat Tugas</h3>
+                        <h3 class="text-lg font-semibold text-gray-900">Buat Pengajuan Surat Tugas</h3>
                         <p class="text-sm text-gray-500">Lengkapi sesuai format surat dinas</p>
                     </div>
-                    <button id="closeCreateSuratModal" class="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-                        aria-label="Tutup">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <button id="closeCreateSuratModal" class="p-2 rounded-full hover:bg-gray-100 text-gray-500">✕</button>
                 </div>
 
-                {{-- Body / Form --}}
-                <form action="{{ route('ketua_bidang.surat.store') }}" method="POST" class="px-6 py-5 space-y-6">
+                {{-- Body/Form --}}
+                <form action="{{ route('pengajuan-surat.store') }}" method="POST" class="px-6 py-5 space-y-6">
                     @csrf
 
-                    {{-- Baris 1: Nomor, Perihal --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{-- Laporan --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Nomor Surat</label>
-                            <input type="text" name="nomor_surat" required
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="700.1/62/Inspektorat" value="{{ old('nomor_surat') }}">
-                            @error('nomor_surat')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Perihal</label>
-                            <input type="text" name="perihal" required
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Audit Investigasi Dana Kelurahan" value="{{ old('perihal') }}">
-                        </div>
-                    </div>
-
-                    {{-- Baris 2: Tim, Laporan, Pembuat --}}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tim Investigasi</label>
-                            <select name="tim_id" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="" selected>— Pilih Tim —</option>
-                                @foreach ($timList ?? [] as $t)
-                                    <option value="{{ $t->tim_id }}">Tim #{{ $t->tim_id }} — Ketua:
-                                        {{ optional($t->ketua)->nama_lengkap ?? '-' }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Laporan</label>
+                            <label class="block text-sm font-medium text-gray-700">Laporan Pengaduan</label>
                             <select name="laporan_id" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="" disabled selected>— Pilih Laporan —</option>
+                                <option value="" selected>— Pilih Laporan —</option>
                                 @foreach ($laporanList ?? [] as $l)
-                                    <option value="{{ $l->laporan_id }}">#{{ $l->laporan_id }} —
-                                        {{ \Illuminate\Support\Str::limit($l->judul_laporan, 40) }}</option>
+                                    <option value="{{ $l->laporan_id }}" @selected(old('laporan_id') == $l->laporan_id)>
+                                        #{{ $l->laporan_id }} — {{ $l->judul ?? $l->permasalahan }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
+
+                        {{-- Penandatangan --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Dibuat Oleh</label>
-                            <select name="dibuat_oleh" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="" disabled selected>— Pilih Pejabat —</option>
+                            <label class="block text-sm font-medium text-gray-700">Penandatangan Surat</label>
+                            <select name="penandatangan_id" required
+                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="" disabled selected>— Pilih Penandatangan —</option>
                                 @foreach ($userList ?? [] as $u)
-                                    <option value="{{ $u->user_id }}">{{ $u->nama_lengkap }}
-                                        ({{ $u->jabatan ?? $u->role }})
+                                    <option value="{{ $u->user_id }}" @selected(old('penandatangan_id') == $u->user_id)>
+                                        {{ $u->nama_lengkap }} — {{ $u->jabatan ?? $u->role }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
-                    {{-- Dasar (repeater) --}}
+                    {{-- Repeater nama ditugaskan --}}
                     <div>
-                        <div class="flex items-center justify-between">
-                            <label class="block text-sm font-medium text-gray-700">Dasar</label>
-                            <button type="button" onclick="addDasar()"
-                                class="px-3 py-1.5 rounded border hover:bg-gray-50">Tambah</button>
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nama yang Ditugaskan <span class="text-xs text-gray-400">(array JSON)</span>
+                            </label>
+                            <button type="button" id="btnAddNama"
+                                class="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50">Tambah Nama</button>
                         </div>
-                        <div id="dasarWrap" class="mt-2 space-y-2">
-                            <input name="dasar[]" class="w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Peraturan Pemerintah No. 12 Tahun 2017 ...">
-                        </div>
-                    </div>
 
-                    {{-- Menugaskan (anggota & jabatan) --}}
-                    <div>
-                        <div class="flex items-center justify-between">
-                            <label class="block text-sm font-medium text-gray-700">Menugaskan</label>
-                            <button type="button" onclick="addAnggota()"
-                                class="px-3 py-1.5 rounded border hover:bg-gray-50">Tambah Anggota</button>
-                        </div>
-                        <div id="anggotaWrap" class="mt-2 space-y-2">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 anggota-row">
-                                <input name="anggota[nama][]" class="rounded-md border-gray-300 shadow-sm"
-                                    placeholder="Nama & Gelar (mis. Drs. MUSTARI KADIR, M.Si.)">
-                                <div class="flex gap-2">
-                                    <input name="anggota[jabatan][]" class="flex-1 rounded-md border-gray-300 shadow-sm"
-                                        placeholder="Penanggung jawab / Ketua Tim / Anggota">
+                        <div id="namaWrap" class="mt-2 space-y-2">
+                            <div class="grid grid-cols-12 gap-2 nama-row">
+                                <div class="col-span-10">
+                                    <input type="text" name="nama_ditugaskan[]"
+                                        class="w-full rounded-md border-gray-300 shadow-sm"
+                                        placeholder="Nama lengkap pegawai" value="{{ old('nama_ditugaskan.0') }}">
+                                </div>
+                                <div class="col-span-2 flex items-center">
                                     <button type="button"
-                                        class="px-2.5 py-1.5 rounded border text-red-600 hover:bg-red-50"
-                                        onclick="this.closest('.anggota-row').remove()">Hapus</button>
+                                        class="btn-remove-nama w-full px-3 py-2 rounded border text-red-600 hover:bg-red-50">
+                                        Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Untuk (poin tugas) --}}
+                    {{-- Deskripsi umum --}}
                     <div>
-                        <div class="flex items-center justify-between">
-                            <label class="block text-sm font-medium text-gray-700">Untuk</label>
-                            <button type="button" onclick="addUntuk()"
-                                class="px-3 py-1.5 rounded border hover:bg-gray-50">Tambah Poin</button>
-                        </div>
-                        <div id="untukWrap" class="mt-2 space-y-2">
-                            <input name="untuk[]" class="w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Melakukan Audit Investigasi di ...">
-                        </div>
-                    </div>
-
-                    {{-- Tanggal pelaksanaan --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tanggal Mulai</label>
-                            <input type="datetime-local" name="tanggal_mulai"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('tanggal_mulai') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tanggal Selesai</label>
-                            <input type="datetime-local" name="tanggal_selesai"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('tanggal_selesai') }}">
-                        </div>
-                    </div>
-
-                    {{-- Metadata surat & pejabat TTD --}}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tempat Dikeluarkan</label>
-                            <input type="text" name="kota_terbit"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Pangkajene Sidenreng" value="{{ old('kota_terbit') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tanggal Surat</label>
-                            <input type="date" name="tanggal_surat" required
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                value="{{ old('tanggal_surat') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Lokasi/Kecamatan (opsional)</label>
-                            <input type="text" name="lokasi" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Watang Sidenreng" value="{{ old('lokasi') }}">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Jabatan Penandatangan</label>
-                            <input type="text" name="jabatan_ttd"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="INSPEKTUR DAERAH KAB. SIDENRENG RAPPANG" value="{{ old('jabatan_ttd') }}">
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Nama Penandatangan</label>
-                                <input type="text" name="nama_ttd"
-                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    placeholder="Drs. MUSTARI KADIR, M.Si." value="{{ old('nama_ttd') }}">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Pangkat</label>
-                                <input type="text" name="pangkat_ttd"
-                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                    placeholder="Pembina Utama Muda" value="{{ old('pangkat_ttd') }}">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">NIP</label>
-                            <input type="text" name="nip_ttd" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="19680119 199112 1 002" value="{{ old('nip_ttd') }}">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Status Surat</label>
-                            <select name="status_surat" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" required>
-                                @foreach (['Draft', 'Diterbitkan', 'Dalam_Pelaksanaan', 'Selesai'] as $st)
-                                    <option value="{{ $st }}"
-                                        {{ old('status_surat') === $st ? 'selected' : '' }}>
-                                        {{ $st }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    {{-- Tembusan (repeater) --}}
-                    <div>
-                        <div class="flex items-center justify-between">
-                            <label class="block text-sm font-medium text-gray-700">Tembusan</label>
-                            <button type="button" onclick="addTembusan()"
-                                class="px-3 py-1.5 rounded border hover:bg-gray-50">Tambah</button>
-                        </div>
-                        <div id="tembusanWrap" class="mt-2 space-y-2">
-                            <input name="tembusan[]" class="w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Bupati Sidenreng Rappang">
-                        </div>
+                        <label class="block text-sm font-medium text-gray-700">Deskripsi Umum</label>
+                        <textarea name="deskripsi_umum" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            placeholder="Isi deskripsi pengajuan...">{{ old('deskripsi_umum') }}</textarea>
                     </div>
 
                     {{-- Footer --}}
-                    <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-200">
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
                         <button type="button" id="cancelCreateSurat"
                             class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Batal</button>
                         <button type="submit"
                             class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700">Simpan
-                            Surat</button>
+                            Pengajuan</button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
 @endsection
+
 @push('scripts')
     <script>
         (function() {
@@ -379,6 +202,7 @@
             const closeBtn = document.getElementById('closeCreateSuratModal');
             const cancelBtn = document.getElementById('cancelCreateSurat');
             const backdrop = document.getElementById('createSuratBackdrop');
+
             const open = () => {
                 modal.classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');
@@ -387,6 +211,7 @@
                 modal.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
             };
+
             openBtn?.addEventListener('click', open);
             closeBtn?.addEventListener('click', close);
             cancelBtn?.addEventListener('click', close);
@@ -394,43 +219,32 @@
             window.addEventListener('keydown', e => {
                 if (e.key === 'Escape') close();
             });
+
+            // Tambah input nama
+            const wrap = document.getElementById('namaWrap');
+            const btnAdd = document.getElementById('btnAddNama');
+            btnAdd?.addEventListener('click', () => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 gap-2 nama-row';
+                row.innerHTML = `
+                <div class="col-span-10">
+                    <input type="text" name="nama_ditugaskan[]" class="w-full rounded-md border-gray-300 shadow-sm" placeholder="Nama lengkap pegawai">
+                </div>
+                <div class="col-span-2 flex items-center">
+                    <button type="button" class="btn-remove-nama w-full px-3 py-2 rounded border text-red-600 hover:bg-red-50">Hapus</button>
+                </div>
+            `;
+                wrap.appendChild(row);
+            });
+
+            // Delegasi hapus input nama
+            wrap?.addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn-remove-nama')) {
+                    e.preventDefault();
+                    const row = e.target.closest('.nama-row');
+                    if (row && wrap.children.length > 1) row.remove();
+                }
+            });
         })();
-
-        function addInput(wrapId, name, placeholder) {
-            const wrap = document.getElementById(wrapId);
-            const div = document.createElement('div');
-            div.className = 'flex gap-2';
-            div.innerHTML = `
-        <input name="${name}" class="flex-1 rounded-md border-gray-300 shadow-sm" placeholder="${placeholder}">
-        <button type="button" class="px-2.5 py-1.5 rounded border text-red-600 hover:bg-red-50" onclick="this.parentElement.remove()">Hapus</button>
-    `;
-            wrap.appendChild(div);
-        }
-
-        function addDasar() {
-            addInput('dasarWrap', 'dasar[]', 'Tambahkan dasar lain...');
-        }
-
-        function addUntuk() {
-            addInput('untukWrap', 'untuk[]', 'Poin tugas...');
-        }
-
-        function addTembusan() {
-            addInput('tembusanWrap', 'tembusan[]', 'Pihak tembusan...');
-        }
-
-        function addAnggota() {
-            const wrap = document.getElementById('anggotaWrap');
-            const row = document.createElement('div');
-            row.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 anggota-row';
-            row.innerHTML = `
-        <input name="anggota[nama][]" class="rounded-md border-gray-300 shadow-sm" placeholder="Nama & Gelar">
-        <div class="flex gap-2">
-            <input name="anggota[jabatan][]" class="flex-1 rounded-md border-gray-300 shadow-sm" placeholder="Jabatan/Peran">
-            <button type="button" class="px-2.5 py-1.5 rounded border text-red-600 hover:bg-red-50" onclick="this.closest('.anggota-row').remove()">Hapus</button>
-        </div>
-    `;
-            wrap.appendChild(row);
-        }
     </script>
 @endpush

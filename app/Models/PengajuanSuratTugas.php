@@ -27,10 +27,22 @@ class PengajuanSuratTugas extends Model
         'penandatangan_id',
         'nomor_surat',
         'status',
+        'nama_ditugaskan',
         'deskripsi_umum',
     ];
 
+
+    protected $casts = [
+        'nama_ditugaskan' => 'array',
+    ];
+
+    public const STATUS_PENDING = 'Pending';
+    public const STATUS_DIBUAT  = 'Dibuat';
+    public const STATUS_SELESAI = 'Selesai';
+
+
     // ========================
+
     // 🔗 RELASI ANTAR TABEL
     // ========================
 
@@ -43,21 +55,15 @@ class PengajuanSuratTugas extends Model
         return $this->belongsTo(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
 
-    /**
-     * Relasi ke tabel users (penandatangan)
-     * 1 pengajuan surat tugas -> 1 user penandatangan
-     */
+
+    public function laporan()
+    {
+        return $this->belongsTo(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
+    }
+
+    /** Relasi ke User penandatangan (Kepala Inspektorat) */
     public function penandatangan()
     {
         return $this->belongsTo(User::class, 'penandatangan_id', 'user_id');
-    }
-
-    /**
-     * Relasi ke anggota tim (jika ada tabel pengajuan_surat_tugas_anggota)
-     * 1 pengajuan surat tugas -> banyak anggota
-     */
-    public function anggota()
-    {
-        return $this->hasMany(PengajuanSuratTugasAnggota::class, 'pengajuan_id', 'pengajuan_surat_id');
     }
 }

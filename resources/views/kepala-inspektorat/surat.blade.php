@@ -13,14 +13,14 @@
             </div>
             <button id="openCreateSuratModal"
                 class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
-                + Buat Surat Tugas
+                + Buat Pengajuan Surat Tugas
             </button>
         </div>
 
         {{-- Table --}}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Daftar Surat Tugas</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Daftar Pengajuan Surat Tugas</h3>
             </div>
 
             <div class="overflow-x-auto">
@@ -38,9 +38,10 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @forelse($suratList ?? [] as $s)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-gray-900">{{ $s->nomor_surat ?? '-' }}</td>
+                                <td class="px-6 py-3 font-medium text-gray-900">{{ $s->nomor_surat ?? 'Belum Tersedia' }}</td>
                                 <td class="px-6 py-3">
-                                    {{ $s->laporanPengaduan->judul ?? ($s->laporanPengaduan->permasalahan ?? '-') }}</td>
+                                    {{ $s->laporan->judul ?? ($s->laporan->permasalahan ?? '') }}
+                                </td>
                                 <td class="px-6 py-3">{{ $s->penandatangan->nama_lengkap ?? '-' }}</td>
                                 <td class="px-6 py-3">
                                     <span
@@ -55,15 +56,14 @@
                                     {{ $s->created_at?->format('d M Y') ?? '-' }}
                                 </td>
                                 <td class="px-6 py-3 text-right space-x-2">
-                                    <a href="{{ route('ketua_bidang.surat.show', $s->pengajuan_surat_id) }}"
-                                        class="text-blue-600 hover:text-blue-800">Lihat</a>
-                                    <a href="{{ route('ketua_bidang.surat.edit', $s->pengajuan_surat_id) }}"
-                                        class="text-gray-600 hover:text-gray-900">Edit</a>
+                                    <a href="{{ route('pengajuan-surat.show', $s->pengajuan_surat_id) }}"
+                                        class="text-blue-600 hover:text-blue-800">Lihat</a>                                    
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada surat tugas.</td>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada pengajuan surat
+                                    tugas.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -79,25 +79,18 @@
             <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Buat Surat Tugas</h3>
-                        <p class="text-sm text-gray-500">Isi data sesuai format surat dinas</p>
+                        <h3 class="text-lg font-semibold text-gray-900">Buat Pengajuan Surat Tugas</h3>
+                        <p class="text-sm text-gray-500">Isi data pengajuan untuk pembuatan surat tugas investigasi</p>
                     </div>
                     <button id="closeCreateSuratModal" class="p-2 rounded-full hover:bg-gray-100 text-gray-500">✕</button>
                 </div>
 
-                <form action="{{ route('ketua_bidang.surat.store') }}" method="POST" class="px-6 py-5 space-y-5">
+                {{-- SESUAI CONTROLLER: store() hanya butuh laporan_id, penandatangan_id, nama_ditugaskan[], deskripsi_umum --}}
+                <form action="{{ route('pengajuan-surat.store') }}" method="POST" class="px-6 py-5 space-y-5">
                     @csrf
-
-                    {{-- Nomor & Laporan --}}
+                    
+                    {{-- Laporan & Penandatangan --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nomor Surat</label>
-                            <input type="text" name="nomor_surat" required class="w-full rounded-md border-gray-300"
-                                placeholder="700.1/62/Inspektorat" value="{{ old('nomor_surat') }}">
-                            @error('nomor_surat')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Laporan Pengaduan</label>
                             <select name="laporan_id" required class="w-full rounded-md border-gray-300">
@@ -112,112 +105,87 @@
                                 <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Penandatangan Surat</label>
+                            <select name="penandatangan_id" required class="w-full rounded-md border-gray-300">
+                                <option value="">— Pilih Penandatangan —</option>
+                                @foreach ($userList ?? [] as $u)
+                                    <option value="{{ $u->user_id }}" @selected(old('penandatangan_id') == $u->user_id)>
+                                        {{ $u->nama_lengkap }} — {{ $u->jabatan ?? $u->role }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('penandatangan_id')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    {{-- Penandatangan --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Penandatangan Surat</label>
-                        <select name="penandatangan_id" required class="w-full rounded-md border-gray-300">
-                            <option value="">— Pilih Penandatangan —</option>
-                            @foreach ($userList ?? [] as $u)
-                                <option value="{{ $u->user_id }}" @selected(old('penandatangan_id') == $u->user_id)>
-                                    {{ $u->nama_lengkap }} — {{ $u->jabatan ?? $u->role }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('penandatangan_id')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- ==== ANGGOTA TIM (MULTI SELECT + ROLE) ==== --}}
+                    {{-- NAMA-NAMA YANG DITUGASKAN (JSON ARRAY OF STRINGS) --}}
                     <div>
                         <div class="flex items-center justify-between">
-                            <label class="block text-sm font-medium text-gray-700">Anggota Tim yang Ditugaskan</label>
-                            <button type="button" id="btnAddAnggota"
-                                class="px-3 py-1.5 rounded border hover:bg-gray-50">Tambah Anggota</button>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nama yang Ditugaskan
+                                <span class="text-xs text-gray-500">(setiap baris adalah 1 nama di surat)</span>
+                            </label>
+                            <button type="button" id="btnAddNama"
+                                class="px-3 py-1.5 rounded border hover:bg-gray-50 text-sm">
+                                Tambah Nama
+                            </button>
                         </div>
 
-                        <div id="anggotaWrap" class="mt-2 space-y-2">
-                            {{-- Row Template (pertama) --}}
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-2 anggota-row">
-                                <div class="md:col-span-6">
-                                    <select name="anggota[pegawai_id][]" class="w-full rounded-md border-gray-300" required>
-                                        <option value="">— Pilih Pegawai —</option>
-                                        @foreach ($pegawaiList ?? [] as $p)
-                                            <option value="{{ $p->user_id }}">{{ $p->nama_lengkap }} —
-                                                {{ $p->jabatan ?? $p->role }}</option>
-                                        @endforeach
-                                    </select>
+                        <div id="namaWrap" class="mt-2 space-y-2">
+                            {{-- Row pertama --}}
+                            <div class="grid grid-cols-12 gap-2 nama-row">
+                                <div class="col-span-10">
+                                    <input type="text" name="nama_ditugaskan[]" class="w-full rounded-md border-gray-300"
+                                        placeholder="Contoh: Ahmad Zainuddin, S.STP."
+                                        value="{{ old('nama_ditugaskan.0') }}">
                                 </div>
-                                <div class="md:col-span-4">
-                                    <select name="anggota[role][]" class="w-full rounded-md border-gray-300" required>
-                                        @php
-                                            $roles = [
-                                                'Penanggung Jawab',
-                                                'Wakil Penanggung Jawab',
-                                                'Pengendali Teknis',
-                                                'Ketua Tim',
-                                                'Anggota',
-                                            ];
-                                        @endphp
-                                        <option value="">— Pilih Role —</option>
-                                        @foreach ($roles as $r)
-                                            <option value="{{ $r }}">{{ $r }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="md:col-span-2 flex items-center">
+                                <div class="col-span-2 flex items-center">
                                     <button type="button"
-                                        class="btn-remove-anggota w-full md:w-auto px-3 py-2 rounded border text-red-600 hover:bg-red-50">
+                                        class="btn-remove-nama w-full md:w-auto px-3 py-2 rounded border text-red-600 hover:bg-red-50">
                                         Hapus
                                     </button>
-                                </div>
-                                <div class="md:col-span-12">
-                                    <input type="text" name="anggota[deskripsi][]"
-                                        class="w-full rounded-md border-gray-300" placeholder="Deskripsi tugas (opsional)">
                                 </div>
                             </div>
                         </div>
 
-                        <p class="text-xs text-gray-500 mt-1">Tips: hindari duplikasi pegawai pada tim yang sama.</p>
-                        @error('anggota.pegawai_id.*')
+                        <p class="text-xs text-gray-500 mt-1">
+                            Nama di sini akan disimpan sebagai array JSON dan bisa ditampilkan urut di surat tugas.
+                        </p>
+                        @error('nama_ditugaskan')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
-                        @error('anggota.role.*')
+                        @error('nama_ditugaskan.*')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Deskripsi Umum (jadi poin “Untuk” di PDF; 1 baris = 1 poin) --}}
+                    {{-- Deskripsi Umum (jadi poin “Untuk” di surat; 1 baris = 1 poin) --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Deskripsi Umum / “Untuk” (satu baris = satu
-                            poin)</label>
+                        <label class="block text-sm font-medium text-gray-700">
+                            Deskripsi Umum / “Untuk” (satu baris = satu poin)
+                        </label>
                         <textarea name="deskripsi_umum" rows="3" class="w-full rounded-md border-gray-300"
                             placeholder="Contoh:
 Melakukan audit investigasi dugaan pungutan liar ...
 Pelaksanaan tugas selama 15 (lima belas) hari kerja mulai tanggal ...
 Hasil pelaksanaan tugas dilaporkan kepada Bupati melalui Inspektur ...">{{ old('deskripsi_umum') }}</textarea>
+                        @error('deskripsi_umum')
+                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    {{-- Status --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
-                        <select name="status" class="w-full rounded-md border-gray-300">
-                            @foreach (['Pending', 'Dibuat', 'Selesai'] as $st)
-                                <option value="{{ $st }}" @selected(old('status') == $st)>{{ $st }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    {{-- Status tidak diminta di form, default = Pending di controller --}}
 
                     {{-- Tombol --}}
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
                         <button type="button" id="cancelCreateSurat"
                             class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Batal</button>
-                        <button type="submit"
-                            class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700">
-                            Simpan Surat
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700">
+                            Simpan Pengajuan
                         </button>
                     </div>
                 </form>
@@ -251,45 +219,33 @@ Hasil pelaksanaan tugas dilaporkan kepada Bupati melalui Inspektur ...">{{ old('
                 if (e.key === 'Escape') close();
             });
 
-            // Repeater Anggota
-            const wrap = document.getElementById('anggotaWrap');
-            const btnAdd = document.getElementById('btnAddAnggota');
+            // Repeater Nama Ditugaskan
+            const wrap = document.getElementById('namaWrap');
+            const btnAdd = document.getElementById('btnAddNama');
 
             btnAdd?.addEventListener('click', () => {
                 const row = document.createElement('div');
-                row.className = 'grid grid-cols-1 md:grid-cols-12 gap-2 anggota-row';
+                row.className = 'grid grid-cols-12 gap-2 nama-row';
                 row.innerHTML = `
-            <div class="md:col-span-6">
-                <select name="anggota[pegawai_id][]" class="w-full rounded-md border-gray-300" required>
-                    <option value="">— Pilih Pegawai —</option>
-                    @foreach ($pegawaiList ?? [] as $p)
-                        <option value="{{ $p->user_id }}">{{ $p->nama_lengkap }} — {{ $p->jabatan ?? $p->role }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="md:col-span-4">
-                <select name="anggota[role][]" class="w-full rounded-md border-gray-300" required>
-                    <option value="">— Pilih Role —</option>
-                    @foreach ($roles as $r)
-                        <option value="{{ $r }}">{{ $r }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="md:col-span-2 flex items-center">
-                <button type="button" class="btn-remove-anggota w-full md:w-auto px-3 py-2 rounded border text-red-600 hover:bg-red-50">Hapus</button>
-            </div>
-            <div class="md:col-span-12">
-                <input type="text" name="anggota[deskripsi][]" class="w-full rounded-md border-gray-300" placeholder="Deskripsi tugas (opsional)">
-            </div>
-        `;
+                    <div class="col-span-10">
+                        <input type="text" name="nama_ditugaskan[]" class="w-full rounded-md border-gray-300"
+                            placeholder="Nama lengkap pegawai yang ditugaskan">
+                    </div>
+                    <div class="col-span-2 flex items-center">
+                        <button type="button"
+                            class="btn-remove-nama w-full md:w-auto px-3 py-2 rounded border text-red-600 hover:bg-red-50">
+                            Hapus
+                        </button>
+                    </div>
+                `;
                 wrap.appendChild(row);
             });
 
-            // Delegasi: hapus baris anggota
+            // Delegasi: hapus baris nama
             wrap?.addEventListener('click', (e) => {
-                if (e.target.classList.contains('btn-remove-anggota')) {
+                if (e.target.classList.contains('btn-remove-nama')) {
                     e.preventDefault();
-                    const row = e.target.closest('.anggota-row');
+                    const row = e.target.closest('.nama-row');
                     if (row && wrap.children.length > 1) row.remove();
                 }
             });

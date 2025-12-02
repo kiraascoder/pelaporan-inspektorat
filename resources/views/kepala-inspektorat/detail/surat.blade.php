@@ -18,7 +18,7 @@
             </div>
 
             <div class="flex gap-2">
-                <a href="{{ route('sekretaris.surat_tugas') }}"
+                <a href="{{ route('kepala.surat_tugas') }}"
                     class="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
                     Kembali
                 </a>
@@ -91,16 +91,18 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Form Cepat: Set Nomor & Selesai --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-3">
                 <h2 class="text-sm font-semibold text-gray-900">Set Nomor Surat & Selesaikan</h2>
                 <p class="text-xs text-gray-500">
                     Dipakai oleh Sekretaris untuk mengisi nomor surat resmi dan mengubah status menjadi
                     <span class="font-semibold">Selesai</span>.
                 </p>
-                <form action="{{ route('sekretaris-surat.update-status', $pengajuanSurat) }}" method="POST"
-                    class="space-y-3">
+
+                <form action="" method="POST" class="space-y-3">
                     @csrf
-                    @method('PUT')
+
                     <div>
                         <label class="block text-xs font-medium text-gray-700">Nomor Surat Resmi</label>
                         <input type="text" name="nomor_surat" class="mt-1 w-full rounded-md border-gray-300 text-sm"
@@ -111,10 +113,9 @@
                         @enderror
                     </div>
 
-                    {{-- Tombol Simpan & Selesai --}}
                     <button type="submit"
                         class="w-full inline-flex justify-center items-center px-3 py-2 rounded-lg text-sm
-                   bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-60"
+                                   bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-60"
                         @if ($pengajuanSurat->status === 'Selesai') disabled @endif>
                         @if ($pengajuanSurat->status === 'Selesai')
                             Sudah Selesai
@@ -122,13 +123,6 @@
                             Simpan Nomor & Tandai Selesai
                         @endif
                     </button>
-                    @if ($pengajuanSurat->status === 'Selesai')
-                        <a href="{{ route('sekretaris-surat.cetak-pdf', $pengajuanSurat) }}"
-                            class="w-full inline-flex justify-center items-center px-3 py-2 rounded-lg text-sm
-              border border-primary-600 text-primary-700 hover:bg-primary-50">
-                            Buat Surat Tugas (PDF)
-                        </a>
-                    @endif
                 </form>
             </div>
         </div>
@@ -193,7 +187,7 @@
                         dibuat.
                     </p>
                 </div>
-                <form action="{{ route('sekretaris-surat.destroy', $pengajuanSurat) }}" method="POST"
+                <form action="{{ route('pengajuan-surat.destroy', $pengajuanSurat) }}" method="POST"
                     onsubmit="return confirm('Yakin ingin menghapus pengajuan ini? Tindakan ini tidak dapat dibatalkan.');">
                     @csrf
                     @method('DELETE')

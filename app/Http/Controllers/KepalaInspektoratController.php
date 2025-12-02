@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
+use App\Models\PengajuanSuratTugas;
 use App\Models\SuratTugas;
 use App\Models\TimInvestigasi;
 use App\Models\User;
@@ -98,25 +99,30 @@ class KepalaInspektoratController extends Controller
     }
     public function suratTugas()
     {
-        // Ambil tim aktif (jika diperlukan)
+
+        $suratList = PengajuanSuratTugas::with(['laporan', 'penandatangan'])
+            ->latest()
+            ->get();
+
         $tim = TimInvestigasi::aktif()->first();
 
-        // Ambil semua user yang bisa jadi penandatangan atau pegawai
+
         $userList = User::select('user_id', 'nama_lengkap', 'jabatan', 'role')
+            ->whereIn('role', ['Ketua_Bidang_Investigasi', 'Sekretaris', 'Kepala_Inspektorat'])
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
-        // Ambil semua laporan pengaduan yang belum punya surat tugas
         $laporanList = LaporanPengaduan::select('laporan_id', 'permasalahan', 'status', 'created_at')
             ->where('status', '!=', 'Ditolak')
             ->orderByDesc('created_at')
             ->get();
 
-        // Kirim ke view
+
         return view('kepala-inspektorat.surat', [
             'tim' => $tim,
             'userList' => $userList,
             'laporanList' => $laporanList,
+            'suratList' => $suratList
         ]);
     }
 
@@ -233,5 +239,11 @@ class KepalaInspektoratController extends Controller
         $laporan = $query->paginate(12)->withQueryString();
 
         return view('kepala-inspektorat.laporan', compact('stats', 'laporan'));
+    }
+    public function show(PengajuanSuratTugas $pengajuanSurat)
+    {
+        $pengajuanSurat->load(['laporan', 'penandatangan']);
+
+        return view('kepala-inspektorat.detail.surat', compact('pengajuanSurat'));
     }
 }

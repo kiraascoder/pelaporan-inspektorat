@@ -3,14 +3,45 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
+use App\Models\PengajuanSuratTugas;
 use App\Models\SuratTugas;
 use App\Models\TimInvestigasi;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Http\Request;
 
 class SekretarisController extends Controller
 {
+
+    public function setNomorDanSelesai(Request $request, PengajuanSuratTugas $pengajuanSurat)
+    {
+        $validated = $request->validate([
+            'nomor_surat' => 'required|string|max:100|unique:pengajuan_surat_tugas,nomor_surat,' .
+                $pengajuanSurat->pengajuan_surat_id . ',pengajuan_surat_id',
+        ]);
+
+        $pengajuanSurat->update([
+            'nomor_surat' => $validated['nomor_surat'],
+            'status'      => PengajuanSuratTugas::STATUS_SELESAI,
+        ]);
+
+        return back()->with('success', 'Nomor surat di-set dan status diubah menjadi Selesai.');
+    }
+    public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
+    {
+     
+        $pengajuanSurat->load(['laporan', 'penandatangan']);
+        if ($pengajuanSurat->status !== 'Selesai') {
+            return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');
+        }
+        $pdf = Pdf::loadView('sekretaris.surat-tugas.pdf', [
+            'pengajuan' => $pengajuanSurat,
+        ])->setPaper('A4', 'portrait');
+        $filename = 'Surat_Tugas_' . ($pengajuanSurat->nomor_surat ?? $pengajuanSurat->pengajuan_surat_id) . '.pdf';
+        return $pdf->download($filename);
+    }
+
     public function dashboard()
     {
         $user = auth()->user();
@@ -277,10 +308,41 @@ class SekretarisController extends Controller
             return back()->with('error', 'Tim tidak ditemukan');
         }
     }
+    public function show(PengajuanSuratTugas $pengajuanSurat)
+    {
+        $pengajuanSurat->load(['laporan', 'penandatangan']);
+
+        return view('sekretaris.detail.surat', compact('pengajuanSurat'));
+    }
+
+    public function destroy(PengajuanSuratTugas $pengajuanSurat)
+    {
+        $pengajuanSurat->delete();
+
+        return redirect()
+            ->route('kepala.surat_tugas')
+            ->with('success', 'Pengajuan surat tugas berhasil dihapus.');
+    }
 
     public function suratTugas()
     {
-        $tim = TimInvestigasi::aktif()->first();
-        return (view('ketua_bidang.surat',));
+        $suratList = PengajuanSuratTugas::with(['laporan', 'penandatangan'])
+            ->latest()
+            ->get();
+
+
+        $laporanList = LaporanPengaduan::latest()->get();
+
+
+        $userList = User::select('user_id', 'nama_lengkap', 'jabatan', 'role')
+            ->whereIn('role', ['Kepala_Dinas', 'Ketua_Bidang', 'Sekretaris'])
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+
+        return view('sekretaris.surat', compact(
+            'suratList',
+            'laporanList',
+            'userList'
+        ));
     }
 }
