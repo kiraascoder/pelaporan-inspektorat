@@ -29,18 +29,20 @@ class LaporanPengaduan extends Model
         'harapan',
         'status',
         'keterangan_admin',
+        'surat_tugas_file',
+        'surat_tugas_id',   // ⬅ ganti dari 'surat_id' → 'surat_tugas_id'
     ];
 
     protected $casts = [
         'tanggal_pengaduan' => 'date',
-        'bukti_pendukung'   => 'array', // otomatis array
+        'bukti_pendukung'   => 'array',
     ];
-    // Scope untuk filter berdasarkan status
+
+    // Scopes status
     public function scopePending($query)
     {
         return $query->where('status', 'Pending');
     }
-
 
     public function scopeDiterima($query)
     {
@@ -75,14 +77,18 @@ class LaporanPengaduan extends Model
 
     public function suratTugas()
     {
-        return $this->hasMany(SuratTugas::class, 'laporan_id', 'laporan_id');
+        // 1 laporan -> 1 pengajuan_surat_tugas (FK surat_tugas_id)
+        return $this->belongsTo(PengajuanSuratTugas::class, 'surat_tugas_id', 'pengajuan_surat_id');
     }
+
+    public function pengajuanSuratTugas()
+    {
+        // alternatif relasi via laporan_id
+        return $this->hasOne(PengajuanSuratTugas::class, 'laporan_id', 'laporan_id');
+    }
+
     public function getRouteKeyName()
     {
         return 'laporan_id';
-    }
-    public function pengajuanSuratTugas()
-    {
-        return $this->hasOne(\App\Models\PengajuanSuratTugas::class, 'laporan_id', 'laporan_id');
     }
 }

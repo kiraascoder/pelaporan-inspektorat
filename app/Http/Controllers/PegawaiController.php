@@ -21,64 +21,19 @@ class PegawaiController extends Controller
         $user = auth()->user();
 
         $laporanList = $user->laporanTugas()
-            ->with([
-                'suratTugas.timInvestigasi',
-                'suratTugas.laporanPengaduan'
-            ])
             ->latest()
             ->paginate(10);
 
         $stats = [
             'tim_aktif' => $user->timInvestigasiDiikuti()->aktif()->count(),
-            'surat_tugas_aktif' => SuratTugas::whereHas('timInvestigasi.anggota', function ($query) use ($user) {
-                $query->where('anggota_tim.pegawai_id', $user->user_id)
-                    ->where('anggota_tim.is_active', 1);
-            })->dalamPelaksanaan()->count(),
-            'laporan_tugas_draft' => $user->laporanTugas()->draft()->count(),
-            'laporan_tugas_submitted' => $user->laporanTugas()->submitted()->count(),
-        ];
-
-        // Surat tugas terbaru - also fixed ambiguous column
-        $suratTugasTerbaru = SuratTugas::whereHas('timInvestigasi.anggota', function ($query) use ($user) {
-            $query->where('anggota_tim.pegawai_id', $user->user_id)
-                ->where('anggota_tim.is_active', true);
-        })
-            ->with(['timInvestigasi', 'laporanPengaduan'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('pegawai.dashboard', compact('stats', 'suratTugasTerbaru', 'laporanList'));
-    }
-
-    // Alternative approach using the new anggotaAktif relationship
-    public function dashboardAlternative()
-    {
-        $user = auth()->user();
-
-        // Get active team IDs for the user
-        $activeTeamIds = $user->timInvestigasiDiikuti()
-            ->wherePivot('is_active', true)
-            ->pluck('tim_investigasi.tim_id');
-
-        $stats = [
-            'tim_aktif' => $activeTeamIds->count(),
-            'surat_tugas_aktif' => SuratTugas::whereIn('tim_id', $activeTeamIds)
-                ->dalamPelaksanaan()
-                ->count(),
             'laporan_tugas_draft' => $user->laporanTugas()->draft()->count(),
             'laporan_tugas_submitted' => $user->laporanTugas()->submitted()->count(),
         ];
 
 
-        $suratTugasTerbaru = SuratTugas::whereIn('tim_id', $activeTeamIds)
-            ->with(['timInvestigasi', 'laporanPengaduan'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('pegawai.dashboard', compact('stats', 'suratTugasTerbaru'));
+        return view('pegawai.dashboard', compact('laporanList'));
     }
+
 
 
     public function updateStatusLaporan(
@@ -139,8 +94,7 @@ class PegawaiController extends Controller
             'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
-            'semuaTim'                   => TimInvestigasi::count(),
-            'surat_tugas_aktif'          => SuratTugas::where('status_surat', 'Aktif')->count(),
+            'semuaTim'                   => TimInvestigasi::count(),            
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {
@@ -206,8 +160,7 @@ class PegawaiController extends Controller
             $tim = TimInvestigasi::with([
                 'ketuaTim',
                 'anggotaAktif',
-                'laporanPengaduan',
-                'suratTugas'
+                'laporanPengaduan',                
             ])->findOrFail($tim_id);
 
             return view('pegawai.detail.tim', compact('tim'));
@@ -314,11 +267,7 @@ class PegawaiController extends Controller
         $user = auth()->user();
 
         // daftar laporan tugas milik user (biarkan seperti sebelumnya)
-        $laporanList = $user->laporanTugas()
-            ->with([
-                'suratTugas.timInvestigasi',
-                'suratTugas.laporanPengaduan'
-            ])
+        $laporanList = $user->laporanTugas()            
             ->latest()
             ->paginate(10);
 
@@ -353,7 +302,7 @@ class PegawaiController extends Controller
         $totalLaporanTugas = $user->laporanTugas()->count();
         $laporanDraft      = $user->laporanTugas()->where('status_laporan', 'Draft')->count();
         $laporanSubmitted  = $user->laporanTugas()->where('status_laporan', 'Submitted')->count();
-        
+
 
         // PENTING: kembalikan ke view yang sesuai dengan file Blade kamu
         return view('pegawai.report-tugas', compact(

@@ -97,40 +97,75 @@
                     Dipakai oleh Sekretaris untuk mengisi nomor surat resmi dan mengubah status menjadi
                     <span class="font-semibold">Selesai</span>.
                 </p>
-                <form action="{{ route('sekretaris-surat.update-status', $pengajuanSurat) }}" method="POST"
-                    class="space-y-3">
-                    @csrf
-                    @method('PUT')
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700">Nomor Surat Resmi</label>
-                        <input type="text" name="nomor_surat" class="mt-1 w-full rounded-md border-gray-300 text-sm"
-                            placeholder="700.1/62/INSPEKTORAT"
-                            value="{{ old('nomor_surat', $pengajuanSurat->nomor_surat) }}">
-                        @error('nomor_surat')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
+
+                {{-- STATUS LOGIC --}}
+                @php
+                    $hasNomor = filled($pengajuanSurat->nomor_surat);
+                    $hasPDF = filled($pengajuanSurat->file_surat); // ganti jika field kamu berbeda
+                @endphp
+
+                {{-- Jika PDF sudah dibuat --}}
+                @if ($hasPDF)
+                    <div class="p-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800">
+                        Surat Tugas Sudah Dibuat
+                    </div>
+                    <a href="{{ asset('storage/surat_tugas/' . $pengajuanSurat->file_surat) }}"
+                        class="block w-full text-center px-3 py-2 mt-2 rounded-lg text-sm border border-primary-600 text-primary-700 hover:bg-primary-50">
+                        Lihat Surat Tugas
+                    </a>
+
+                    {{-- Jika nomor sudah diisi tetapi PDF belum dibuat --}}
+                @elseif ($hasNomor)
+                    <div class="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+                        Nomor Surat Resmi Sudah Diisi
                     </div>
 
-                    {{-- Tombol Simpan & Selesai --}}
-                    <button type="submit"
-                        class="w-full inline-flex justify-center items-center px-3 py-2 rounded-lg text-sm
-                   bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-60"
-                        @if ($pengajuanSurat->status === 'Selesai') disabled @endif>
-                        @if ($pengajuanSurat->status === 'Selesai')
-                            Sudah Selesai
-                        @else
-                            Simpan Nomor & Tandai Selesai
-                        @endif
-                    </button>
-                    @if ($pengajuanSurat->status === 'Selesai')
-                        <a href="{{ route('sekretaris-surat.cetak-pdf', $pengajuanSurat) }}"
+                    {{-- tombol generate PDF --}}
+                    <a href="{{ route('sekretaris-surat.cetak-pdf', $pengajuanSurat) }}"
+                        class="block w-full text-center px-3 py-2 rounded-lg mt-2 text-sm border border-primary-600 text-primary-700 hover:bg-primary-50">
+                        Buat Surat Tugas (PDF)
+                    </a>
+
+                    {{-- Jika belum isi nomor → tampil form --}}
+                @else
+                    <form action="{{ route('sekretaris-surat.update-status', $pengajuanSurat) }}" method="POST"
+                        class="space-y-3">
+                        @csrf
+                        @method('PUT')
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700">Nomor Surat Resmi</label>
+                            <input type="text" name="nomor_surat" class="mt-1 w-full rounded-md border-gray-300 text-sm"
+                                placeholder="700.1/62/INSPEKTORAT"
+                                value="{{ old('nomor_surat', $pengajuanSurat->nomor_surat) }}">
+
+                            @error('nomor_surat')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button type="submit"
                             class="w-full inline-flex justify-center items-center px-3 py-2 rounded-lg text-sm
-              border border-primary-600 text-primary-700 hover:bg-primary-50">
-                            Buat Surat Tugas (PDF)
-                        </a>
-                    @endif
+                bg-primary-600 text-white hover:bg-primary-700">
+                            Simpan Nomor & Tandai Selesai
+                        </button>
+                    </form>
+                @endif
+                <form action="{{ route('sekretaris-surat.upload-surat', $pengajuanSurat->laporan->laporan_id) }}"
+                    method="POST" enctype="multipart/form-data" class="space-y-3 mt-3">
+                    @csrf
+
+                    <input type="hidden" name="pengajuan_surat_id" value="{{ $pengajuanSurat->pengajuan_surat_id }}">
+
+                    <label class="text-xs font-medium">Upload Surat ke Laporan</label>
+                    <input type="file" name="surat_tugas" accept="application/pdf">
+
+                    <button class="px-3 py-2 bg-primary-600 text-white rounded-md text-sm">
+                        Upload
+                    </button>
                 </form>
             </div>
+
         </div>
 
         {{-- Nama-nama yang Ditugaskan --}}

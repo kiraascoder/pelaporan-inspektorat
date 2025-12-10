@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
 use App\Models\PengajuanSuratTugas;
-use App\Models\SuratTugas;
 use App\Models\TimInvestigasi;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -37,58 +36,50 @@ class SekretarisController extends Controller
             return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');
         }
 
-        // 1. Generate view menjadi PDF
-        $pdf = Pdf::loadView('sekretaris.surat-tugas.pdf', [
+        // 1. RENDER VIEW JADI HTML DULU
+        $html = view('sekretaris.surat-tugas.pdf', [
             'pengajuan' => $pengajuanSurat,
-        ])->setPaper('A4', 'portrait');
+        ])->render();
 
-        // 2. Simpan ke storage
+
+        // 3. Kalau HTML normal, baru generate PDF
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
+            'defaultFont'            => 'DejaVu Sans',
+            'enable_font_subsetting' => false,
+            'isHtml5ParserEnabled'   => true,
+            'isRemoteEnabled'        => true,
+        ])
+            ->loadHTML($html)
+            ->setPaper('A4', 'portrait');
+
         $filename = 'Surat_Tugas_' . ($pengajuanSurat->nomor_surat ?? $pengajuanSurat->pengajuan_surat_id) . '.pdf';
-        $path = 'surat_tugas/' . $filename; // disimpan di storage/app/public/surat_tugas
 
-        Storage::disk('public')->put($path, $pdf->output());
-
-        // 3. Update pengajuan dengan path file
-        $pengajuanSurat->update([
-            'surat_tugas_path' => $path,
-            'surat_tugas_uploaded_at' => now(),
-        ]);
         return $pdf->download($filename);
     }
+    public function uploadSuratTugas(Request $request, LaporanPengaduan $laporan)
+    {
+        $request->validate([
+            'surat_tugas'       => 'required|mimes:pdf|max:2048',
+            'pengajuan_surat_id' => 'required|exists:pengajuan_surat_tugas,pengajuan_surat_id',
+        ]);
+
+        $file = $request->file('surat_tugas');
+        $path = $file->store('surat_tugas', 'public'); // hasil: 'surat_tugas/namafile.pdf'
+
+        $laporan->update([
+            'surat_tugas_file' => $path,
+            'surat_tugas_id'   => $request->pengajuan_surat_id,
+        ]);
+
+        return back()->with('success', 'Surat tugas berhasil diunggah ke laporan.');
+    }
+
+
 
     public function dashboard()
     {
         $user = auth()->user();
-
-        $laporanList = $user->laporanTugas()
-            ->with([
-                'suratTugas.timInvestigasi',
-                'suratTugas.laporanPengaduan'
-            ])
-            ->latest()
-            ->paginate(10);
-
-        $stats = [
-            'tim_aktif' => $user->timInvestigasiDiikuti()->aktif()->count(),
-            'surat_tugas_aktif' => SuratTugas::whereHas('timInvestigasi.anggota', function ($query) use ($user) {
-                $query->where('anggota_tim.pegawai_id', $user->user_id)
-                    ->where('anggota_tim.is_active', 1);
-            })->dalamPelaksanaan()->count(),
-            'laporan_tugas_draft' => $user->laporanTugas()->draft()->count(),
-            'laporan_tugas_submitted' => $user->laporanTugas()->submitted()->count(),
-        ];
-
-        // Surat tugas terbaru - also fixed ambiguous column
-        $suratTugasTerbaru = SuratTugas::whereHas('timInvestigasi.anggota', function ($query) use ($user) {
-            $query->where('anggota_tim.pegawai_id', $user->user_id)
-                ->where('anggota_tim.is_active', true);
-        })
-            ->with(['timInvestigasi', 'laporanPengaduan'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('sekretaris.dashboard', compact('stats', 'suratTugasTerbaru', 'laporanList'));
+        return view('sekretaris.dashboard');
     }
 
     public function laporan(Request $request)
@@ -99,7 +90,6 @@ class SekretarisController extends Controller
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
             'semuaTim'                   => TimInvestigasi::count(),
-            'surat_tugas_aktif'          => SuratTugas::where('status_surat', 'Aktif')->count(),
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {
@@ -250,14 +240,6 @@ class SekretarisController extends Controller
     {
         $user = auth()->user();
 
-        // daftar laporan tugas milik user (biarkan seperti sebelumnya)
-        $laporanList = $user->laporanTugas()
-            ->with([
-                'suratTugas.timInvestigasi',
-                'suratTugas.laporanPengaduan'
-            ])
-            ->latest()
-            ->paginate(10);
 
         // ====== Base query untuk Pengaduan Selesai yang terhubung ke tim user (anggota aktif) ======
         $qBase = LaporanPengaduan::selesai()

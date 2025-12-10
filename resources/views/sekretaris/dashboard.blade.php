@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="space-y-6">
-        <!-- Welcome Section with Time-based Greeting -->
+        <!-- Welcome Section -->
         <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white" x-data="{
             greeting: (() => {
                 const hour = new Date().getHours();
@@ -34,8 +34,10 @@
             </div>
         </div>
 
-        <!-- Statistics Cards with Trend Indicators -->
+        <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <!-- Tim Aktif -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -47,18 +49,13 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Tim Aktif</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['tim_aktif'] }}</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['tim_aktif'] ?? '-' }}</p>
                         </div>
-                    </div>
-                    <div class="text-green-600">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                        </svg>
                     </div>
                 </div>
             </div>
 
+            <!-- Surat Tugas Aktif -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -70,10 +67,10 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Surat Tugas Aktif</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['surat_tugas_aktif'] }}</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['surat_tugas_aktif'] ?? '-' }}</p>
                         </div>
                     </div>
-                    @if ($stats['surat_tugas_aktif'] > 0)
+                    @if (($stats['surat_tugas_aktif'] ?? 0) > 0)
                         <div class="text-yellow-600">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -84,6 +81,7 @@
                 </div>
             </div>
 
+            <!-- Draft Laporan -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -95,10 +93,10 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Draft Laporan</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_tugas_draft'] }}</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_tugas_draft'] ?? '-' }}</p>
                         </div>
                     </div>
-                    @if ($stats['laporan_tugas_draft'] > 0)
+                    @if (($stats['laporan_tugas_draft'] ?? 0) > 0)
                         <div class="text-orange-600">
                             <span class="text-xs font-medium">Perlu diselesaikan</span>
                         </div>
@@ -106,6 +104,7 @@
                 </div>
             </div>
 
+            <!-- Laporan Submitted -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -117,46 +116,49 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Laporan Submitted</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_tugas_submitted'] }}</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_tugas_submitted'] ?? '-' }}
+                            </p>
                         </div>
-                    </div>
-                    <div class="text-green-600">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Today's Priority Tasks -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">Laporan Terbaru</h3>
             </div>
+
             <div class="p-6">
-                <div class="space-y-3">
-                    <!-- Example Priority Tasks -->
-                    <div class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
-                        @foreach ($laporanList as $laporan)
-                            <div class="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <div class="flex-shrink-0">
-                                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <p class="text-sm font-medium text-gray-900">{{ $laporan->permasalahan }}</p>
-                                    <p class="text-xs text-gray-500">Surat Tugas #ST-002 • Tim Beta</p>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        Medium
-                                    </span>
-                                </div>
-                            </div>
-                        @endforeach
+
+                @forelse ($laporanList ?? [] as $laporan)
+                    <div class="flex items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        </div>
+
+                        <div class="ml-3 flex-1">
+                            <p class="text-sm font-medium text-gray-900">
+                                {{ $laporan->permasalahan ?? '-' }}
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                Surat Tugas #{{ $laporan->surat_tugas_id ?? '-' }}
+                                • Tim {{ $laporan->tim_nama ?? '-' }}
+                            </p>
+                        </div>
+
+                        <div class="flex-shrink-0">
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full
+                        text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ $laporan->prioritas ?? 'Medium' }}
+                            </span>
+                        </div>
                     </div>
-                </div>
+                @empty
+                    <p class="text-sm text-gray-500 text-center">Tidak ada laporan terbaru.</p>
+                @endforelse
 
                 <div class="mt-4 text-center">
                     <a href="{{ route('pegawai.laporan') }}"
@@ -166,45 +168,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    @push('scripts')
-        <script>
-            // Workload Chart
-            const workloadCtx = document.getElementById('workloadChart').getContext('2d');
-            new Chart(workloadCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Tugas Selesai',
-                        data: [5, 8, 6, 10, 7, 9],
-                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                        borderColor: 'rgb(59, 130, 246)',
-                        borderWidth: 1
-                    }, {
-                        label: 'Tugas Pending',
-                        data: [2, 1, 3, 2, 4, 1],
-                        backgroundColor: 'rgba(251, 191, 36, 0.8)',
-                        borderColor: 'rgb(251, 191, 36)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        </script>
-    @endpush
+    </div>
 @endsection

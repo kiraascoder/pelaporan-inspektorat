@@ -15,24 +15,7 @@ class KepalaInspektoratController extends Controller
     public function dashboard()
     {
         $user = auth()->user();
-
-        $stats = [
-            'laporan_pending' => LaporanPengaduan::pending()->count(),
-            'tim_dipimpin' => $user->timInvestigasiDipimpin()->count(),
-            'tim_aktif' => $user->timInvestigasiDipimpin()->aktif()->count(),
-            'surat_tugas_aktif' => SuratTugas::where('dibuat_oleh', $user->user_id)
-                ->dalamPelaksanaan()
-                ->count(),
-        ];
-
-
-        $timDipimpin = $user->timInvestigasiDipimpin()
-            ->with(['laporanPengaduan', 'anggotaAktif'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('kepala-inspektorat.dashboard', compact('stats', 'timDipimpin'));
+        return view('kepala-inspektorat.dashboard');
     }
     public function showLaporan(LaporanPengaduan $laporan)
     {
@@ -44,12 +27,7 @@ class KepalaInspektoratController extends Controller
     {
         $user = auth()->user();
 
-        // daftar laporan tugas milik user (biarkan seperti sebelumnya)
         $laporanList = $user->laporanTugas()
-            ->with([
-                'suratTugas.timInvestigasi',
-                'suratTugas.laporanPengaduan'
-            ])
             ->latest()
             ->paginate(10);
 
@@ -183,8 +161,7 @@ class KepalaInspektoratController extends Controller
             'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
-            'semuaTim'                   => TimInvestigasi::count(),
-            'surat_tugas_aktif'          => SuratTugas::where('status_surat', 'Aktif')->count(),
+            'semuaTim'                   => TimInvestigasi::count(),            
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {

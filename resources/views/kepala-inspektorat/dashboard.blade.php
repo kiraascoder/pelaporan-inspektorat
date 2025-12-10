@@ -11,9 +11,9 @@
                     <h2 class="text-2xl font-bold mb-2">Dashboard Kepala Inspektorat</h2>
                     <p class="text-primary-100">Koordinasi tim investigasi dan pengawasan kualitas penyelidikan.</p>
                     <div class="mt-3 flex items-center space-x-4 text-sm text-primary-200">
-                        <span>{{ $stats['tim_aktif'] }} Tim Aktif</span>
+                        <span>{{ $stats['tim_aktif'] ?? '-' }} Tim Aktif</span>
                         <span>•</span>
-                        <span>{{ $stats['laporan_pending'] }} Laporan Menunggu Review</span>
+                        <span>{{ $stats['laporan_pending'] ?? '-' }} Laporan Menunggu Review</span>
                     </div>
                 </div>
                 <div class="hidden md:block">
@@ -34,7 +34,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Laporan Pending</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_pending'] }}</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_pending'] ?? '-' }}</p>
                         <p class="text-xs text-gray-500 mt-1">Perlu review segera</p>
                     </div>
                     <div class="p-2 bg-yellow-100 rounded-lg">
@@ -44,7 +44,7 @@
                         </svg>
                     </div>
                 </div>
-                @if ($stats['laporan_pending'] > 5)
+                @if (($stats['laporan_pending'] ?? 0) > 5)
                     <div class="absolute top-2 right-2">
                         <span
                             class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -59,8 +59,10 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Tim Aktif</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['tim_aktif'] }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Dari {{ $stats['tim_dipimpin'] }} total tim</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['tim_aktif'] ?? '-' }}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Dari {{ $stats['tim_dipimpin'] ?? '-' }} total tim
+                        </p>
                     </div>
                     <div class="p-2 bg-green-100 rounded-lg">
                         <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,7 +78,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Surat Tugas Aktif</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['surat_tugas_aktif'] }}</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['surat_tugas_aktif'] ?? '-' }}</p>
                         <p class="text-xs text-gray-500 mt-1">Dalam pelaksanaan</p>
                     </div>
                     <div class="p-2 bg-purple-100 rounded-lg">
@@ -105,10 +107,12 @@
                 </div>
             </div>
         </div>
+
         <!-- Teams Performance Overview -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Kalender -->
             <x-kalender />
+
             <!-- Recent Decisions -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Keputusan Terbaru</h3>
@@ -152,19 +156,20 @@
                 </div>
             </div>
             <div class="p-6">
-                @if ($timDipimpin->count() > 0)
+                @if (isset($timDipimpin) && $timDipimpin->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach ($timDipimpin as $tim)
                             <div
                                 class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-sm font-medium text-gray-900">{{ $tim->nama_tim }}</h4>
-                                    <x-status-badge :status="$tim->status_tim" />
+                                    <h4 class="text-sm font-medium text-gray-900">{{ $tim->nama_tim ?? '-' }}</h4>
+                                    <x-status-badge :status="$tim->status_tim ?? ''" />
                                 </div>
                                 <p class="text-xs text-gray-600 mb-3">
-                                    {{ Str::limit($tim->laporanPengaduan->judul_laporan, 60) }}</p>
+                                    {{ Str::limit(optional($tim->laporanPengaduan)->judul_laporan ?? '-', 60) }}
+                                </p>
                                 <div class="flex items-center justify-between text-xs text-gray-500">
-                                    <span>{{ $tim->anggotaAktif->count() }} anggota</span>
+                                    <span>{{ optional($tim->anggotaAktif)->count() ?? 0 }} anggota</span>
                                     <a href="{{ route('ketua_bidang.tim.show', $tim) }}"
                                         class="text-primary-600 hover:text-primary-700 font-medium">
                                         Detail →
@@ -178,7 +183,7 @@
                         description="Mulai dengan mereview laporan masuk dan bentuk tim investigasi." :actionHref="">
                         <x-slot name="icon">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 2 2 0z" />
                         </x-slot>
                     </x-empty-state>
                 @endif
@@ -189,47 +194,49 @@
     @push('scripts')
         <script>
             // Team Performance Chart
-            const teamPerformanceCtx = document.getElementById('teamPerformanceChart').getContext('2d');
-            new Chart(teamPerformanceCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['Kecepatan', 'Kualitas', 'Komunikasi', 'Kepatuhan', 'Inovasi'],
-                    datasets: [{
-                        label: 'Tim Alpha',
-                        data: [85, 90, 88, 92, 75],
-                        borderColor: 'rgb(59, 130, 246)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        pointBackgroundColor: 'rgb(59, 130, 246)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgb(59, 130, 246)'
-                    }, {
-                        label: 'Tim Beta',
-                        data: [78, 85, 90, 87, 82],
-                        borderColor: 'rgb(34, 197, 94)',
-                        backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                        pointBackgroundColor: 'rgb(34, 197, 94)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgb(34, 197, 94)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
+            const teamPerformanceCtx = document.getElementById('teamPerformanceChart')?.getContext('2d');
+            if (teamPerformanceCtx) {
+                new Chart(teamPerformanceCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Kecepatan', 'Kualitas', 'Komunikasi', 'Kepatuhan', 'Inovasi'],
+                        datasets: [{
+                            label: 'Tim Alpha',
+                            data: [85, 90, 88, 92, 75],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            pointBackgroundColor: 'rgb(59, 130, 246)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(59, 130, 246)'
+                        }, {
+                            label: 'Tim Beta',
+                            data: [78, 85, 90, 87, 82],
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                            pointBackgroundColor: 'rgb(34, 197, 94)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(34, 197, 94)'
+                        }]
                     },
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         </script>
     @endpush
 @endsection

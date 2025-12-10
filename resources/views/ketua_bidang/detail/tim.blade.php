@@ -89,6 +89,14 @@
                             {{ \Illuminate\Support\Str::limit($lap->permasalahan, 220) }}
                         </p>
                     @endif
+                    @if ($lap->surat_tugas_file)
+                        <div class="mt-4">
+                            <a href="{{ asset('storage/' . $lap->surat_tugas_file) }}" class="text-blue-600 underline"
+                                target="_blank">
+                                📄 Lihat Surat Tugas
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

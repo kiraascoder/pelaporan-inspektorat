@@ -69,6 +69,8 @@ class LaporanTugasController extends Controller
                 'bukti_pendukung'    => $storedPaths ?: null,                     // cast: array
                 'status_laporan'     => $validated['status_laporan'],
                 'tanggal_submit'     => $tanggalSubmit,
+                'pegawai_id' => $auth->user_id ?? $auth->id,
+
             ];
 
             // Simpan jika kamu memang punya kolom ini di tabel
@@ -81,7 +83,7 @@ class LaporanTugasController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('sekretaris.laporan_tugas')
+                ->route('pegawai.laporan_tugas')
                 ->with('success', 'Laporan berhasil disimpan.');
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -140,9 +142,7 @@ class LaporanTugasController extends Controller
         $user = auth()->user();
 
 
-        $laporan = LaporanTugas::with([
-            'suratTugas.timInvestigasi',
-            'suratTugas.laporanPengaduan',
+        $laporan = LaporanTugas::with([            
             'sekretaris'
         ])
             ->where('sekretaris_id', $user->user_id)

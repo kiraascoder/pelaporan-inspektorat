@@ -54,8 +54,12 @@
                     {{ str_replace('_', ' ', $lap->status ?? '-') }}
                 </span>
 
-                @if ($isAndaKetua)
-                    {{-- Tombol Update Status (toggle form) --}}
+                @php
+                    $isFinalStatus = in_array($lap->status, ['Selesai', 'Ditolak']);
+                @endphp
+
+                @if ($isAndaKetua && !$isFinalStatus)
+                    
                     <div x-data="{ openUpdate: false }" class="relative">
                         <button type="button" @click="openUpdate = !openUpdate"
                             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
@@ -81,11 +85,14 @@
                                         Diterima</option>
                                     <option value="Dalam_Investigasi"
                                         {{ ($lap->status ?? '') === 'Dalam_Investigasi' ? 'selected' : '' }}>Dalam
-                                        Investigasi</option>
+                                        Investigasi
+                                    </option>
                                     <option value="Selesai" {{ ($lap->status ?? '') === 'Selesai' ? 'selected' : '' }}>
-                                        Selesai</option>
+                                        Selesai
+                                    </option>
                                     <option value="Ditolak" {{ ($lap->status ?? '') === 'Ditolak' ? 'selected' : '' }}>
-                                        Ditolak</option>
+                                        Ditolak
+                                    </option>
                                 </select>
 
                                 <input type="text" name="keterangan_admin" placeholder="Catatan (opsional)"
@@ -106,6 +113,7 @@
                         </div>
                     </div>
                 @endif
+
             </div>
 
             {{-- Kanan: tombol kembali --}}

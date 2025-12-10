@@ -21,7 +21,7 @@ class PengajuanSuratTugas extends Model
     // Auto-increment aktif
     public $incrementing = true;
 
-    // Kolom yang bisa diisi massal
+    // Kolom yang bisa diisi massal    
     protected $fillable = [
         'laporan_id',
         'penandatangan_id',
@@ -56,7 +56,8 @@ class PengajuanSuratTugas extends Model
     {
         return $this->belongsTo(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
-    
+
+
 
 
     public function laporan()

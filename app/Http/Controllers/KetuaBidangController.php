@@ -21,25 +21,14 @@ class KetuaBidangController extends Controller
 {
     public function dashboard()
     {
-        $user = auth()->user();
-
-        $stats = [
-            'laporan_pending' => LaporanPengaduan::pending()->count(),
-            'tim_dipimpin' => $user->timInvestigasiDipimpin()->count(),
-            'tim_aktif' => $user->timInvestigasiDipimpin()->aktif()->count(),
-            'surat_tugas_aktif' => SuratTugas::where('dibuat_oleh', $user->user_id)
-                ->dalamPelaksanaan()
-                ->count(),
-        ];
-
-
+        $user = auth()->user();        
         $timDipimpin = $user->timInvestigasiDipimpin()
             ->with(['laporanPengaduan', 'anggotaAktif'])
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('ketua_bidang.dashboard', compact('stats', 'timDipimpin'));
+        return view('ketua_bidang.dashboard', compact( 'timDipimpin'));
     }
 
     public function laporan(Request $request)
@@ -49,8 +38,7 @@ class KetuaBidangController extends Controller
             'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
-            'semuaTim'                   => TimInvestigasi::count(),
-            'surat_tugas_aktif'          => SuratTugas::where('status_surat', 'Aktif')->count(),
+            'semuaTim'                   => TimInvestigasi::count(),            
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {
@@ -328,8 +316,7 @@ class KetuaBidangController extends Controller
             $tim = TimInvestigasi::with([
                 'ketuaTim',
                 'anggotaAktif',
-                'laporanPengaduan',
-                'suratTugas'
+                'laporanPengaduan',                
             ])->findOrFail($tim_id);
 
             return view('ketua_bidang.detail.tim', compact('tim'));

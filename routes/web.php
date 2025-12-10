@@ -10,6 +10,7 @@ use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\PengajuanSuratController;
 use App\Http\Controllers\SekretarisController;
 use App\Http\Controllers\WargaController;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
 
 
@@ -99,7 +100,10 @@ Route::prefix('sekretaris')->group(function () {
         'sekretaris/surat-tugas/{pengajuanSurat}/cetak-pdf',
         [SekretarisController::class, 'generatePdf']
     )->name('sekretaris-surat.cetak-pdf');
-    
+    Route::post(
+        '/surat/upload/{laporan}',
+        [SekretarisController::class, 'uploadSuratTugas']
+    )->name('sekretaris-surat.upload-surat');
 });
 
 Route::prefix('kepala-inspektorat')->group(function () {
@@ -122,4 +126,18 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // Home Page Route
 Route::get('/', function () {
     return view('home');
+});
+
+Route::get('/test-pdf', function () {
+    $pdf = Pdf::loadHTML('
+        <html>
+            <head><meta charset="UTF-8"></head>
+            <body style="font-family: \'DejaVu Sans\', sans-serif; font-size: 12px;">
+                <h1>Test PDF</h1>
+                <p>Ini adalah percobaan PDF DomPDF dengan font DejaVu Sans.</p>
+            </body>
+        </html>
+    ');
+
+    return $pdf->download('test.pdf');
 });
