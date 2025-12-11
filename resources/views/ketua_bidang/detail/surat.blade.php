@@ -17,12 +17,18 @@
                 </p>
             </div>
 
-            <div class="flex gap-2">
-                <a href="{{ route('kepala.surat_tugas') }}"
+            <div class="flex gap-2 items-center">
+                <a href="{{ route('ketua-bidang-surat.cetak-pdf', $pengajuanSurat) }}"
+                    class="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                    📥 Download Surat (PDF)
+                </a>
+
+                <a href="{{ route('ketua_bidang.surat') }}"
                     class="px-3 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
                     Kembali
                 </a>
             </div>
+
         </div>
 
         {{-- Alert Flash --}}
@@ -90,7 +96,7 @@
                         </p>
                     </div>
                 </div>
-            </div>            
+            </div>
         </div>
 
         {{-- Nama-nama yang Ditugaskan --}}
@@ -169,28 +175,6 @@
                         Belum ada deskripsi umum. Deskripsi ini akan menjadi poin-poin "Untuk" di surat tugas.
                     </p>
                 @endif
-            </div>
-        </div>
-
-        {{-- Opsi Danger / Hapus --}}
-        <div class="bg-white rounded-xl border border-red-200/60 shadow-sm p-5">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-sm font-semibold text-red-700">Hapus Pengajuan</h2>
-                    <p class="text-xs text-red-500 mt-1">
-                        Tindakan ini akan menghapus pengajuan surat tugas dari sistem. Tidak disarankan jika surat sudah
-                        dibuat.
-                    </p>
-                </div>
-                <form action="{{ route('pengajuan-surat.destroy', $pengajuanSurat) }}" method="POST"
-                    onsubmit="return confirm('Yakin ingin menghapus pengajuan ini? Tindakan ini tidak dapat dibatalkan.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit"
-                        class="px-3 py-2 text-sm rounded-lg border border-red-400 text-red-700 hover:bg-red-50">
-                        Hapus Pengajuan
-                    </button>
-                </form>
             </div>
         </div>
     </div>

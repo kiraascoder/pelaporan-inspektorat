@@ -169,54 +169,60 @@
         </div>
 
         {{-- Nama-nama yang Ditugaskan --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-sm font-semibold text-gray-900">Nama yang Ditugaskan</h2>
-                    @if (!empty($pengajuanSurat->nama_ditugaskan))
-                        <span class="text-xs text-gray-500">
-                            Total: {{ count($pengajuanSurat->nama_ditugaskan) }} orang
-                        </span>
-                    @endif
-                </div>
-
-                @if (!empty($pengajuanSurat->nama_ditugaskan) && is_array($pengajuanSurat->nama_ditugaskan))
-                    <ol class="list-decimal list-inside space-y-1 text-sm text-gray-800">
-                        @foreach ($pengajuanSurat->nama_ditugaskan as $idx => $nama)
-                            <li>{{ $nama }}</li>
-                        @endforeach
-                    </ol>
-                @else
-                    <p class="text-sm text-gray-500">
-                        Belum ada nama yang ditugaskan. Silakan edit pengajuan untuk menambahkan nama.
-                    </p>
-                @endif
-            </div>
-
-            {{-- Deskripsi Umum / Untuk --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <h2 class="text-sm font-semibold text-gray-900 mb-3">
-                    Deskripsi Umum / Poin "Untuk"
-                </h2>
+        <!-- === Mulai: Nama-nama yang Ditugaskan (ganti blok lama dengan ini) === -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-semibold text-gray-900">Nama yang Ditugaskan</h2>
 
                 @php
-                    $deskripsiLines = preg_split("/\r\n|\n|\r/", $pengajuanSurat->deskripsi_umum ?? '');
-                    $deskripsiLines = array_filter($deskripsiLines, fn($line) => trim($line) !== '');
+                    // Ambil raw dari model
+                    $rawNama = $pengajuanSurat->nama_ditugaskan ?? [];
+
+                    // Jika disimpan sebagai string JSON di DB (atau string biasa), decode dulu
+                    if (is_string($rawNama)) {
+                        $decoded = json_decode($rawNama, true);
+                        $namaList = is_array($decoded) ? $decoded : [$rawNama];
+                    } elseif (is_null($rawNama)) {
+                        $namaList = [];
+                    } else {
+                        $namaList = is_array($rawNama) ? $rawNama : [];
+                    }
+
+                    $totalNama = count($namaList);
                 @endphp
 
-                @if (!empty($deskripsiLines))
-                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-800">
-                        @foreach ($deskripsiLines as $line)
-                            <li>{{ $line }}</li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p class="text-sm text-gray-500">
-                        Belum ada deskripsi umum. Deskripsi ini akan menjadi poin-poin "Untuk" di surat tugas.
-                    </p>
+                @if ($totalNama > 0)
+                    <span class="text-xs text-gray-500">Total: {{ $totalNama }} orang</span>
                 @endif
             </div>
+
+            @if ($totalNama > 0)
+                <ol class="list-decimal list-inside space-y-1 text-sm text-gray-800">
+                    @foreach ($namaList as $idx => $item)
+                        @if (is_array($item))
+                            {{-- mendukung struktur: ['nama' => '...', 'jabatan' => '...'] --}}
+                            <li class="flex items-baseline justify-between gap-2">
+                                <div>
+                                    {{ $item['nama'] ?? ($item[0] ?? '-') }}
+                                    @if (!empty($item['jabatan']))
+                                        <span class="text-xs text-gray-500">— {{ $item['jabatan'] }}</span>
+                                    @endif
+                                </div>
+                            </li>
+                        @else
+                            {{-- item string (legacy) --}}
+                            <li>{{ $item }}</li>
+                        @endif
+                    @endforeach
+                </ol>
+            @else
+                <p class="text-sm text-gray-500">
+                    Belum ada nama yang ditugaskan. Silakan edit pengajuan untuk menambahkan nama.
+                </p>
+            @endif
         </div>
+        <!-- === Selesai: Nama-nama yang Ditugaskan === -->
+
 
         {{-- Opsi Danger / Hapus --}}
         <div class="bg-white rounded-xl border border-red-200/60 shadow-sm p-5">

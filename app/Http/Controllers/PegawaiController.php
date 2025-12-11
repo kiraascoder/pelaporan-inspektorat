@@ -94,7 +94,7 @@ class PegawaiController extends Controller
             'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
-            'semuaTim'                   => TimInvestigasi::count(),            
+            'semuaTim'                   => TimInvestigasi::count(),
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {
@@ -160,7 +160,7 @@ class PegawaiController extends Controller
             $tim = TimInvestigasi::with([
                 'ketuaTim',
                 'anggotaAktif',
-                'laporanPengaduan',                
+                'laporanPengaduan',
             ])->findOrFail($tim_id);
 
             return view('pegawai.detail.tim', compact('tim'));
@@ -267,7 +267,7 @@ class PegawaiController extends Controller
         $user = auth()->user();
 
         // daftar laporan tugas milik user (biarkan seperti sebelumnya)
-        $laporanList = $user->laporanTugas()            
+        $laporanList = $user->laporanTugas()
             ->latest()
             ->paginate(10);
 

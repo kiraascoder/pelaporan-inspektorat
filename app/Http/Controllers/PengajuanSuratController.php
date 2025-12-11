@@ -14,16 +14,20 @@ class PengajuanSuratController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'laporan_id'        => 'required|exists:laporan_pengaduan,laporan_id',
-            'penandatangan_id'  => 'required|exists:users,user_id', // kepala inspektorat
-            'nama_ditugaskan'   => 'nullable|array',
-            'nama_ditugaskan.*' => 'string|max:255',
-            'deskripsi_umum'    => 'nullable|string',
+            'laporan_id'                      => 'required|exists:laporan_pengaduan,laporan_id',
+            'penandatangan_id'                => 'required|exists:users,user_id',
+            'nama_ditugaskan'                 => 'nullable|array',
+            'nama_ditugaskan.*.nama'          => 'required|string|max:255',
+            'nama_ditugaskan.*.jabatan'       => 'nullable|string|max:255',
+            'deskripsi_umum'                  => 'nullable|string',
         ]);
 
-        // status default "Pending"
+        
         $validated['status'] = PengajuanSuratTugas::STATUS_PENDING;
-
+        
+        if (empty($validated['nama_ditugaskan'])) {
+            $validated['nama_ditugaskan'] = [];
+        }
         $pengajuan = PengajuanSuratTugas::create($validated);
 
         return redirect()

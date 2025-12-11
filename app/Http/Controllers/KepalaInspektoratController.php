@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
+use App\Models\LaporanTugas;
 use App\Models\PengajuanSuratTugas;
-use App\Models\SuratTugas;
+
 use App\Models\TimInvestigasi;
 use App\Models\User;
 use Exception;
@@ -15,8 +16,23 @@ class KepalaInspektoratController extends Controller
     public function dashboard()
     {
         $user = auth()->user();
-        return view('kepala-inspektorat.dashboard');
+
+        $stats = [
+            'laporan_pending'      => LaporanPengaduan::where('status', 'Pending')->count(),
+            'tim_aktif'            => TimInvestigasi::where('status_tim', 'Aktif')->count(),
+            'tim_dipimpin'         => TimInvestigasi::where('ketua_tim_id', $user->user_id)->count(),
+            'surat_tugas_aktif'    => PengajuanSuratTugas::where('status', 'Selesai')->count(),
+            'laporan_tugas'        => LaporanTugas::where('status_laporan', 'Submitted')->count(),
+        ];
+        $timBertugas = $user->timInvestigasiDiikuti()
+            ->with(['laporanPengaduan', 'anggotaAktif'])
+            ->orderBy('updated_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('kepala-inspektorat.dashboard', compact('stats', 'timBertugas'));
     }
+
     public function showLaporan(LaporanPengaduan $laporan)
     {
         $laporan->load(['user', 'timInvestigasi.anggotaAktif']);
@@ -83,6 +99,13 @@ class KepalaInspektoratController extends Controller
             ->get();
 
         $tim = TimInvestigasi::aktif()->first();
+        $jabatanList = [
+            'Penanggung Jawab',
+            'Wakil Penanggung Jawab',
+            'Pengendali Teknis',
+            'Ketua Tim',
+            'Anggota Tim',
+        ];
 
 
         $userList = User::select('user_id', 'nama_lengkap', 'jabatan', 'role')
@@ -100,7 +123,8 @@ class KepalaInspektoratController extends Controller
             'tim' => $tim,
             'userList' => $userList,
             'laporanList' => $laporanList,
-            'suratList' => $suratList
+            'suratList' => $suratList,
+            'jabatanList' => $jabatanList
         ]);
     }
 
@@ -161,7 +185,7 @@ class KepalaInspektoratController extends Controller
             'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
-            'semuaTim'                   => TimInvestigasi::count(),            
+            'semuaTim'                   => TimInvestigasi::count(),
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {

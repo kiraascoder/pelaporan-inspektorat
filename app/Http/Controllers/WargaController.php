@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -232,5 +233,17 @@ class WargaController extends Controller
         $laporan = LaporanPengaduan::find($id);
         $laporan->delete();
         return redirect()->route('warga.laporan')->with('success', 'Laporan berhasil dihapus.');
+    }
+    public function downloadFormat()
+    {
+        // Jika view membutuhkan data, kirimkan di sini
+        $html = view('pdf.format-pengaduan')->render();
+
+        // load view menjadi PDF
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('F4', 'portrait');
+
+        // kembalikan sebagai file download
+        return $pdf->download('Formulir_Pengaduan.pdf');
     }
 }

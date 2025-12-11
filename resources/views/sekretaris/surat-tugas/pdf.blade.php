@@ -175,23 +175,73 @@
             <td class="kolom-titik">:</td>
             <td>
                 @php
-                    $namaDitugaskan = $pengajuan->nama_ditugaskan ?? [];
+                    // Ambil raw value dan normalisasi ke array
+                    $namaDitugaskanRaw = $pengajuan->nama_ditugaskan ?? [];
+                    if (is_string($namaDitugaskanRaw)) {
+                        // bila disimpan sebagai JSON string di DB
+                        $decoded = json_decode($namaDitugaskanRaw, true);
+                        $namaDitugaskan = is_array($decoded) ? $decoded : [$namaDitugaskanRaw];
+                    } elseif (is_null($namaDitugaskanRaw)) {
+                        $namaDitugaskan = [];
+                    } else {
+                        $namaDitugaskan = is_array($namaDitugaskanRaw) ? $namaDitugaskanRaw : [$namaDitugaskanRaw];
+                    }
+
+                    // Pemetaan role per index (jika Anda ingin mapping posisi tertentu)
                     $roleMap = [
-                        0 => 'Penanggung jawab',
-                        1 => 'Wakil Penanggung jawab',
+                        0 => 'Penanggung Jawab',
+                        1 => 'Wakil Penanggung Jawab',
                         2 => 'Pengendali Teknis',
                         3 => 'Ketua Tim',
+                        // sisanya default 'Anggota Tim'
                     ];
+
+                    // Helper untuk ambil nama dari berbagai format item
+                    $getNama = function ($item) {
+                        if (is_array($item)) {
+                            // struktur baru: ['nama' => '...', 'jabatan' => '...'] atau numeric indexed
+                            if (!empty($item['nama'])) {
+                                return $item['nama'];
+                            }
+                            // fallback ke index 0
+                            return $item[0] ?? '[Tidak Diketahui]';
+                        } elseif (is_object($item)) {
+                            // jika objek (stdClass), coba property nama
+                            return $item->nama ?? (property_exists($item, 0) ? $item->{0} : '[Tidak Diketahui]');
+                        } else {
+                            // string
+                            return (string) $item;
+                        }
+                    };
+
+                    // Helper untuk ambil jabatan dari item (opsional)
+                    $getJabatan = function ($item) {
+                        if (is_array($item) && !empty($item['jabatan'])) {
+                            return $item['jabatan'];
+                        }
+                        if (is_object($item) && !empty($item->jabatan)) {
+                            return $item->jabatan;
+                        }
+                        return null;
+                    };
                 @endphp
 
                 @if (is_array($namaDitugaskan) && count($namaDitugaskan))
                     <table class="simple">
-                        @foreach ($namaDitugaskan as $i => $nama)
+                        @foreach ($namaDitugaskan as $i => $item)
+                            @php
+                                $displayName = $getNama($item);
+                                $jabatanItem = $getJabatan($item);
+                                $roleLabel = $roleMap[$i] ?? 'Anggota Tim';
+                                // escape text untuk keamanan pada PDF generation
+                                $displayNameEsc = e($displayName);
+                                $roleLabelEsc = e($jabatanItem ?? $roleLabel);
+                            @endphp
                             <tr>
                                 <td style="width: 18px;">{{ $i + 1 }}.</td>
-                                <td>{{ $nama }}</td>
+                                <td>{!! $displayNameEsc !!}</td>
                                 <td style="width: 190px; text-align:right; font-size:10px;">
-                                    {{ $roleMap[$i] ?? 'Anggota Tim' }}
+                                    {!! $roleLabelEsc !!}
                                 </td>
                             </tr>
                         @endforeach
@@ -241,15 +291,21 @@
             <td style="width:50%; text-align:left;">
                 @php
                     $tgl = \Carbon\Carbon::parse($pengajuan->created_at ?? now())->translatedFormat('d F Y');
+                    $penandatanganNama = $pengajuan->penandatangan->nama_lengkap ?? 'Drs. MUSTARI KADIR, M.Si.';
+                    // Pangkat field pada model mungkin berbeda; jika Anda punya 'pangkat' gunakan itu.
+                    $penandatanganPangkat =
+                        $pengajuan->penandatangan->pangkat ??
+                        ($pengajuan->penandatangan->jabatan ?? 'Pembina Utama Muda');
+                    $penandatanganNip = $pengajuan->penandatangan->nip ?? '19680119 199112 1 002';
                 @endphp
                 Dikeluarkan di Pangkajene Sidenreng<br>
                 Pada Tanggal {{ $tgl }}<br><br>
                 INSPEKTUR DAERAH<br>
                 KABUPATEN SIDENRENG RAPPANG<br><br><br><br>
 
-                <u>{{ $pengajuan->penandatangan->nama_lengkap ?? 'Drs. MUSTARI KADIR, M.Si.' }}</u><br>
-                Pangkat : {{ $pengajuan->penandatangan->jabatan ?? 'Pembina Utama Muda' }}<br>
-                Nip : {{ $pengajuan->penandatangan->nip ?? '19680119 199112 1 002' }}
+                <u>{{ e($penandatanganNama) }}</u><br>
+                Pangkat : {{ e($penandatanganPangkat) }}<br>
+                Nip : {{ e($penandatanganNip) }}
             </td>
         </tr>
     </table>

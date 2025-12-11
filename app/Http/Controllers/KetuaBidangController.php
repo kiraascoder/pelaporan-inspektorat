@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AnggotaTim;
 use App\Models\LaporanPengaduan;
+use App\Models\PengajuanSuratTugas;
 use App\Models\TimInvestigasi;
 use App\Models\SuratTugas;
 use App\Models\LaporanTugas;
@@ -14,6 +15,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -21,14 +23,27 @@ class KetuaBidangController extends Controller
 {
     public function dashboard()
     {
-        $user = auth()->user();        
+        $user = auth()->user();
+        $stats = [
+            'laporan_pending' => LaporanPengaduan::where('status', 'Pending')->count(),
+            'tim_aktif' => $user->timInvestigasiDiikuti()->aktif()->count(),
+            'surat_tugas_aktif' => PengajuanSuratTugas::where('status', 'Selesai')->count(),
+            'laporan_tugas' => LaporanTugas::where('status_laporan', 'Submitted')->count(),
+        ];
         $timDipimpin = $user->timInvestigasiDipimpin()
             ->with(['laporanPengaduan', 'anggotaAktif'])
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('ketua_bidang.dashboard', compact( 'timDipimpin'));
+        $timBertugas = $user->timInvestigasiDiikuti()
+            ->with(['laporanPengaduan', 'anggotaAktif'])
+            ->orderBy('updated_at', 'desc')
+            ->take(5)
+            ->get();
+
+
+        return view('ketua_bidang.dashboard', compact('timDipimpin', 'stats', 'timBertugas'));
     }
 
     public function laporan(Request $request)
@@ -38,7 +53,7 @@ class KetuaBidangController extends Controller
             'laporan_diterima'           => LaporanPengaduan::where('status', 'Diterima')->count(),
             'laporan_dalam_investigasi'  => LaporanPengaduan::where('status', 'Dalam_Investigasi')->count(),
             'laporan_selesai'            => LaporanPengaduan::where('status', 'Selesai')->count(),
-            'semuaTim'                   => TimInvestigasi::count(),            
+            'semuaTim'                   => TimInvestigasi::count(),
         ];
         $query = LaporanPengaduan::with('user')->orderByDesc('created_at');
         if ($request->filled('status')) {
@@ -316,7 +331,7 @@ class KetuaBidangController extends Controller
             $tim = TimInvestigasi::with([
                 'ketuaTim',
                 'anggotaAktif',
-                'laporanPengaduan',                
+                'laporanPengaduan',
             ])->findOrFail($tim_id);
 
             return view('ketua_bidang.detail.tim', compact('tim'));
@@ -324,7 +339,7 @@ class KetuaBidangController extends Controller
             return back()->with('error', 'Tim tidak ditemukan');
         }
     }
-    
+
 
     public function showTim(TimInvestigasi $tim)
     {
@@ -521,6 +536,76 @@ class KetuaBidangController extends Controller
         ])->setPaper('A4', 'portrait');
 
         $filename = 'Surat_Tugas_' . preg_replace('/[^A-Za-z0-9\-]/', '_', $suratTugas->nomor_surat) . '.pdf';
+        return $pdf->download($filename);
+    }
+    public function suratTugas()
+    {
+
+        $suratList = PengajuanSuratTugas::with(['laporan', 'penandatangan'])
+            ->latest()
+            ->get();
+
+        $tim = TimInvestigasi::aktif()->first();
+        $jabatanList = [
+            'Penanggung Jawab',
+            'Wakil Penanggung Jawab',
+            'Pengendali Teknis',
+            'Ketua Tim',
+            'Anggota Tim',
+        ];
+
+
+        $userList = User::select('user_id', 'nama_lengkap', 'jabatan', 'role')
+            ->whereIn('role', ['Ketua_Bidang_Investigasi', 'Sekretaris', 'Kepala_Inspektorat'])
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+
+        $laporanList = LaporanPengaduan::select('laporan_id', 'permasalahan', 'status', 'created_at')
+            ->where('status', '!=', 'Ditolak')
+            ->orderByDesc('created_at')
+            ->get();
+
+
+        return view('ketua_bidang.surat', [
+            'tim' => $tim,
+            'userList' => $userList,
+            'laporanList' => $laporanList,
+            'suratList' => $suratList,
+            'jabatanList' => $jabatanList
+        ]);
+    }
+    public function showSurat(PengajuanSuratTugas $pengajuanSurat)
+    {
+        $pengajuanSurat->load(['laporan', 'penandatangan']);
+
+        return view('ketua_bidang.detail.surat', compact('pengajuanSurat'));
+    }
+    public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
+    {
+        $pengajuanSurat->load(['laporan', 'penandatangan']);
+
+        if ($pengajuanSurat->status !== 'Selesai') {
+            return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');
+        }
+
+        // 1. RENDER VIEW JADI HTML DULU
+        $html = view('sekretaris.surat-tugas.pdf', [
+            'pengajuan' => $pengajuanSurat,
+        ])->render();
+
+
+        // 3. Kalau HTML normal, baru generate PDF
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
+            'defaultFont'            => 'DejaVu Sans',
+            'enable_font_subsetting' => false,
+            'isHtml5ParserEnabled'   => true,
+            'isRemoteEnabled'        => true,
+        ])
+            ->loadHTML($html)
+            ->setPaper('A4', 'portrait');
+
+        $filename = 'Surat_Tugas_' . ($pengajuanSurat->nomor_surat ?? $pengajuanSurat->pengajuan_surat_id) . '.pdf';
+
         return $pdf->download($filename);
     }
 }

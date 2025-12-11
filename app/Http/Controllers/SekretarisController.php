@@ -314,7 +314,13 @@ class SekretarisController extends Controller
     public function destroy(PengajuanSuratTugas $pengajuanSurat)
     {
         $pengajuanSurat->delete();
-
+        $jabatanList = [
+            'Penanggung Jawab',
+            'Wakil Penanggung Jawab',
+            'Pengendali Teknis',
+            'Ketua Tim',
+            'Anggota Tim',
+        ];
         return redirect()
             ->route('kepala.surat_tugas')
             ->with('success', 'Pengajuan surat tugas berhasil dihapus.');
@@ -326,6 +332,13 @@ class SekretarisController extends Controller
             ->latest()
             ->get();
 
+        $jabatanList = [
+            'Penanggung Jawab',
+            'Wakil Penanggung Jawab',
+            'Pengendali Teknis',
+            'Ketua Tim',
+            'Anggota Tim',
+        ];
 
         $laporanList = LaporanPengaduan::latest()->get();
 
@@ -338,6 +351,7 @@ class SekretarisController extends Controller
         return view('sekretaris.surat', compact(
             'suratList',
             'laporanList',
+            'jabatanList',
             'userList'
         ));
     }

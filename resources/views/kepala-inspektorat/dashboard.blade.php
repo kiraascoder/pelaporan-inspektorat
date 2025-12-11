@@ -10,11 +10,6 @@
                 <div>
                     <h2 class="text-2xl font-bold mb-2">Dashboard Kepala Inspektorat</h2>
                     <p class="text-primary-100">Koordinasi tim investigasi dan pengawasan kualitas penyelidikan.</p>
-                    <div class="mt-3 flex items-center space-x-4 text-sm text-primary-200">
-                        <span>{{ $stats['tim_aktif'] ?? '-' }} Tim Aktif</span>
-                        <span>•</span>
-                        <span>{{ $stats['laporan_pending'] ?? '-' }} Laporan Menunggu Review</span>
-                    </div>
                 </div>
                 <div class="hidden md:block">
                     <div class="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center">
@@ -94,9 +89,9 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-600">Skor Kinerja</p>
-                        <p class="text-2xl font-semibold text-gray-900">94%</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 5% dari bulan lalu</p>
+                        <p class="text-sm font-medium text-gray-600">Laporan Tugas Pegawai</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ $stats['laporan_tugas'] }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Laporan Tugas Pegawai Submitted</p>
                     </div>
                     <div class="p-2 bg-blue-100 rounded-lg">
                         <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -115,79 +110,38 @@
 
             <!-- Recent Decisions -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Keputusan Terbaru</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Tim yang Bertugas</h3>
+
                 <div class="space-y-4">
-                    <div class="flex items-start border-l-4 border-green-400 pl-4">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">Laporan #LP-001 Disetujui</p>
-                            <p class="text-xs text-gray-500">Tim Alpha berhasil menyelesaikan investigasi korupsi</p>
-                            <p class="text-xs text-gray-400 mt-1">2 jam lalu</p>
-                        </div>
-                    </div>
+                    @forelse ($timBertugas as $tim)
+                        <div
+                            class="flex items-start border-l-4 
+                @if ($tim->status_tim === 'Aktif') border-green-400
+                @elseif($tim->status_tim === 'Dibentuk') border-blue-400
+                @else border-yellow-400 @endif pl-4">
 
-                    <div class="flex items-start border-l-4 border-blue-400 pl-4">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">Tim Beta Dibentuk</p>
-                            <p class="text-xs text-gray-500">Untuk menangani kasus pelayanan publik Dinas XYZ</p>
-                            <p class="text-xs text-gray-400 mt-1">5 jam lalu</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start border-l-4 border-yellow-400 pl-4">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">Surat Tugas ST-003 Diterbitkan</p>
-                            <p class="text-xs text-gray-500">Investigasi dugaan mark-up anggaran</p>
-                            <p class="text-xs text-gray-400 mt-1">1 hari lalu</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Teams Overview -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-900">Tim yang Bertugas</h3>
-                    <a href="{{ route('ketua_bidang.tim') }}"
-                        class="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                        Lihat Semua
-                    </a>
-                </div>
-            </div>
-            <div class="p-6">
-                @if (isset($timDipimpin) && $timDipimpin->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach ($timDipimpin as $tim)
-                            <div
-                                class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-sm font-medium text-gray-900">{{ $tim->nama_tim ?? '-' }}</h4>
-                                    <x-status-badge :status="$tim->status_tim ?? ''" />
-                                </div>
-                                <p class="text-xs text-gray-600 mb-3">
-                                    {{ Str::limit(optional($tim->laporanPengaduan)->judul_laporan ?? '-', 60) }}
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $tim->nama_tim ?? 'Tim ' . $tim->tim_id }}
+                                    ({{ $tim->status_tim }})
                                 </p>
-                                <div class="flex items-center justify-between text-xs text-gray-500">
-                                    <span>{{ optional($tim->anggotaAktif)->count() ?? 0 }} anggota</span>
-                                    <a href="{{ route('ketua_bidang.tim.show', $tim) }}"
-                                        class="text-primary-600 hover:text-primary-700 font-medium">
-                                        Detail →
-                                    </a>
-                                </div>
+
+                                <p class="text-xs text-gray-500">
+                                    {{ $tim->laporanPengaduan->permasalahan ?? 'Tanpa judul laporan' }}
+                                </p>
+
+                                <p class="text-xs text-gray-400 mt-1">
+                                    {{ $tim->updated_at->diffForHumans() }}
+                                </p>
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <x-empty-state title="Belum ada tim">
-                        description="Mulai dengan mereview laporan masuk dan bentuk tim investigasi." :actionHref="">
-                        <x-slot name="icon">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 2 2 0z" />
-                        </x-slot>
-                    </x-empty-state>
-                @endif
+                        </div>
+
+                    @empty
+                        <p class="text-sm text-gray-500">Belum ada tim yang bertugas.</p>
+                    @endforelse
+                </div>
             </div>
+
         </div>
     </div>
 

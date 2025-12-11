@@ -213,13 +213,28 @@
                     <div class="px-6 py-4 space-y-5">
 
                         <!-- HEADER FORM -->
-                        <div class="text-center space-y-1">
-                            <p class="text-xs tracking-wide">LAMPIRAN I</p>
-                            <p class="text-xs">PERATURAN BUPATI SIDENRENG RAPPANG NOMOR 19 TAHUN 2024</p>
-                            <p class="text-xs">TENTANG</p>
-                            <p class="text-xs font-semibold uppercase">
-                                PEDOMAN PENANGANAN PENGADUAN MASYARAKAT DI LINGKUNGAN INSPEKTORAT DAERAH
-                            </p>
+                        <!-- di bagian header modal, misalnya di dalam <div class="text-center space-y-1"> -->
+                        <div class="flex items-center justify-between">
+                            <div class="text-center space-y-1">
+                                <p class="text-xs tracking-wide">LAMPIRAN I</p>
+                                <p class="text-xs">PERATURAN BUPATI SIDENRENG RAPPANG NOMOR 19 TAHUN 2024</p>
+                                <p class="text-xs">TENTANG</p>
+                                <p class="text-xs font-semibold uppercase">
+                                    PEDOMAN PENANGANAN PENGADUAN MASYARAKAT DI LINGKUNGAN INSPEKTORAT DAERAH
+                                </p>
+                            </div>
+
+                            <!-- Tombol Download PDF -->
+                            <div class="ml-4">
+                                <a href="{{ route('format-pengaduan.download') }}" target="_blank"
+                                    class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 3v12m0 0l-4-4m4 4l4-4M21 21H3" />
+                                    </svg>
+                                    Download Format PDF
+                                </a>
+                            </div>
                         </div>
 
                         <h4 class="text-sm font-semibold">FORMAT FORMULIR PENGADUAN</h4>
@@ -361,6 +376,30 @@
 
 
     <script>
+        document.getElementById('downloadFormatBtn').addEventListener('click', function() {
+            const url = this.dataset.url;
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.blob())
+                .then(blob => {
+                    const link = document.createElement('a');
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    link.href = blobUrl;
+                    link.download = 'Formulir_Pengaduan.pdf';
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    window.URL.revokeObjectURL(blobUrl);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Gagal mengunduh PDF.');
+                });
+        });
+
         function openModal() {
             document.getElementById('laporanModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');

@@ -55,9 +55,9 @@
                         @foreach ($laporanTerbaru as $laporan)
                             <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg flex justify-between items-start">
                                 <div class="flex-1">
-                                    <h4 class="text-sm font-medium text-gray-900">{{ $laporan->judul_laporan }}</h4>
-                                    <p class="text-xs text-gray-500">{{ $laporan->created_at->format('d M Y H:i') }}</p>
-                                    <p class="text-xs text-gray-600 mt-1">{{ Str::limit($laporan->isi_laporan, 100) }}</p>
+                                    <h4 class="text-sm font-medium text-gray-900">{{ $laporan->no_pengaduan }}</h4>
+                                    <p class="text-xs text-gray-500">{{ $laporan->created_at->format('d M Y') }}</p>
+                                    <p class="text-xs text-gray-600 mt-1">{{ Str::limit($laporan->terlapor_nama, 100) }}</p>
                                 </div>
                                 <div class="ml-4">
                                     <span

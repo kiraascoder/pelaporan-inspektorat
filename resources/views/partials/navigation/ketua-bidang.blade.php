@@ -40,8 +40,8 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('ketua_bidang.review') }}"
-            class="flex items-center px-4 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('ketua_bidang.review') ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
+        <a href="{{ route('ketua_bidang.surat') }}"
+            class="flex items-center px-4 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('ketua_bidang.surat') ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />

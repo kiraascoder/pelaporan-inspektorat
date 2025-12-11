@@ -11,7 +11,86 @@
                     Daftar laporan</a>
             </div>
 
-            {{-- Status --}}
+            {{-- =========================
+                 STATUS & KETERANGAN ADMIN (UI saja, tanpa action)
+                 ========================= --}}
+            <div class="mt-3 mb-4 border border-gray-100 rounded-md p-4 bg-gray-50">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">Ubah Status & Keterangan Admin</h3>
+
+                <div class="flex flex-col md:flex-row md:items-center gap-3">
+                    <div class="flex items-center gap-3">
+                        <label for="statusSelect" class="text-xs text-gray-500">Status</label>
+                        <select id="statusSelect" class="text-sm rounded-md border-gray-300 px-3 py-2"
+                            data-laporan-id="{{ $laporan->laporan_id ?? ($laporan->id ?? '') }}">
+                            <option value="Pending" {{ ($laporan->status ?? '') == 'Pending' ? 'selected' : '' }}>Pending
+                            </option>
+                            <option value="Diterima" {{ ($laporan->status ?? '') == 'Diterima' ? 'selected' : '' }}>
+                                Diterima</option>
+                            <option value="Ditolak" {{ ($laporan->status ?? '') == 'Ditolak' ? 'selected' : '' }}>
+                                Ditolak</option>
+                            <option value="Dalam_Investigasi"
+                                {{ ($laporan->status ?? '') == 'Dalam_Investigasi' ? 'selected' : '' }}>Dalam
+                                Investigasi</option>
+                            <option value="Selesai" {{ ($laporan->status ?? '') == 'Selesai' ? 'selected' : '' }}>
+                                Selesai</option>
+                        </select>
+                    </div>
+
+                    {{-- Tombol Update (BELUM ADA ACTION) --}}
+                    <div class="flex items-center gap-2">
+                        <button id="btnUpdateStatus" type="button"
+                            class="px-3 py-1.5 rounded-md bg-primary-600 text-white text-sm hover:bg-primary-700"
+                            title="Tombol ini belum terhubung ke backend">
+                            Update Status
+                        </button>
+
+                        <button id="btnPreview" type="button"
+                            class="px-3 py-1.5 rounded-md border border-gray-300 text-sm hover:bg-gray-100">
+                            Lihat Preview
+                        </button>
+
+                        <p id="statusHint" class="text-xs text-gray-400 ml-2">* Tombol belum aktif — hubungkan action di
+                            controller/JS.</p>
+                    </div>
+                </div>
+
+                {{-- Keterangan Admin (textarea berubah sesuai pilihan status) --}}
+                <div class="mt-4">
+                    <label for="keteranganAdmin" class="text-sm font-medium text-gray-700">Keterangan Admin</label>
+                    <p class="text-xs text-gray-500 mb-2">
+                        Masukkan keterangan yang akan disimpan ketika status diubah. Placeholder berubah otomatis
+                        berdasarkan status terpilih.
+                    </p>
+
+                    <textarea id="keteranganAdmin" rows="5"
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm resize-y"
+                        placeholder="Pilih status terlebih dahulu...">{{ old('keterangan_admin', $laporan->keterangan_admin ?? '') }}</textarea>
+
+                    <div class="flex items-center gap-2 mt-2">
+                        <button id="fillTemplateDiterima" type="button"
+                            class="px-2 py-1 rounded-md text-sm border border-green-300 hover:bg-green-50">
+                            Isi template (Diterima)
+                        </button>
+                        <button id="fillTemplateDitolak" type="button"
+                            class="px-2 py-1 rounded-md text-sm border border-red-300 hover:bg-red-50">
+                            Isi template (Ditolak)
+                        </button>
+
+                        <span class="text-xs text-gray-500 ml-3">Contoh template cepat untuk percepatan input.</span>
+                    </div>
+                </div>
+
+                {{-- Preview kecil --}}
+                <div id="keteranganPreview" class="mt-4 hidden">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-1">Preview Keterangan</h4>
+                    <div class="border border-dashed border-gray-200 rounded-md p-3 text-sm text-gray-800 whitespace-pre-line"
+                        id="keteranganPreviewContent"></div>
+                </div>
+            </div>
+
+            {{-- =========================
+                 Status badge (tetap menampilkan status sekarang)
+                 ========================= --}}
             <div class="mb-4">
                 @php
                     $statusColors = [
@@ -23,12 +102,14 @@
                     ];
                     $statusColor = $statusColors[$laporan->status] ?? 'bg-gray-100 text-gray-800';
                 @endphp
-                <span class="inline-block px-3 py-1 rounded-full text-sm {{ $statusColor }}">
+                <span id="currentStatusBadge" class="inline-block px-3 py-1 rounded-full text-sm {{ $statusColor }}">
                     {{ str_replace('_', ' ', $laporan->status) }}
                 </span>
             </div>
 
-            {{-- Info ringkas --}}
+            {{-- =========================
+                 Info ringkas
+                 ========================= --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Tanggal Pengaduan</h3>
@@ -118,7 +199,7 @@
             {{-- Keterangan Admin (opsional) --}}
             @if (!empty($laporan->keterangan_admin))
                 <div class="mt-6">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Keterangan Admin</h3>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Keterangan Admin (tersimpan)</h3>
                     <p class="text-gray-900 whitespace-pre-line text-sm">{{ $laporan->keterangan_admin }}</p>
                 </div>
             @endif
@@ -129,4 +210,86 @@
             </div>
         </div>
     </div>
+
+    {{-- ======= Minimal JS (front-end only) untuk toggle placeholder & preview ======= --}}
+    @push('scripts')
+        <script>
+            (function() {
+                const statusSelect = document.getElementById('statusSelect');
+                const keterangan = document.getElementById('keteranganAdmin');
+                const previewBox = document.getElementById('keteranganPreview');
+                const previewContent = document.getElementById('keteranganPreviewContent');
+                const btnPreview = document.getElementById('btnPreview');
+                const fillDiterima = document.getElementById('fillTemplateDiterima');
+                const fillDitolak = document.getElementById('fillTemplateDitolak');
+                const currentBadge = document.getElementById('currentStatusBadge');
+
+                const templates = {
+                    'Diterima': 'Status: Diterima\n\nKeterangan: Pengaduan diterima. Tindakan selanjutnya akan dilakukan oleh tim terkait. Mohon menunggu pemberitahuan selanjutnya.',
+                    'Ditolak': 'Status: Ditolak\n\nKeterangan: Pengaduan ditolak karena tidak memenuhi ketentuan/berkas tidak lengkap. Silakan lengkapi berkas/penjelasan dan ajukan kembali jika perlu.'
+                };
+
+                function updatePlaceholder() {
+                    const s = statusSelect.value;
+                    if (s === 'Diterima') {
+                        keterangan.placeholder =
+                            'Tuliskan keterangan untuk status Diterima (alasan, tindak lanjut, PIC, dll).';
+                    } else if (s === 'Ditolak') {
+                        keterangan.placeholder = 'Tuliskan alasan penolakan secara singkat dan jelas.';
+                    } else if (s === 'Pending') {
+                        keterangan.placeholder = 'Opsional: catatan untuk pending (mis. perlu verifikasi berkas).';
+                    } else {
+                        keterangan.placeholder = 'Tambahkan catatan/komentar admin jika perlu.';
+                    }
+
+                    // update badge warna & teks preview kecil (UI-only)
+                    let colorClass = 'bg-gray-100 text-gray-800';
+                    if (s === 'Diterima') colorClass = 'bg-green-100 text-green-800';
+                    if (s === 'Ditolak') colorClass = 'bg-red-100 text-red-800';
+                    if (s === 'Pending') colorClass = 'bg-yellow-100 text-yellow-800';
+                    if (s === 'Dalam_Investigasi') colorClass = 'bg-blue-100 text-blue-800';
+                    if (s === 'Selesai') colorClass = 'bg-emerald-100 text-emerald-800';
+
+                    currentBadge.className = 'inline-block px-3 py-1 rounded-full text-sm ' + colorClass;
+                    currentBadge.textContent = s.replace('_', ' ');
+                }
+
+                statusSelect.addEventListener('change', updatePlaceholder);
+                // inisialisasi
+                updatePlaceholder();
+
+                btnPreview.addEventListener('click', function() {
+                    const txt = keterangan.value.trim();
+                    if (!txt) {
+                        previewContent.textContent =
+                            '(Belum ada teks keterangan — isi textarea untuk melihat preview)';
+                    } else {
+                        previewContent.textContent = txt;
+                    }
+                    previewBox.classList.remove('hidden');
+                    previewBox.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                });
+
+                fillDiterima.addEventListener('click', function() {
+                    keterangan.value = templates['Diterima'];
+                });
+                fillDitolak.addEventListener('click', function() {
+                    keterangan.value = templates['Ditolak'];
+                });
+
+                // tombol update status hanya UI (tidak ada action). Beri feedback kecil ketika diklik.
+                const btnUpdateStatus = document.getElementById('btnUpdateStatus');
+                btnUpdateStatus.addEventListener('click', function() {
+                    // Hanya notifikasi kecil — integrasikan sendiri ke controller/axios/fetch nanti.
+                    const s = statusSelect.value;
+                    const k = keterangan.value.trim();
+                    alert('UI: akan mengubah status ke "' + s + '".\n\nKeterangan:\n' + (k || '(kosong)') +
+                        '\n\n(Tombol belum terhubung ke backend)');
+                });
+            })();
+        </script>
+    @endpush
 @endsection

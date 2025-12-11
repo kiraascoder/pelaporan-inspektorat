@@ -64,11 +64,13 @@ Route::prefix('ketua-investigasi')->group(function () {
     Route::get('tim', [KetuaBidangController::class, 'tim'])->name('ketua_bidang.tim');
     Route::post('store-tim', [KetuaBidangController::class, 'storeTim'])->name('ketua_bidang.store-tim');
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');
-    Route::get('surat', [KetuaBidangController::class, 'surat'])->name('ketua_bidang.surat');
-    Route::get('surat-store', [KetuaBidangController::class, 'storeSuratTugas'])->name('ketua_bidang.surat.store');
+    Route::get('surat', [KetuaBidangController::class, 'suratTugas'])->name('ketua_bidang.surat');
     Route::get('review', [KetuaBidangController::class, 'review'])->name('ketua_bidang.review');
-    Route::get('/surat-tugas/{suratTugas}/download', [KetuaBidangController::class, 'downloadPdf'])
-        ->name('surat_tugas.download');
+    Route::get('/surat-tugas/{pengajuanSurat}/detail', [KetuaBidangController::class, 'showSurat'])->name('ketua-bidang.surat.show');
+    Route::get(
+        '/surat-tugas/{pengajuanSurat}/cetak-pdf',
+        [KetuaBidangController::class, 'generatePdf']
+    )->name('ketua-bidang-surat.cetak-pdf');
 });
 
 Route::prefix('pegawai')->group(function () {
@@ -120,6 +122,8 @@ Route::prefix('kepala-inspektorat')->group(function () {
     Route::delete('/surat-tugas/{pengajuanSurat}/destroy', [PengajuanSuratController::class, 'destroy'])->name('pengajuan-surat.destroy');
     // Route::get('/surat-tugas/{suratTugas}/store', [KepalaInspektoratController::class, 'downloadPdf']);
 });
+
+Route::get('format-surat', [WargaController::class, 'downloadFormat'])->name('format-pengaduan.download');
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 

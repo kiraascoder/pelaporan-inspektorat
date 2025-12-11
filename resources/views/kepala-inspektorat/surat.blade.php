@@ -38,7 +38,8 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @forelse($suratList ?? [] as $s)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-3 font-medium text-gray-900">{{ $s->nomor_surat ?? 'Belum Tersedia' }}</td>
+                                <td class="px-6 py-3 font-medium text-gray-900">{{ $s->nomor_surat ?? 'Belum Tersedia' }}
+                                </td>
                                 <td class="px-6 py-3">
                                     {{ $s->laporan->judul ?? ($s->laporan->permasalahan ?? '') }}
                                 </td>
@@ -57,7 +58,7 @@
                                 </td>
                                 <td class="px-6 py-3 text-right space-x-2">
                                     <a href="{{ route('pengajuan-surat.show', $s->pengajuan_surat_id) }}"
-                                        class="text-blue-600 hover:text-blue-800">Lihat</a>                                    
+                                        class="text-blue-600 hover:text-blue-800">Lihat</a>
                                 </td>
                             </tr>
                         @empty
@@ -88,7 +89,7 @@
                 {{-- SESUAI CONTROLLER: store() hanya butuh laporan_id, penandatangan_id, nama_ditugaskan[], deskripsi_umum --}}
                 <form action="{{ route('pengajuan-surat.store') }}" method="POST" class="px-6 py-5 space-y-5">
                     @csrf
-                    
+
                     {{-- Laporan & Penandatangan --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -122,12 +123,12 @@
                         </div>
                     </div>
 
-                    {{-- NAMA-NAMA YANG DITUGASKAN (JSON ARRAY OF STRINGS) --}}
+                    {{-- NAMA-NAMA YANG DITUGASKAN (JSON ARRAY OF OBJECTS) --}}
                     <div>
                         <div class="flex items-center justify-between">
                             <label class="block text-sm font-medium text-gray-700">
                                 Nama yang Ditugaskan
-                                <span class="text-xs text-gray-500">(setiap baris adalah 1 nama di surat)</span>
+                                <span class="text-xs text-gray-500">(setiap baris adalah 1 orang; pilih jabatan)</span>
                             </label>
                             <button type="button" id="btnAddNama"
                                 class="px-3 py-1.5 rounded border hover:bg-gray-50 text-sm">
@@ -138,11 +139,23 @@
                         <div id="namaWrap" class="mt-2 space-y-2">
                             {{-- Row pertama --}}
                             <div class="grid grid-cols-12 gap-2 nama-row">
-                                <div class="col-span-10">
-                                    <input type="text" name="nama_ditugaskan[]" class="w-full rounded-md border-gray-300"
+                                <div class="col-span-5">
+                                    <input type="text" name="nama_ditugaskan[0][nama]"
+                                        class="w-full rounded-md border-gray-300"
                                         placeholder="Contoh: Ahmad Zainuddin, S.STP."
-                                        value="{{ old('nama_ditugaskan.0') }}">
+                                        value="{{ old('nama_ditugaskan.0.nama') }}">
                                 </div>
+
+                                <div class="col-span-5">
+                                    <select name="nama_ditugaskan[0][jabatan]" class="w-full rounded-md border-gray-300">
+                                        <option value="">— Pilih Jabatan —</option>
+                                        @foreach ($jabatanList as $jab)
+                                            <option value="{{ $jab }}" @selected(old('nama_ditugaskan.0.jabatan') == $jab)>
+                                                {{ $jab }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
                                 <div class="col-span-2 flex items-center">
                                     <button type="button"
                                         class="btn-remove-nama w-full md:w-auto px-3 py-2 rounded border text-red-600 hover:bg-red-50">
@@ -153,17 +166,21 @@
                         </div>
 
                         <p class="text-xs text-gray-500 mt-1">
-                            Nama di sini akan disimpan sebagai array JSON dan bisa ditampilkan urut di surat tugas.
+                            Nama & jabatan akan disimpan sebagai JSON array of objects dan dapat ditampilkan urut di surat
+                            tugas.
                         </p>
                         @error('nama_ditugaskan')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
-                        @error('nama_ditugaskan.*')
+                        @error('nama_ditugaskan.*.nama')
+                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                        @enderror
+                        @error('nama_ditugaskan.*.jabatan')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Deskripsi Umum (jadi poin “Untuk” di surat; 1 baris = 1 poin) --}}
+                    {{-- Deskripsi Umum --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700">
                             Deskripsi Umum / “Untuk” (satu baris = satu poin)
@@ -177,8 +194,6 @@ Hasil pelaksanaan tugas dilaporkan kepada Bupati melalui Inspektur ...">{{ old('
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    {{-- Status tidak diminta di form, default = Pending di controller --}}
 
                     {{-- Tombol --}}
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
@@ -219,17 +234,41 @@ Hasil pelaksanaan tugas dilaporkan kepada Bupati melalui Inspektur ...">{{ old('
                 if (e.key === 'Escape') close();
             });
 
-            // Repeater Nama Ditugaskan
+            // Repeater Nama Ditugaskan (dengan jabatan)
             const wrap = document.getElementById('namaWrap');
             const btnAdd = document.getElementById('btnAddNama');
 
+            // get jabatanList dari server (rendered via blade)
+            const JB_OPTIONS = (() => {
+                try {
+                    return @json($jabatanList);
+                } catch (err) {
+                    return ['Inspektur', 'Auditor', 'Pengawas', 'Staf'];
+                }
+            })();
+
+            function optionsHtml() {
+                return JB_OPTIONS.map(o => `<option value="${o}">${o}</option>`).join('');
+            }
+
+            function nextIndex() {
+                return wrap.querySelectorAll('.nama-row').length;
+            }
+
             btnAdd?.addEventListener('click', () => {
+                const idx = nextIndex();
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-12 gap-2 nama-row';
                 row.innerHTML = `
-                    <div class="col-span-10">
-                        <input type="text" name="nama_ditugaskan[]" class="w-full rounded-md border-gray-300"
+                    <div class="col-span-5">
+                        <input type="text" name="nama_ditugaskan[${idx}][nama]" class="w-full rounded-md border-gray-300"
                             placeholder="Nama lengkap pegawai yang ditugaskan">
+                    </div>
+                    <div class="col-span-5">
+                        <select name="nama_ditugaskan[${idx}][jabatan]" class="w-full rounded-md border-gray-300">
+                            <option value="">— Pilih Jabatan —</option>
+                            ${optionsHtml()}
+                        </select>
                     </div>
                     <div class="col-span-2 flex items-center">
                         <button type="button"
@@ -241,12 +280,21 @@ Hasil pelaksanaan tugas dilaporkan kepada Bupati melalui Inspektur ...">{{ old('
                 wrap.appendChild(row);
             });
 
-            // Delegasi: hapus baris nama
+            // Delegasi: hapus baris nama + reindex
             wrap?.addEventListener('click', (e) => {
                 if (e.target.classList.contains('btn-remove-nama')) {
                     e.preventDefault();
                     const row = e.target.closest('.nama-row');
                     if (row && wrap.children.length > 1) row.remove();
+
+                    // Re-index names after remove so keys 0..n-1 berurutan
+                    const rows = wrap.querySelectorAll('.nama-row');
+                    rows.forEach((r, i) => {
+                        const inputNama = r.querySelector('input[type="text"]');
+                        const selectJab = r.querySelector('select');
+                        if (inputNama) inputNama.setAttribute('name', `nama_ditugaskan[${i}][nama]`);
+                        if (selectJab) selectJab.setAttribute('name', `nama_ditugaskan[${i}][jabatan]`);
+                    });
                 }
             });
         })();
