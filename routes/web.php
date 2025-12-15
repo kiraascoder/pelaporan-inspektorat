@@ -66,6 +66,7 @@ Route::prefix('ketua-investigasi')->group(function () {
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');
     Route::get('surat', [KetuaBidangController::class, 'suratTugas'])->name('ketua_bidang.surat');
     Route::get('review', [KetuaBidangController::class, 'review'])->name('ketua_bidang.review');
+    Route::put('/laporan/{laporan}/status', [KetuaBidangController::class, 'updateStatusLaporan'])->name('ketua.laporan.updateStatus');
     Route::get('/surat-tugas/{pengajuanSurat}/detail', [KetuaBidangController::class, 'showSurat'])->name('ketua-bidang.surat.show');
     Route::get(
         '/surat-tugas/{pengajuanSurat}/cetak-pdf',
@@ -82,7 +83,9 @@ Route::prefix('pegawai')->group(function () {
     Route::get('tim', [PegawaiController::class, 'tim'])->name('pegawai.tim');
     Route::get('laporan-tugas', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
     Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');
-    Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('pegawai.report.show');
+    // Route::get('laporan-tugas/{laporan}', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
+    // Route::get('laporan-tugas/{laporaniD}/detail', [PegawaiController::class, 'showTugas'])->name('pegawai.laporan_tugas');
+    Route::get('report-tugas/{laporan}/detail', [LaporanTugasController::class, 'showLaporan'])->name('pegawai.report.show');
     Route::put('/laporan/{laporan}/status', [LaporanPengaduanController::class, 'updateStatus'])->name('pegawai.laporan.updateStatus');
 });
 

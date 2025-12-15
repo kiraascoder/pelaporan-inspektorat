@@ -91,4 +91,12 @@ class LaporanPengaduan extends Model
     {
         return 'laporan_id';
     }
+    public function laporanTugas()
+    {
+        return $this->hasMany(
+            LaporanTugas::class,
+            'laporan_pengaduan_id',
+            'laporan_id'
+        );
+    }
 }

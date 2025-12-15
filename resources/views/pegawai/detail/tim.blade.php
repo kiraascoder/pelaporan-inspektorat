@@ -59,7 +59,6 @@
                 @endphp
 
                 @if ($isAndaKetua && !$isFinalStatus)
-                    
                     <div x-data="{ openUpdate: false }" class="relative">
                         <button type="button" @click="openUpdate = !openUpdate"
                             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
@@ -254,7 +253,9 @@
                                                 <span class="text-xs text-gray-500">(Anda)</span>
                                             @endif
                                         </p>
-                                        <p class="text-xs text-gray-500">Anggota</p>
+                                        <p class="text-xs text-gray-500">
+                                            {{ str_replace('_', ' ', $anggota->pivot->role_dalam_tim) }}
+                                        </p>
                                     </div>
                                 </div>
                             @endforeach

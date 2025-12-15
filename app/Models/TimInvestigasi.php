@@ -33,8 +33,11 @@ class TimInvestigasi extends Model
     {
         return $this->belongsToMany(User::class, 'anggota_tim', 'tim_id', 'pegawai_id')
             ->withPivot('role_dalam_tim', 'tanggal_bergabung', 'is_active')
+            ->wherePivot('is_active', true)
             ->withTimestamps();
-    }
+    }    
+
+
 
     // Get only active members
     public function anggotaAktif()
@@ -62,6 +65,9 @@ class TimInvestigasi extends Model
     {
         return $this->hasOne(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
     }
+
+
+
     public function ketua()
     {
         return $this->belongsTo(User::class, 'ketua_tim_id', 'user_id');
@@ -73,6 +79,7 @@ class TimInvestigasi extends Model
     {
         return $this->status_tim === 'Aktif';
     }
+
 
     public function getJumlahAnggotaAttribute()
     {

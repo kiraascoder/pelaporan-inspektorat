@@ -137,17 +137,17 @@ class LaporanTugasController extends Controller
             }
         }
     }
-    public function show($laporan)
-    {
-        $user = auth()->user();
+    public function showLaporan(LaporanPengaduan $laporan)
+    {        
+        $laporan->load('laporanTugas.pegawai');
+        $tim = TimInvestigasi::with('anggotaAktif')
+            ->where('laporan_id', $laporan->laporan_id)
+            ->first();
 
-
-        $laporan = LaporanTugas::with([            
-            'sekretaris'
-        ])
-            ->where('sekretaris_id', $user->user_id)
-            ->findOrFail($laporan);
-
-        return view('sekretaris.detail.report-tugas', compact('laporan'));
+        return view('pegawai.detail.laporan-tugas', [
+            'laporan'      => $laporan,
+            'laporanTugas' => $laporan->laporanTugas,
+            'tim'          => $tim,
+        ]);
     }
 }

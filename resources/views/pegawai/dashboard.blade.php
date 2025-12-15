@@ -43,7 +43,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-600">Tim Aktif</p>
+                            <p class="text-sm text-gray-600">Tim Saya</p>
                             <p class="text-2xl font-semibold text-gray-900">
                                 {{ $stats['tim_aktif'] ?? 0 }}
                             </p>
@@ -63,7 +63,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-600">Surat Tugas Aktif</p>
+                            <p class="text-sm text-gray-600">Laporan Masuk</p>
                             <p class="text-2xl font-semibold text-gray-900">
                                 {{ $stats['surat_tugas_aktif'] ?? 0 }}
                             </p>
@@ -90,7 +90,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm text-gray-600">Draft Laporan</p>
+                            <p class="text-sm text-gray-600">Dalam Investigasi</p>
                             <p class="text-2xl font-semibold text-gray-900">
                                 {{ $stats['laporan_tugas_draft'] ?? 0 }}
                             </p>

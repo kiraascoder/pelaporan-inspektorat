@@ -26,7 +26,7 @@ class KetuaBidangController extends Controller
         $user = auth()->user();
         $stats = [
             'laporan_pending' => LaporanPengaduan::where('status', 'Pending')->count(),
-            'tim_aktif' => $user->timInvestigasiDiikuti()->aktif()->count(),
+            'tim_aktif' => TimInvestigasi::where('status_tim', 'Aktif')->count(),
             'surat_tugas_aktif' => PengajuanSuratTugas::where('status', 'Selesai')->count(),
             'laporan_tugas' => LaporanTugas::where('status_laporan', 'Submitted')->count(),
         ];
@@ -36,15 +36,30 @@ class KetuaBidangController extends Controller
             ->limit(5)
             ->get();
 
-        $timBertugas = $user->timInvestigasiDiikuti()
-            ->with(['laporanPengaduan', 'anggotaAktif'])
-            ->orderBy('updated_at', 'desc')
-            ->take(5)
-            ->get();
+        $timBertugas = TimInvestigasi::with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])->latest()->limit(5)->get();
 
 
         return view('ketua_bidang.dashboard', compact('timDipimpin', 'stats', 'timBertugas'));
     }
+    public function updateStatusLaporan(Request $request, $laporan)
+    {
+        $request->validate([
+            'status' => 'required|string',
+            'keterangan_admin' => 'nullable|string',
+        ]);
+
+        $laporan = LaporanPengaduan::findOrFail($laporan);
+
+        $laporan->update([
+            'status' => $request->status,
+            'keterangan_admin' => $request->keterangan_admin,
+        ]);
+
+        return response()->json([
+            'message' => 'Status laporan berhasil diperbarui'
+        ]);
+    }
+
 
     public function laporan(Request $request)
     {

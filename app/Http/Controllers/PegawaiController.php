@@ -158,10 +158,10 @@ class PegawaiController extends Controller
     {
         try {
             $tim = TimInvestigasi::with([
-                'ketuaTim',
-                'anggotaAktif',
-                'laporanPengaduan',
+                'anggota',
+                'laporanPengaduan'
             ])->findOrFail($tim_id);
+
 
             return view('pegawai.detail.tim', compact('tim'));
         } catch (Exception $e) {
@@ -173,14 +173,19 @@ class PegawaiController extends Controller
     {
         try {
             $pegawaiId = Auth::user()->user_id;
-
-            // Ambil semua tim yang memiliki anggota aktif dengan pegawai_id = user login
             $timList = TimInvestigasi::whereHas('anggotaAktif', function ($query) use ($pegawaiId) {
                 $query->where('pegawai_id', $pegawaiId);
             })
                 ->with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])
                 ->latest()
                 ->get();
+            $dalamInvestigasi = TimInvestigasi::aktif()
+                ->whereHas('laporanPengaduan', function ($query) {
+                    $query->where('status_tim', 'Dalam Investigasi');
+                })->count();
+            $kasusSelesai = TimInvestigasi::whereHas('laporanPengaduan', function ($query) {
+                $query->where('status_tim', 'Selesai');
+            })->count();
 
             // Hitung total dan statistik hanya dari tim yang diikuti
             $totalTim = $timList->count();
@@ -211,8 +216,8 @@ class PegawaiController extends Controller
             return view('pegawai.tim', compact(
                 'totalTim',
                 'timAktif',
-                // 'dalamInvestigasi',
-                // 'kasusSelesai',
+                'dalamInvestigasi',
+                'kasusSelesai',
                 'timList',
                 'pegawaiList',
                 'laporanList'
@@ -261,6 +266,12 @@ class PegawaiController extends Controller
 
         return view('pegawai.surat_tugas.show', compact('surat'));
     }
+
+    public function showTugas(LaporanTugas $laporan)
+    {
+        return view('pegawai.detail.laporan-tugas', compact('laporan'));
+    }
+
 
     public function laporanTugas(Request $request, LaporanPengaduan $laporan)
     {

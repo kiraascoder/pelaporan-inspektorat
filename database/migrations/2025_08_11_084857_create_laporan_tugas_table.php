@@ -13,17 +13,36 @@ return new class extends Migration
     {
         Schema::create('laporan_tugas', function (Blueprint $table) {
             $table->id('laporan_tugas_id');
-            $table->foreignId('pegawai_id')->constrained('users', 'user_id')->onDelete('cascade');
+
+            $table->foreignId('laporan_pengaduan_id')
+                ->constrained('laporan_pengaduan', 'laporan_id')
+                ->onDelete('cascade');
+
+            $table->foreignId('pegawai_id')
+                ->constrained('users', 'user_id')
+                ->onDelete('cascade');
+
             $table->string('judul_laporan');
             $table->text('isi_laporan');
             $table->text('temuan')->nullable();
             $table->text('rekomendasi')->nullable();
             $table->json('bukti_pendukung')->nullable();
-            $table->enum('status_laporan', ['Draft', 'Submitted', 'Approved', 'Rejected'])->default('Draft');
+
+            $table->enum('status_laporan', ['Draft', 'Submitted', 'Approved', 'Rejected'])
+                ->default('Draft');
+
             $table->dateTime('tanggal_submit')->nullable();
             $table->timestamps();
-            $table->index(['status_laporan', 'tanggal_submit'], 'laporan_tugas_status_laporan_tanggal_submit_index');
-            $table->index(['pegawai_id'], 'laporan_tugas_surat_id_pegawai_id_index');
+
+            $table->index(
+                ['laporan_pengaduan_id', 'status_laporan'],
+                'laporan_tugas_pengaduan_status_index'
+            );
+
+            $table->index(
+                ['pegawai_id'],
+                'laporan_tugas_pegawai_index'
+            );
         });
     }
 

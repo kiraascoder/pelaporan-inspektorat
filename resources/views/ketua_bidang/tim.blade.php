@@ -25,7 +25,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Tim</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $totalTim }}</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 2 tim baru bulan ini <b>Statis</b></p>
+                        <p class="text-xs text-green-600 mt-1">Total semua tim</p>
                     </div>
                     <div class="p-2 bg-blue-100 rounded-lg">
                         <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,7 +42,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Tim Aktif</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $timAktif }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Sedang menangani kasus <b>Statis</b></p>
+                        <p class="text-xs text-gray-500 mt-1">Semua tim aktif</p>
                     </div>
                     <div class="p-2 bg-green-100 rounded-lg">
                         <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,7 +59,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Dalam Penanganan</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $dalamInvestigasi }}</p>
-                        <p class="text-xs text-orange-600 mt-1">↓ 3 hari dari target <b>Statis</b></p>
+                        <p class="text-xs text-orange-600 mt-1">Tim sedang dalam investigasi</p>
                     </div>
                     <div class="p-2 bg-orange-100 rounded-lg">
                         <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,7 +76,7 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600">Kasus Selesai</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $kasusSelesai }}</p>
-                        <p class="text-xs text-green-600 mt-1">↑ 12% dari bulan lalu <b>Statis</b></p>
+                        <p class="text-xs text-green-600 mt-1">Tim selesai investigasi</p>
                     </div>
                     <div class="p-2 bg-purple-100 rounded-lg">
                         <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

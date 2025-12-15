@@ -24,37 +24,22 @@
                             data-laporan-id="{{ $laporan->laporan_id ?? ($laporan->id ?? '') }}">
                             <option value="Pending" {{ ($laporan->status ?? '') == 'Pending' ? 'selected' : '' }}>Pending
                             </option>
-                            <option value="Diterima" {{ ($laporan->status ?? '') == 'Diterima' ? 'selected' : '' }}>
-                                Diterima</option>
-                            <option value="Ditolak" {{ ($laporan->status ?? '') == 'Ditolak' ? 'selected' : '' }}>
-                                Ditolak</option>
-                            <option value="Dalam_Investigasi"
-                                {{ ($laporan->status ?? '') == 'Dalam_Investigasi' ? 'selected' : '' }}>Dalam
-                                Investigasi</option>
-                            <option value="Selesai" {{ ($laporan->status ?? '') == 'Selesai' ? 'selected' : '' }}>
-                                Selesai</option>
+                            <option value="Diterima" {{ ($laporan->status ?? '') == 'Diterima' ? 'selected' : '' }}>Diterima
+                            </option>
+                            <option value="Ditolak" {{ ($laporan->status ?? '') == 'Ditolak' ? 'selected' : '' }}>Ditolak
+                            </option>                            
                         </select>
                     </div>
 
-                    {{-- Tombol Update (BELUM ADA ACTION) --}}
                     <div class="flex items-center gap-2">
                         <button id="btnUpdateStatus" type="button"
                             class="px-3 py-1.5 rounded-md bg-primary-600 text-white text-sm hover:bg-primary-700"
                             title="Tombol ini belum terhubung ke backend">
                             Update Status
                         </button>
-
-                        <button id="btnPreview" type="button"
-                            class="px-3 py-1.5 rounded-md border border-gray-300 text-sm hover:bg-gray-100">
-                            Lihat Preview
-                        </button>
-
-                        <p id="statusHint" class="text-xs text-gray-400 ml-2">* Tombol belum aktif — hubungkan action di
-                            controller/JS.</p>
                     </div>
                 </div>
 
-                {{-- Keterangan Admin (textarea berubah sesuai pilihan status) --}}
                 <div class="mt-4">
                     <label for="keteranganAdmin" class="text-sm font-medium text-gray-700">Keterangan Admin</label>
                     <p class="text-xs text-gray-500 mb-2">
@@ -80,7 +65,6 @@
                     </div>
                 </div>
 
-                {{-- Preview kecil --}}
                 <div id="keteranganPreview" class="mt-4 hidden">
                     <h4 class="text-sm font-semibold text-gray-700 mb-1">Preview Keterangan</h4>
                     <div class="border border-dashed border-gray-200 rounded-md p-3 text-sm text-gray-800 whitespace-pre-line"
@@ -89,7 +73,7 @@
             </div>
 
             {{-- =========================
-                 Status badge (tetap menampilkan status sekarang)
+                 Status badge
                  ========================= --}}
             <div class="mb-4">
                 @php
@@ -139,6 +123,7 @@
                                 class="text-gray-900">{{ $laporan->pelapor_telp ?? '-' }}</span></div>
                     </div>
                 </div>
+
                 <div class="border border-gray-200 rounded-lg">
                     <div class="bg-gray-50 px-4 py-2 text-sm font-semibold">DATA TERLAPOR</div>
                     <div class="p-4 space-y-2 text-sm">
@@ -168,7 +153,6 @@
                     </div>
                 @endif
 
-                {{-- Bukti pendukung (multiple) --}}
                 @php
                     $lampiran = $laporan->bukti_pendukung;
                     if (is_string($lampiran)) {
@@ -196,7 +180,6 @@
                 @endif
             </div>
 
-            {{-- Keterangan Admin (opsional) --}}
             @if (!empty($laporan->keterangan_admin))
                 <div class="mt-6">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Keterangan Admin (tersimpan)</h3>
@@ -204,14 +187,12 @@
                 </div>
             @endif
 
-            {{-- Created at --}}
             <div class="mt-6 text-xs text-gray-500">
                 Dibuat pada {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
             </div>
         </div>
     </div>
 
-    {{-- ======= Minimal JS (front-end only) untuk toggle placeholder & preview ======= --}}
     @push('scripts')
         <script>
             (function() {
@@ -219,10 +200,10 @@
                 const keterangan = document.getElementById('keteranganAdmin');
                 const previewBox = document.getElementById('keteranganPreview');
                 const previewContent = document.getElementById('keteranganPreviewContent');
-                const btnPreview = document.getElementById('btnPreview');
                 const fillDiterima = document.getElementById('fillTemplateDiterima');
                 const fillDitolak = document.getElementById('fillTemplateDitolak');
                 const currentBadge = document.getElementById('currentStatusBadge');
+                const btnUpdateStatus = document.getElementById('btnUpdateStatus');
 
                 const templates = {
                     'Diterima': 'Status: Diterima\n\nKeterangan: Pengaduan diterima. Tindakan selanjutnya akan dilakukan oleh tim terkait. Mohon menunggu pemberitahuan selanjutnya.',
@@ -231,6 +212,7 @@
 
                 function updatePlaceholder() {
                     const s = statusSelect.value;
+
                     if (s === 'Diterima') {
                         keterangan.placeholder =
                             'Tuliskan keterangan untuk status Diterima (alasan, tindak lanjut, PIC, dll).';
@@ -242,7 +224,6 @@
                         keterangan.placeholder = 'Tambahkan catatan/komentar admin jika perlu.';
                     }
 
-                    // update badge warna & teks preview kecil (UI-only)
                     let colorClass = 'bg-gray-100 text-gray-800';
                     if (s === 'Diterima') colorClass = 'bg-green-100 text-green-800';
                     if (s === 'Ditolak') colorClass = 'bg-red-100 text-red-800';
@@ -255,40 +236,37 @@
                 }
 
                 statusSelect.addEventListener('change', updatePlaceholder);
-                // inisialisasi
                 updatePlaceholder();
 
-                btnPreview.addEventListener('click', function() {
-                    const txt = keterangan.value.trim();
-                    if (!txt) {
-                        previewContent.textContent =
-                            '(Belum ada teks keterangan — isi textarea untuk melihat preview)';
-                    } else {
-                        previewContent.textContent = txt;
-                    }
-                    previewBox.classList.remove('hidden');
-                    previewBox.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'nearest'
-                    });
-                });
+                fillDiterima.onclick = () => keterangan.value = templates['Diterima'];
+                fillDitolak.onclick = () => keterangan.value = templates['Ditolak'];
 
-                fillDiterima.addEventListener('click', function() {
-                    keterangan.value = templates['Diterima'];
-                });
-                fillDitolak.addEventListener('click', function() {
-                    keterangan.value = templates['Ditolak'];
-                });
+                btnUpdateStatus.onclick = function() {
+                    const laporanId = statusSelect.dataset.laporanId;
+                    if (!confirm('Yakin mengubah status laporan?')) return;
 
-                // tombol update status hanya UI (tidak ada action). Beri feedback kecil ketika diklik.
-                const btnUpdateStatus = document.getElementById('btnUpdateStatus');
-                btnUpdateStatus.addEventListener('click', function() {
-                    // Hanya notifikasi kecil — integrasikan sendiri ke controller/axios/fetch nanti.
-                    const s = statusSelect.value;
-                    const k = keterangan.value.trim();
-                    alert('UI: akan mengubah status ke "' + s + '".\n\nKeterangan:\n' + (k || '(kosong)') +
-                        '\n\n(Tombol belum terhubung ke backend)');
-                });
+                    btnUpdateStatus.disabled = true;
+                    btnUpdateStatus.textContent = 'Menyimpan...';
+
+                    fetch(`/ketua-investigasi/laporan/${laporanId}/status`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                status: statusSelect.value,
+                                keterangan_admin: keterangan.value
+                            })
+                        })
+                        .then(() => location.reload())
+                        .catch(() => alert('Gagal menyimpan'))
+                        .finally(() => {
+                            btnUpdateStatus.disabled = false;
+                            btnUpdateStatus.textContent = 'Update Status';
+                        });
+                };
             })();
         </script>
     @endpush

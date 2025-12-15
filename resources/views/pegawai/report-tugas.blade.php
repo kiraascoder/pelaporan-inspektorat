@@ -4,6 +4,41 @@
 @section('title', 'Laporan Tugas')
 
 @section('content')
+    {{-- ================= Flash Message ================= --}}
+    @if (session('success'))
+        <div x-data="{ show: true }" x-show="show" x-transition
+            class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-start justify-between">
+            <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="text-sm font-medium">
+                    {{ session('success') }}
+                </span>
+            </div>
+            <button @click="show = false" class="text-green-600 hover:text-green-800">
+                ✕
+            </button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div x-data="{ show: true }" x-show="show" x-transition
+            class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-start justify-between">
+            <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span class="text-sm font-medium">
+                    {{ session('error') }}
+                </span>
+            </div>
+            <button @click="show = false" class="text-red-600 hover:text-red-800">
+                ✕
+            </button>
+        </div>
+    @endif
+
     <div class="space-y-6">
 
         {{-- ================= Header Actions ================= --}}
@@ -140,7 +175,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center gap-3">
-                                            <a href="{{ route('pegawai.laporan.show', $pengaduan->laporan_id) }}">
+                                            <a href="{{ route('pegawai.report.show', $pengaduan->laporan_id) }}">
                                                 <button class="text-blue-600 hover:text-blue-800">
                                                     Detail
                                                 </button>

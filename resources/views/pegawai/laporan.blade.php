@@ -195,7 +195,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
-                                            <a href="{{ route('ketua_bidang.laporan.show', $report->laporan_id) }}"
+                                            <a href="{{ route('pegawai.laporan.show', $report->laporan_id) }}"
                                                 class="text-primary-600 hover:text-primary-900">
                                                 Lihat
                                             </a>

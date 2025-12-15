@@ -126,7 +126,72 @@
             {{-- Created at --}}
             <div class="mt-6 text-xs text-gray-500">
                 Dibuat pada {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
-            </div>            
+            </div>
+            {{-- =========================
+     DAFTAR LAPORAN TUGAS PEGAWAI
+     ========================= --}}
+            <div class="mt-6 bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    Daftar Laporan Tugas Pegawai
+                </h3>
+
+                @if (isset($laporanTugas) && $laporanTugas->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 border text-left">No</th>
+                                    <th class="px-3 py-2 border text-left">Pegawai</th>
+                                    <th class="px-3 py-2 border text-left">Judul Laporan</th>
+                                    <th class="px-3 py-2 border text-left">Status</th>
+                                    <th class="px-3 py-2 border text-left">Tanggal</th>
+                                    <th class="px-3 py-2 border text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($laporanTugas as $i => $lt)
+                                    @php
+                                        $statusColors = [
+                                            'Draft' => 'bg-gray-100 text-gray-800',
+                                            'Submitted' => 'bg-yellow-100 text-yellow-800',
+                                            'Reviewed' => 'bg-blue-100 text-blue-800',
+                                            'Approved' => 'bg-green-100 text-green-800',
+                                        ];
+                                    @endphp
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 border">{{ $i + 1 }}</td>
+                                        <td class="px-3 py-2 border">
+                                            {{ $lt->pegawai->nama_lengkap ?? '-' }}
+                                        </td>
+                                        <td class="px-3 py-2 border">
+                                            {{ $lt->judul_laporan ?? '-' }}
+                                        </td>
+                                        <td class="px-3 py-2 border">
+                                            <span
+                                                class="px-2 py-1 rounded-full text-xs {{ $statusColors[$lt->status_laporan] ?? 'bg-gray-100 text-gray-800' }}">
+                                                {{ $lt->status_laporan }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2 border">
+                                            {{ $lt->created_at ? $lt->created_at->format('d M Y') : '-' }}
+                                        </td>
+                                        <td class="px-3 py-2 border text-center">
+                                            <a href="{{ route('pegawai.laporan_tugas.show', $lt->laporan_tugas_id) }}"
+                                                class="text-blue-600 hover:underline text-sm">
+                                                Detail
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-sm text-gray-500 text-center py-6">
+                        Belum ada laporan tugas yang dibuat oleh pegawai.
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 @endsection

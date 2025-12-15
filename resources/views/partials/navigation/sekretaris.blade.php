@@ -29,7 +29,7 @@
             Tim Investigasi
         </a>
     </li>
-    <li>
+    {{-- <li>
         <a href="{{ route('sekretaris.laporan_tugas') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('sekretaris.laporan_tugas') ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">
             <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -38,7 +38,7 @@
             </svg>
             Laporan Tugas sekretaris
         </a>
-    </li>
+    </li> --}}
     <li>
         <a href="{{ route('sekretaris.surat_tugas') }}"
             class="flex items-center px-4 py-2 text-sm font-medium rounded-lg {{ request()->routeIs('sekretaris.surat_tugas') ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100' }}">

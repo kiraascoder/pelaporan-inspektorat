@@ -22,11 +22,12 @@ class LaporanTugas extends Model
         'bukti_pendukung',
         'status_laporan',
         'tanggal_submit',
+        'laporan_pengaduan_id',
     ];
 
     protected $casts = [
         'bukti_pendukung'   => 'array',
-        'temuan_pemeriksaan' => 'array', 
+        'temuan_pemeriksaan' => 'array',
         'tanggal_submit'    => 'datetime',
     ];
 
