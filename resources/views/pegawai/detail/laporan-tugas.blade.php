@@ -136,16 +136,23 @@
                         </thead>
                         <tbody>
                             @foreach ($laporanTugas as $i => $lt)
+                                {{-- JIKA KETUA → SKIP LAPORAN DRAFT --}}
+                                @if ($isKetua && $lt->status_laporan === 'Draft')
+                                    @continue
+                                @endif
+                                @if (!$isKetua && $lt->pegawai_id !== auth()->id())
+                                    @continue
+                                @endif
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-2 border text-center">{{ $i + 1 }}</td>
                                     <td class="px-4 py-2 border">{{ $lt->pegawai->nama_lengkap ?? '-' }}</td>
                                     <td class="px-4 py-2 border">{{ $lt->judul_laporan }}</td>
 
-                                    {{-- STATUS SELECT --}}
+                                    {{-- STATUS --}}
                                     <td class="px-4 py-2 border text-center">
                                         <p
                                             class="inline-block px-3 py-1 rounded-full text-xs font-medium
-        {{ $lt->status_laporan === 'Submitted' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800' }}">
+                {{ $lt->status_laporan === 'Submitted' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800' }}">
                                             {{ $lt->status_laporan }}
                                         </p>
                                     </td>
@@ -156,42 +163,43 @@
 
                                     <td class="px-4 py-2 border text-center">
                                         <div class="flex items-center justify-center gap-3">
-
-                                            {{-- ================= DOWNLOAD (SEMUA BOLEH) ================= --}}
-                                            <a href=""
+                                            {{-- Download --}}
+                                            <a href="{{ route('laporan_tugas.download', $lt->laporan_tugas_id) }}"
                                                 class="text-indigo-600 hover:text-indigo-800 text-sm">
                                                 Download
                                             </a>
 
-                                            {{-- ================= JIKA KETUA TIM ================= --}}
+                                            {{-- Ketua --}}
                                             @if ($isKetua)
-                                                {{-- Approve / Review --}}
-                                                <form
-                                                    action=""
-                                                    method="POST" class="inline">
+                                                <form action="{{ route('laporan_tugas.approve', $lt->laporan_tugas_id) }}"
+                                                    method="POST">
                                                     @csrf
-                                                    @method('PUT')
-
-                                                    <select name="status_laporan" onchange="this.form.submit()"
+                                                    <select name="status" onchange="this.form.submit()"
                                                         class="text-xs border-gray-300 rounded-md px-2 py-1 bg-emerald-50 text-emerald-800">
-                                                        <option value="">Approve</option>
-                                                        <option value="Reviewed">Reviewed</option>
-                                                        <option value="Approved">Approved</option>
-                                                        <option value="Rejected">Rejected</option>
+                                                        <option value="" disabled>Approve</option>
+                                                        <option value="Reviewed"
+                                                            {{ $lt->status_laporan === 'Reviewed' ? 'selected' : '' }}>
+                                                            Reviewed
+                                                        </option>
+                                                        <option value="Approved"
+                                                            {{ $lt->status_laporan === 'Approved' ? 'selected' : '' }}>
+                                                            Approved
+                                                        </option>
+                                                        <option value="Rejected"
+                                                            {{ $lt->status_laporan === 'Rejected' ? 'selected' : '' }}>
+                                                            Rejected
+                                                        </option>
                                                     </select>
                                                 </form>
 
-                                                {{-- ================= JIKA ANGGOTA ================= --}}
-                                            @else
-                                                {{-- Edit --}}
+                                                {{-- Pemilik laporan --}}
+                                            @elseif ($lt->pegawai_id === auth()->id() && $lt->status_laporan === 'Draft')
                                                 <button onclick='openEditLaporanModal(@json($lt))'
                                                     class="text-yellow-600 hover:text-yellow-800 text-sm">
                                                     Edit
                                                 </button>
 
-                                                {{-- Hapus --}}
-                                                <form
-                                                    action=""
+                                                <form action="{{ route('laporan_tugas.destroy', $lt->laporan_tugas_id) }}"
                                                     method="POST"
                                                     onsubmit="return confirm('Yakin ingin menghapus laporan tugas ini?')">
                                                     @csrf
@@ -203,9 +211,9 @@
                                             @endif
                                         </div>
                                     </td>
-
                                 </tr>
                             @endforeach
+
                         </tbody>
                     </table>
                 </div>
@@ -236,7 +244,8 @@
                 </div>
 
                 {{-- Body --}}
-                <form id="editLaporanForm" action="" method="POST" enctype="multipart/form-data">
+                <form id="editLaporanForm" action="{{ route('laporan_tugas.update', $laporan) }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -347,7 +356,7 @@
 
             // Set action form dengan route update
             const form = document.getElementById('editLaporanForm');
-            form.action = `/pegawai/laporan-tugas/${laporan.laporan_tugas_id}`;
+            form.action = `/pegawai/${laporan.laporan_tugas_id}/update`;
 
             // Isi field
             document.getElementById('edit_judul_laporan').value = laporan.judul_laporan || '';

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class LaporanTugas extends Model
 {
@@ -77,5 +78,27 @@ class LaporanTugas extends Model
     public function isApproved()
     {
         return $this->status_laporan === 'Approved';
+    }
+    protected function isKetuaTim(LaporanTugas $laporan): bool
+    {
+        $tim = $laporan->laporanPengaduan
+            ->timInvestigasi()
+            ->with('anggotaAktif')
+            ->first();
+
+        if (!$tim) return false;
+
+        $anggota = $tim->anggotaAktif
+            ->firstWhere('user_id', Auth::id());
+
+        return $anggota && $anggota->pivot->role_dalam_tim === 'Ketua';
+    }
+    public function laporanPengaduan()
+    {
+        return $this->belongsTo(
+            LaporanPengaduan::class,
+            'laporan_pengaduan_id', // FK di laporan_tugas
+            'laporan_id'            // PK di laporan_pengaduan
+        );
     }
 }

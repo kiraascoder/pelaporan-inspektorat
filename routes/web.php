@@ -82,11 +82,17 @@ Route::prefix('pegawai')->group(function () {
     Route::patch('/tim/{tim_id}/status', [PegawaiController::class, 'updateStatusLaporan'])->name('ketuaTim.tim.laporan.updateStatus');
     Route::get('tim', [PegawaiController::class, 'tim'])->name('pegawai.tim');
     Route::get('laporan-tugas', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
-    Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');
-    // Route::get('laporan-tugas/{laporan}', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
-    // Route::get('laporan-tugas/{laporaniD}/detail', [PegawaiController::class, 'showTugas'])->name('pegawai.laporan_tugas');
+    Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');    
     Route::get('report-tugas/{laporan}/detail', [LaporanTugasController::class, 'showLaporan'])->name('pegawai.report.show');
     Route::put('/laporan/{laporan}/status', [LaporanPengaduanController::class, 'updateStatus'])->name('pegawai.laporan.updateStatus');
+    Route::put('{id}/update', [LaporanTugasController::class, 'update'])->name('laporan_tugas.update');
+    Route::delete('{id}', [LaporanTugasController::class, 'destroy'])->name('laporan_tugas.destroy');
+
+    Route::post('{id}/approve', [LaporanTugasController::class, 'setStatus'])
+        ->name('laporan_tugas.approve');
+
+    Route::get('{id}/download', [LaporanTugasController::class, 'download'])
+        ->name('laporan_tugas.download');
 });
 
 Route::prefix('sekretaris')->group(function () {
