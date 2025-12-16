@@ -116,16 +116,29 @@
 
                     {{-- Jika nomor sudah diisi tetapi PDF belum dibuat --}}
                 @elseif ($hasNomor)
-                    <div class="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
-                        Nomor Surat Resmi Sudah Diisi
+                    <div class="space-y-3">
+                        {{-- Info --}}
+                        <div class="p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+                            Nomor Surat Resmi Sudah Diisi
+                        </div>
+
+                        {{-- Action Buttons --}}
+                        <div class="flex flex-col gap-2">
+                            {{-- Primary Action --}}
+                            <a href="{{ route('sekretaris-surat.cetak-pdf', $pengajuanSurat) }}"
+                                class="inline-flex justify-center items-center w-full px-3 py-2 rounded-lg text-sm
+                   bg-primary-600 text-white hover:bg-primary-700 transition">
+                                📝 Buat Surat Tugas (PDF)
+                            </a>
+
+                            {{-- Secondary Action --}}
+                            <a href="{{ route('ketua-bidang-surat.cetak-pdf', $pengajuanSurat) }}"
+                                class="inline-flex justify-center items-center w-full px-3 py-2 rounded-lg text-sm
+                   border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                                📥 Download Surat (PDF)
+                            </a>
+                        </div>
                     </div>
-
-                    {{-- tombol generate PDF --}}
-                    <a href="{{ route('sekretaris-surat.cetak-pdf', $pengajuanSurat) }}"
-                        class="block w-full text-center px-3 py-2 rounded-lg mt-2 text-sm border border-primary-600 text-primary-700 hover:bg-primary-50">
-                        Buat Surat Tugas (PDF)
-                    </a>
-
                     {{-- Jika belum isi nomor → tampil form --}}
                 @else
                     <form action="{{ route('sekretaris-surat.update-status', $pengajuanSurat) }}" method="POST"
@@ -151,19 +164,6 @@
                         </button>
                     </form>
                 @endif
-                <form action="{{ route('sekretaris-surat.upload-surat', $pengajuanSurat->laporan->laporan_id) }}"
-                    method="POST" enctype="multipart/form-data" class="space-y-3 mt-3">
-                    @csrf
-
-                    <input type="hidden" name="pengajuan_surat_id" value="{{ $pengajuanSurat->pengajuan_surat_id }}">
-
-                    <label class="text-xs font-medium">Upload Surat ke Laporan</label>
-                    <input type="file" name="surat_tugas" accept="application/pdf">
-
-                    <button class="px-3 py-2 bg-primary-600 text-white rounded-md text-sm">
-                        Upload
-                    </button>
-                </form>
             </div>
 
         </div>

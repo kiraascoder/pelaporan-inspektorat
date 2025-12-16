@@ -243,14 +243,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                 placeholder="Masukkan nama tim">
                         </div>
-
-                        <!-- Deskripsi Tim -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Tim</label>
-                            <textarea name="deskripsi_tim" rows="3"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="Jelaskan tugas atau fokus tim ini (opsional)"></textarea>
-                        </div>
+                        
 
                         <!-- Anggota Tim -->
                         <div>

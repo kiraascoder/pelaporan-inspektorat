@@ -259,7 +259,6 @@ class KetuaBidangController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama_tim'         => 'required|string|max:255',
-            'deskripsi_tim'    => 'nullable|string',
 
             // Wajib: anggota_ids[] berisi user_id dari tabel users.user_id
             'anggota_ids'      => 'required|array|min:1',
@@ -308,7 +307,6 @@ class KetuaBidangController extends Controller
             'laporan_id'    => $request->input('laporan_id', $laporan->laporan_id),
             'ketua_tim_id'  => $request->ketua_tim_id,
             'nama_tim'      => $request->nama_tim,
-            'deskripsi_tim' => $request->deskripsi_tim,
             'status_tim'    => $request->input('status_tim', 'Dibentuk'),
         ]);
 
@@ -376,11 +374,10 @@ class KetuaBidangController extends Controller
     {
         $request->validate([
             'nama_tim' => 'required|string|max:255',
-            'deskripsi_tim' => 'nullable|string',
             'status_tim' => 'required|in:Dibentuk,Aktif,Selesai',
         ]);
 
-        $tim->update($request->only(['nama_tim', 'deskripsi_tim', 'status_tim']));
+        $tim->update($request->only(['nama_tim', 'status_tim']));
 
         return redirect()->route('ketua_bidang.tim.show', $tim)
             ->with('success', 'Tim investigasi berhasil diperbarui.');
@@ -603,23 +600,24 @@ class KetuaBidangController extends Controller
             return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');
         }
 
-        // 1. RENDER VIEW JADI HTML DULU
         $html = view('sekretaris.surat-tugas.pdf', [
             'pengajuan' => $pengajuanSurat,
         ])->render();
 
-
-        // 3. Kalau HTML normal, baru generate PDF
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
-            'defaultFont'            => 'DejaVu Sans',
-            'enable_font_subsetting' => false,
-            'isHtml5ParserEnabled'   => true,
-            'isRemoteEnabled'        => true,
+            'defaultFont'          => 'DejaVu Sans',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled'     => true,
         ])
             ->loadHTML($html)
             ->setPaper('A4', 'portrait');
 
-        $filename = 'Surat_Tugas_' . ($pengajuanSurat->nomor_surat ?? $pengajuanSurat->pengajuan_surat_id) . '.pdf';
+        // ✅ SANITASI NAMA FILE (GANTI / dan \)
+        $safeNomor = $pengajuanSurat->nomor_surat
+            ? str_replace(['/', '\\'], '-', $pengajuanSurat->nomor_surat)
+            : $pengajuanSurat->pengajuan_surat_id;
+
+        $filename = 'Surat_Tugas_' . $safeNomor . '.pdf';
 
         return $pdf->download($filename);
     }

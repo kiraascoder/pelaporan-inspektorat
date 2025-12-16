@@ -110,11 +110,7 @@ Route::prefix('sekretaris')->group(function () {
     Route::get(
         'sekretaris/surat-tugas/{pengajuanSurat}/cetak-pdf',
         [SekretarisController::class, 'generatePdf']
-    )->name('sekretaris-surat.cetak-pdf');
-    Route::post(
-        '/surat/upload/{laporan}',
-        [SekretarisController::class, 'uploadSuratTugas']
-    )->name('sekretaris-surat.upload-surat');
+    )->name('sekretaris-surat.cetak-pdf');    
 });
 
 Route::prefix('kepala-inspektorat')->group(function () {

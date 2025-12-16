@@ -17,8 +17,14 @@ class SekretarisController extends Controller
     public function setNomorDanSelesai(Request $request, PengajuanSuratTugas $pengajuanSurat)
     {
         $validated = $request->validate([
-            'nomor_surat' => 'required|string|max:100|unique:pengajuan_surat_tugas,nomor_surat,' .
-                $pengajuanSurat->pengajuan_surat_id . ',pengajuan_surat_id',
+            'nomor_surat' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[A-Za-z0-9.\/\-]+$/',
+                'unique:pengajuan_surat_tugas,nomor_surat,' .
+                    $pengajuanSurat->pengajuan_surat_id . ',pengajuan_surat_id',
+            ],
         ]);
 
         $pengajuanSurat->update([
@@ -30,51 +36,34 @@ class SekretarisController extends Controller
     }
     public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
     {
-        $pengajuanSurat->load(['laporan', 'penandatangan']);
-
         if ($pengajuanSurat->status !== 'Selesai') {
-            return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');
+            return back()->with('error', 'Surat hanya bisa dibuat jika status Selesai.');
         }
 
-        // 1. RENDER VIEW JADI HTML DULU
         $html = view('sekretaris.surat-tugas.pdf', [
             'pengajuan' => $pengajuanSurat,
         ])->render();
 
+        $pdf = Pdf::setOptions([
+            'defaultFont' => 'DejaVu Sans',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+        ])->loadHTML($html)->setPaper('A4', 'portrait');
 
-        // 3. Kalau HTML normal, baru generate PDF
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
-            'defaultFont'            => 'DejaVu Sans',
-            'enable_font_subsetting' => false,
-            'isHtml5ParserEnabled'   => true,
-            'isRemoteEnabled'        => true,
-        ])
-            ->loadHTML($html)
-            ->setPaper('A4', 'portrait');
+        $filename = 'Surat_Tugas_' . $pengajuanSurat->nomor_surat . '.pdf';
+        $path = 'surat_tugas/' . $filename;
 
-        $filename = 'Surat_Tugas_' . ($pengajuanSurat->nomor_surat ?? $pengajuanSurat->pengajuan_surat_id) . '.pdf';
+        // simpan ke storage
+        Storage::disk('public')->put($path, $pdf->output());
 
-        return $pdf->download($filename);
-    }
-    public function uploadSuratTugas(Request $request, LaporanPengaduan $laporan)
-    {
-        $request->validate([
-            'surat_tugas'       => 'required|mimes:pdf|max:2048',
-            'pengajuan_surat_id' => 'required|exists:pengajuan_surat_tugas,pengajuan_surat_id',
+        // simpan path ke pengajuan_surat_tugas
+        $pengajuanSurat->update([
+            'surat_tugas_path' => $path,
+            'surat_tugas_uploaded_at' => now(),
         ]);
 
-        $file = $request->file('surat_tugas');
-        $path = $file->store('surat_tugas', 'public'); // hasil: 'surat_tugas/namafile.pdf'
-
-        $laporan->update([
-            'surat_tugas_file' => $path,
-            'surat_tugas_id'   => $request->pengajuan_surat_id,
-        ]);
-
-        return back()->with('success', 'Surat tugas berhasil diunggah ke laporan.');
+        return back()->with('success', 'Surat tugas berhasil dibuat.');
     }
-
-
 
     public function dashboard()
     {
