@@ -164,7 +164,7 @@ class KepalaInspektoratController extends Controller
                 ->whereDoesntHave('timInvestigasi')
                 ->get(['laporan_id as id', 'permasalahan']);
 
-            return view('ketua_bidang.tim', compact(
+            return view('kepala-inspektorat.tim', compact(
                 'totalTim',
                 'timAktif',
                 'dalamInvestigasi',

@@ -9,60 +9,77 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class SekretarisController extends Controller
 {
-
-    public function setNomorDanSelesai(Request $request, PengajuanSuratTugas $pengajuanSurat)
-    {
-        $validated = $request->validate([
-            'nomor_surat' => [
-                'required',
-                'string',
-                'max:100',
-                'regex:/^[A-Za-z0-9.\/\-]+$/',
-                'unique:pengajuan_surat_tugas,nomor_surat,' .
-                    $pengajuanSurat->pengajuan_surat_id . ',pengajuan_surat_id',
-            ],
-        ]);
-
-        $pengajuanSurat->update([
-            'nomor_surat' => $validated['nomor_surat'],
-            'status'      => PengajuanSuratTugas::STATUS_SELESAI,
-        ]);
-
-        return back()->with('success', 'Nomor surat di-set dan status diubah menjadi Selesai.');
-    }
+    
     public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
     {
-        if ($pengajuanSurat->status !== 'Selesai') {
-            return back()->with('error', 'Surat hanya bisa dibuat jika status Selesai.');
+        // ❗ Cegah double generate
+        if ($pengajuanSurat->surat_tugas_path) {
+            return back()->with('error', 'Surat tugas sudah pernah dibuat.');
         }
 
-        $html = view('sekretaris.surat-tugas.pdf', [
-            'pengajuan' => $pengajuanSurat,
-        ])->render();
+        DB::transaction(function () use ($pengajuanSurat) {
 
-        $pdf = Pdf::setOptions([
-            'defaultFont' => 'DejaVu Sans',
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-        ])->loadHTML($html)->setPaper('A4', 'portrait');
+            /** ===============================
+             * 1. BUAT NOMOR SURAT OTOMATIS
+             * =============================== */
+            $urutan = PengajuanSuratTugas::whereNotNull('nomor_surat')->count() + 1;
 
-        $filename = 'Surat_Tugas_' . $pengajuanSurat->nomor_surat . '.pdf';
-        $path = 'surat_tugas/' . $filename;
+            $nomorSurat = "700.1 / {$urutan} / Inspektorat";
 
-        // simpan ke storage
-        Storage::disk('public')->put($path, $pdf->output());
+            /** ===============================
+             * 2. SIMPAN NOMOR & STATUS
+             * =============================== */
+            $pengajuanSurat->update([
+                'nomor_surat' => $nomorSurat,
+                'status'      => PengajuanSuratTugas::STATUS_SELESAI,
+            ]);
 
-        // simpan path ke pengajuan_surat_tugas
-        $pengajuanSurat->update([
-            'surat_tugas_path' => $path,
-            'surat_tugas_uploaded_at' => now(),
-        ]);
+            /** ===============================
+             * 3. SALIN KE LAPORAN_PENGADUAN
+             * =============================== */
+            $pengajuanSurat->laporan->update([
+                'nomor_surat' => $nomorSurat,
+            ]);
 
-        return back()->with('success', 'Surat tugas berhasil dibuat.');
+            /** ===============================
+             * 4. GENERATE PDF
+             * =============================== */
+            $html = view('sekretaris.surat-tugas.pdf', [
+                'pengajuan' => $pengajuanSurat->fresh(['laporan', 'penandatangan']),
+            ])->render();
+
+            $pdf = Pdf::setOptions([
+                'defaultFont'          => 'DejaVu Sans',
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled'     => true,
+            ])
+                ->loadHTML($html)
+                ->setPaper('A4', 'portrait');
+
+            /** ===============================
+             * 5. NAMA FILE AMAN (TANPA /)
+             * =============================== */
+            $safeNomor = str_replace(['/', '\\'], '-', $nomorSurat);
+            $filename  = "Surat_Tugas_{$safeNomor}.pdf";
+            $path      = "surat_tugas/{$filename}";
+
+            Storage::disk('public')->put($path, $pdf->output());
+
+            /** ===============================
+             * 6. SIMPAN PATH FILE
+             * =============================== */
+            $pengajuanSurat->update([
+                'surat_tugas_path'        => $path,
+                'surat_tugas_uploaded_at' => now(),
+            ]);
+        });
+
+        return back()->with('success', 'Surat tugas berhasil dibuat otomatis.');
     }
 
     public function dashboard()
