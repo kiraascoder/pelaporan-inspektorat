@@ -14,43 +14,42 @@ use Illuminate\Support\Facades\Storage;
 
 class SekretarisController extends Controller
 {
-    
+
     public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
     {
-        // ❗ Cegah double generate
         if ($pengajuanSurat->surat_tugas_path) {
             return back()->with('error', 'Surat tugas sudah pernah dibuat.');
         }
 
         DB::transaction(function () use ($pengajuanSurat) {
 
-            /** ===============================
-             * 1. BUAT NOMOR SURAT OTOMATIS
-             * =============================== */
+            /** 1. NOMOR SURAT */
             $urutan = PengajuanSuratTugas::whereNotNull('nomor_surat')->count() + 1;
-
             $nomorSurat = "700.1 / {$urutan} / Inspektorat";
 
-            /** ===============================
-             * 2. SIMPAN NOMOR & STATUS
-             * =============================== */
+            /** 2. UPDATE STATUS */
             $pengajuanSurat->update([
                 'nomor_surat' => $nomorSurat,
                 'status'      => PengajuanSuratTugas::STATUS_SELESAI,
             ]);
 
-            /** ===============================
-             * 3. SALIN KE LAPORAN_PENGADUAN
-             * =============================== */
+            /** 3. UPDATE LAPORAN */
             $pengajuanSurat->laporan->update([
                 'nomor_surat' => $nomorSurat,
             ]);
 
-            /** ===============================
-             * 4. GENERATE PDF
-             * =============================== */
+            /** 4. LOGO BASE64 (🔥 INI KUNCI UTAMA 🔥) */
+            $logoPath = public_path('logo.png');
+            $logoBase64 = null;
+
+            if (file_exists($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+
+            /** 5. RENDER VIEW */
             $html = view('sekretaris.surat-tugas.pdf', [
                 'pengajuan' => $pengajuanSurat->fresh(['laporan', 'penandatangan']),
+                'logoBase64' => $logoBase64,
             ])->render();
 
             $pdf = Pdf::setOptions([
@@ -61,18 +60,14 @@ class SekretarisController extends Controller
                 ->loadHTML($html)
                 ->setPaper('A4', 'portrait');
 
-            /** ===============================
-             * 5. NAMA FILE AMAN (TANPA /)
-             * =============================== */
+            /** 6. SIMPAN FILE */
             $safeNomor = str_replace(['/', '\\'], '-', $nomorSurat);
             $filename  = "Surat_Tugas_{$safeNomor}.pdf";
             $path      = "surat_tugas/{$filename}";
 
             Storage::disk('public')->put($path, $pdf->output());
 
-            /** ===============================
-             * 6. SIMPAN PATH FILE
-             * =============================== */
+            /** 7. SIMPAN PATH */
             $pengajuanSurat->update([
                 'surat_tugas_path'        => $path,
                 'surat_tugas_uploaded_at' => now(),
@@ -81,6 +76,7 @@ class SekretarisController extends Controller
 
         return back()->with('success', 'Surat tugas berhasil dibuat otomatis.');
     }
+
 
     public function dashboard()
     {

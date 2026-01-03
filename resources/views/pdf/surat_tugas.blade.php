@@ -101,13 +101,26 @@
 
 <body>
 
-    {{-- KOP SINGKAT (bisa diganti gambar jika ada logo) --}}
-    <div class="center">
-        <div class="bold caps">PEMERINTAH KABUPATEN SIDENRENG RAPPANG</div>
-        <div class="bold caps">INSPEKTORAT DAERAH</div>
-        <div class="tiny">JL. Harapan Baru Blok C No.17 Komplek SKPD Sidrap 91611 – Telp (0421) 3590015</div>
-    </div>
+    <table style="width:100%; margin-bottom:8px;">
+        <tr>
+            <td style="width:90px; vertical-align:middle;">
+                @if ($logoBase64)
+                    <img src="data:image/png;base64,{{ $logoBase64 }}" style="width:80px;">
+                @endif
+            </td>
+            <td style="text-align:center;">
+                <div class="bold caps">PEMERINTAH KABUPATEN SIDENRENG RAPPANG</div>
+                <div class="bold caps">INSPEKTORAT DAERAH</div>
+                <div class="tiny">
+                    JL. Harapan Baru Blok C No.17 Komplek SKPD Sidrap 91611 – Telp (0421) 3590015
+                </div>
+            </td>
+            <td style="width:90px;"></td>
+        </tr>
+    </table>
     <hr class="mb-4">
+
+
 
     <div class="center">
         <div class="title">SURAT TUGAS</div>
@@ -196,4 +209,3 @@
 </body>
 
 </html>
- 
