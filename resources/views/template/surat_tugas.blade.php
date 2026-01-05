@@ -1,24 +1,12 @@
-@php
-    use Carbon\Carbon;
-    Carbon::setLocale('id');
-    $dasar = is_array($surat->dasar ?? null) ? $surat->dasar : json_decode($surat->dasar ?? '[]', true);
-    $anggota = is_array($surat->anggota ?? null) ? $surat->anggota : json_decode($surat->anggota ?? '[]', true);
-    $untuk = is_array($surat->untuk ?? null) ? $surat->untuk : json_decode($surat->untuk ?? '[]', true);
-    $tembusan = is_array($surat->tembusan ?? null) ? $surat->tembusan : json_decode($surat->tembusan ?? '[]', true);
-    function tgl($d)
-    {
-        return $d ? \Carbon\Carbon::parse($d)->translatedFormat('d F Y') : '-';
-    }
-@endphp
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
-    <meta charset="utf-8">
-    <title>Surat Tugas {{ $surat->nomor_surat }}</title>
+    <meta charset="UTF-8">
+    <title>Surat Tugas</title>
     <style>
         @page {
-            margin: 2.2cm 2cm 2cm 2cm;
+            margin: 2.2cm 2.2cm;
         }
 
         body {
@@ -27,214 +15,196 @@
             color: #000;
         }
 
-        .kop {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .kop img {
-            width: 70px;
-            height: 70px;
-            object-fit: contain;
-        }
-
-        .kop-text {
+        .center {
             text-align: center;
-            flex: 1;
-        }
-
-        .kop-text .l1 {
-            font-weight: 700;
-            font-size: 16px;
-            text-transform: uppercase;
-            margin: 0;
-        }
-
-        .kop-text .l2 {
-            font-weight: 700;
-            font-size: 14px;
-            text-transform: uppercase;
-            margin: 2px 0 0;
-        }
-
-        .kop-text .addr {
-            font-size: 10px;
-            margin-top: 4px;
-        }
-
-        .divider {
-            border-top: 2px solid #000;
-            margin: 8px 0 16px;
         }
 
         .title {
-            text-align: center;
             font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 6px;
+            font-size: 16px;
+            margin: 8px 0 4px;
+            text-decoration: underline;
         }
 
-        .nomor {
-            text-align: center;
-            margin: 4px 0 14px;
+        .mb-4 {
+            margin-bottom: 14px;
         }
 
-        .section {
-            margin: 10px 0;
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+
+        .mt-4 {
+            margin-top: 14px;
         }
 
         .bold {
             font-weight: 700;
         }
 
-        .list-num {
-            counter-reset: item;
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .list-num>li {
-            counter-increment: item;
-            list-style: none;
-            margin: 4px 0;
-        }
-
-        .list-num>li::before {
-            content: counter(item) ". ";
-            margin-left: -20px;
-            width: 20px;
-            display: inline-block;
-        }
-
-        .dua-kolom {
+        .table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .dua-kolom td {
-            vertical-align: top;
-            padding: 2px 0;
+        .li {
+            display: flex;
         }
 
-        .right {
+        .li>.no {
+            width: 14px;
+        }
+
+        .li>.txt {
+            flex: 1;
+        }
+
+        .tiny {
+            font-size: 11px;
+            color: #333;
+        }
+
+        .signature {
+            width: 100%;
+            margin-top: 32px;
+        }
+
+        .signature .place {
+            text-align: right;
+            margin-bottom: 40px;
+        }
+
+        .signature .name {
+            text-align: right;
+            margin-top: 60px;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        .signature .meta {
             text-align: right;
         }
 
-        .center {
-            text-align: center;
+        .caps {
+            text-transform: uppercase;
         }
 
-        .isi {
-            text-align: justify;
-            line-height: 1.5;
-        }
-
-        .ttd {
-            width: 100%;
-            margin-top: 24px;
-        }
-
-        .small {
-            font-size: 11px;
+        .underline {
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
 
-    {{-- KOP --}}
-    <div class="kop">
-        {{-- ganti ke logo asli: <img src="{{ public_path('images/logo.png') }}"> --}}
-        <div style="width:70px;height:70px;border:1px solid #000;"></div>
-        <div class="kop-text">
-            <p class="l1">Pemerintah Kabupaten Sidenreng Rappang</p>
-            <p class="l2">Inspektorat Daerah</p>
-            <p class="addr">JL. Harapan Baru Blok C No.17 Kompleks SKPD Sidrap 91611 Sul-Sel<br>Telepon : (0421)
-                3590015 — FAX (0421) 3590015</p>
-        </div>
-    </div>
-    <div class="divider"></div>
+    <table style="width:100%; margin-bottom:8px;">
+        <tr>
+            <td style="width:90px; vertical-align:middle;">
+                @if ($logoBase64)
+                    <img src="data:image/png;base64,{{ $logoBase64 }}" style="width:80px;">
+                @endif
+            </td>
+            <td style="text-align:center;">
+                <div class="bold caps">PEMERINTAH KABUPATEN SIDENRENG RAPPANG</div>
+                <div class="bold caps">INSPEKTORAT DAERAH</div>
+                <div class="tiny">
+                    JL. Harapan Baru Blok C No.17 Komplek SKPD Sidrap 91611 – Telp (0421) 3590015
+                </div>
+            </td>
+            <td style="width:90px;"></td>
+        </tr>
+    </table>
+    <hr class="mb-4">
 
-    <div class="title">Surat Tugas</div>
-    <div class="nomor bold">NOMOR : {{ $surat->nomor_surat }}</div>
+
+
+    <div class="center">
+        <div class="title">SURAT TUGAS</div>
+        <div class="bold">NOMOR: {{ $surat->nomor_surat }}</div>
+    </div>
 
     {{-- DASAR --}}
-    <div class="section">
-        <span class="bold">Dasar :</span>
-        <ol class="list-num">
-            @forelse($dasar as $d)
-            <li>{{ $d }}</li>@empty<li>-</li>
-            @endforelse
-        </ol>
+    <div class="mt-4 mb-2 bold">Dasar :</div>
+    <div class="mb-4">
+        @foreach ($dasar as $i => $item)
+            <div class="li">
+                <div class="no">{{ $i + 1 }}.</div>
+                <div class="txt">{{ $item }}</div>
+            </div>
+        @endforeach
     </div>
 
     {{-- MENUGASKAN --}}
-    <div class="section">
-        <span class="bold">MENUGASKAN :</span>
-        <table class="dua-kolom" style="margin-top:6px">
-            @forelse(($anggota['nama'] ?? []) as $i => $nm)
+    <div class="center bold mb-2 caps">MENUGASKAN :</div>
+
+    {{-- Kepada (daftar orang & role) --}}
+    <div class="mb-2 bold">Kepada :</div>
+    <table class="table mb-4">
+        <tbody>
+            @foreach ($surat->anggota as $i => $agt)
                 <tr>
-                    <td style="width:24px">{{ $i + 1 }}.</td>
-                    <td class="bold">{{ $nm }}</td>
-                    <td style="width:12px"></td>
-                    <td class="right">{{ $anggota['jabatan'][$i] ?? '' }}</td>
+                    <td style="width: 16px; vertical-align: top;">{{ $i + 1 }}.</td>
+                    <td style="vertical-align: top;">
+                        {{ $agt->pegawai->nama_lengkap ?? '-' }}
+                    </td>
+                    <td style="width: 180px; text-align:right; vertical-align: top;">
+                        {{ $agt->role_dalam_tim ?? 'Anggota Tim' }}
+                    </td>
                 </tr>
-            @empty
-                <tr>
-                    <td></td>
-                    <td>-</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            @endforelse
-        </table>
+            @endforeach
+        </tbody>
+    </table>
+
+    {{-- UNTUK (point dari deskripsi_umum) --}}
+    <div class="bold mb-2">Untuk :</div>
+    <div class="mb-4">
+        @forelse($untuk as $i => $poin)
+            <div class="li">
+                <div class="no">{{ $i + 1 }}.</div>
+                <div class="txt">{{ $poin }}</div>
+            </div>
+        @empty
+            <div class="li">
+                <div class="no">1.</div>
+                <div class="txt">Melaksanakan tugas sesuai ketentuan yang berlaku.</div>
+            </div>
+        @endforelse
     </div>
 
-    {{-- UNTUK --}}
-    <div class="section">
-        <span class="bold">Untuk :</span>
-        <ol class="list-num">
-            @forelse($untuk as $u)
-            <li class="isi">{{ $u }}</li>@empty<li>-</li>
-            @endforelse
-        </ol>
-    </div>
-
-    {{-- PARAGRAF BIAYA & GRATIFIKASI (sesuai contoh) --}}
-    <div class="section isi">
-        Biaya Kegiatan ini menjadi beban anggaran Inspektorat Daerah Kabupaten Sidenreng Rappang.
+    {{-- Paragraf biaya & integritas (sesuai contoh) --}}
+    <div class="mb-4">
+        Biaya kegiatan ini menjadi beban anggaran Inspektorat Daerah Kabupaten Sidenreng Rappang.
         Pegawai Inspektorat Daerah dalam melaksanakan tugas tidak menerima/meminta gratifikasi dan suap.
         Demikian surat tugas ini diberikan untuk dilaksanakan dengan penuh rasa tanggung jawab.
     </div>
 
     {{-- TTD --}}
-    <table class="ttd">
-        <tr>
-            <td></td>
-            <td class="right small">
-                Dikeluarkan di {{ $surat->kota_terbit ?? '—' }}<br>
-                Pada Tanggal {{ tgl($surat->tanggal_surat) }}<br><br>
-                <span
-                    class="bold">{{ $surat->jabatan_ttd ?? 'INSPEKTUR DAERAH KABUPATEN SIDENRENG RAPPANG' }}</span><br><br><br><br>
-                <span class="bold">{{ $surat->nama_ttd ?? '-' }}</span><br>
-                Pangkat : {{ $surat->pangkat_ttd ?? '-' }}<br>
-                Nip : {{ $surat->nip_ttd ?? '-' }}
-            </td>
-        </tr>
-    </table>
-
-    {{-- TEMBUSAN --}}
-    @if (!empty($tembusan))
-        <div class="section small">
-            <span class="bold">Tembusan :</span>
-            <ol class="list-num">
-                @foreach ($tembusan as $t)
-                    <li>{{ $t }}</li>
-                @endforeach
-            </ol>
+    <div class="signature">
+        <div class="place">
+            Dikeluarkan di Pangkajene Sidenreng<br>
+            Pada Tanggal {{ now()->translatedFormat('d F Y') }}
         </div>
-    @endif
+        <div class="meta caps"><strong>{{ $surat->penandatangan->jabatan ?? 'INSPEKTUR DAERAH' }}</strong></div>
+
+        {{-- ruang tanda tangan --}}
+        <div style="height: 70px;"></div>
+
+        <div class="name">{{ $surat->penandatangan->nama_lengkap ?? '-' }}</div>
+        <div class="meta">Pangkat : {{ $surat->penandatangan->pangkat ?? '-' }}</div>
+        <div class="meta">NIP : {{ $surat->penandatangan->nip ?? '-' }}</div>
+    </div>
+
+    {{-- Tembusan (opsional, jika mau tambahkan) --}}
+    {{-- <div class="mt-4">
+        <div class="bold">Tembusan:</div>
+        <div class="li"><div class="no">1.</div><div class="txt">Bupati Sidenreng Rappang</div></div>
+        <div class="li"><div class="no">2.</div><div class="txt">Kepala BKPSDM Kab. Sidenreng Rappang</div></div>
+        <div class="li"><div class="no">3.</div><div class="txt">Kepala Dinas Pendidikan dan Kebudayaan Kab. Sidenreng Rappang</div></div>
+    </div> --}}
 
 </body>
 

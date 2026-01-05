@@ -128,15 +128,27 @@
 
 <body>
     {{-- KOP SEDERHANA --}}
-    <div class="kop">
-        <div class="pemda">PEMERINTAH KABUPATEN SIDENRENG RAPPANG</div>
-        <div class="instansi">INSPEKTORAT DAERAH</div>
-        <div class="alamat">
-            JL. Harapan Baru Blok C No.17 Komplek SKPD Sidrap 91611 Sul-Sel<br>
-            Telepon : (0421) 3590015 &nbsp;&nbsp; FAX : (0421) 3590015
-        </div>
-    </div>
+    {{-- KOP DENGAN LOGO --}}
+    <table style="width:100%; margin-bottom:6px;">
+        <tr>
+            <td style="width:80px; text-align:left; vertical-align:middle;">
+                @if (!empty($logoBase64))
+                    <img src="data:image/png;base64,{{ $logoBase64 }}" style="width:70px;">
+                @endif
+            </td>
+            <td style="text-align:center;">
+                <div class="pemda">PEMERINTAH KABUPATEN SIDENRENG RAPPANG</div>
+                <div class="instansi">INSPEKTORAT DAERAH</div>
+                <div class="alamat">
+                    JL. Harapan Baru Blok C No.17 Komplek SKPD Sidrap 91611 Sul-Sel<br>
+                    Telepon : (0421) 3590015 &nbsp;&nbsp; FAX : (0421) 3590015
+                </div>
+            </td>
+            <td style="width:80px;"></td>
+        </tr>
+    </table>
     <div class="garis"></div>
+
 
     {{-- JUDUL --}}
     <div class="judul-surat">
