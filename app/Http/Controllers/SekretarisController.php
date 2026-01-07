@@ -53,7 +53,7 @@ class SekretarisController extends Controller
             ])->render();
 
             $pdf = Pdf::setOptions([
-                'defaultFont'          => 'DejaVu Sans',
+                'defaultFont'          => 'TimesNewRoman',
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled'     => true,
             ])

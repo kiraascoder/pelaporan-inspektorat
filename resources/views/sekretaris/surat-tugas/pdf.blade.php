@@ -11,9 +11,22 @@
             box-sizing: border-box;
         }
 
+        @font-face {
+            font-family: 'TimesNewRoman';
+            src: url("{{ storage_path('fonts/times.ttf') }}") format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'TimesNewRoman';
+            src: url("{{ storage_path('fonts/timesbd.ttf') }}") format('truetype');
+            font-weight: bold;
+        }
+
+
         body {
-            font-family: "DejaVu Sans", sans-serif;
-            font-size: 11px;
+            font-family: "Times-Roman", serif;
+            font-size: 12pt;
             line-height: 1.5;
             margin: 0;
             padding: 0;
