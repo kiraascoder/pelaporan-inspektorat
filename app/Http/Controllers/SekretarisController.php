@@ -324,7 +324,7 @@ class SekretarisController extends Controller
             'Anggota Tim',
         ];
         return redirect()
-            ->route('kepala.surat_tugas')
+            ->route('sekretaris.surat_tugas')
             ->with('success', 'Pengajuan surat tugas berhasil dihapus.');
     }
 
