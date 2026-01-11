@@ -46,8 +46,8 @@
                                 <td class="px-6 py-3">{{ $s->penandatangan->nama_lengkap ?? '-' }}</td>
                                 <td class="px-6 py-3">
                                     <span
-                                        class="px-2.5 py-1 rounded-full text-xs font-medium 
-                                    @if ($s->status == 'Pending') bg-yellow-100 text-yellow-800 
+                                        class="px-2.5 py-1 rounded-full text-xs font-medium
+                                    @if ($s->status == 'Pending') bg-yellow-100 text-yellow-800
                                     @elseif($s->status == 'Dibuat') bg-blue-100 text-blue-800
                                     @elseif($s->status == 'Selesai') bg-green-100 text-green-800 @endif">
                                         {{ $s->status }}
@@ -164,11 +164,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <p class="text-xs text-gray-500 mt-1">
-                            Nama & jabatan akan disimpan sebagai JSON array of objects dan dapat ditampilkan urut di surat
-                            tugas.
-                        </p>
                         @error('nama_ditugaskan')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror

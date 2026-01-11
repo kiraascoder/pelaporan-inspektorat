@@ -58,7 +58,7 @@
         }
 
         .kop .alamat {
-            font-size: 10px;
+            font-size: 12px;
         }
 
         .garis {
@@ -72,14 +72,14 @@
         }
 
         .judul-surat .judul {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             text-transform: uppercase;
             text-decoration: underline;
         }
 
         .judul-surat .nomor {
-            font-size: 11px;
+            font-size: 12px;
             margin-top: 4px;
         }
 
@@ -129,11 +129,11 @@
 
         .tembusan-title {
             margin-top: 14px;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         .tembusan-list {
-            font-size: 10px;
+            font-size: 12px;
             margin-top: 2px;
         }
     </style>
@@ -265,7 +265,7 @@
                             <tr>
                                 <td style="width: 18px;">{{ $i + 1 }}.</td>
                                 <td>{!! $displayNameEsc !!}</td>
-                                <td style="width: 190px; text-align:right; font-size:10px;">
+                                <td style="width: 190px; text-align:right; font-size:12px;">
                                     {!! $roleLabelEsc !!}
                                 </td>
                             </tr>
