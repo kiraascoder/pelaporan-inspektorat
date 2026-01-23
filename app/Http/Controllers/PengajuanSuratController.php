@@ -22,16 +22,16 @@ class PengajuanSuratController extends Controller
             'deskripsi_umum'                  => 'nullable|string',
         ]);
 
-        
+
         $validated['status'] = PengajuanSuratTugas::STATUS_PENDING;
-        
+
         if (empty($validated['nama_ditugaskan'])) {
             $validated['nama_ditugaskan'] = [];
         }
         $pengajuan = PengajuanSuratTugas::create($validated);
 
         return redirect()
-            ->route('pengajuan-surat.show', $pengajuan->pengajuan_surat_id)
+            ->route('ketua-bidang.surat.show', $pengajuan->pengajuan_surat_id)
             ->with('success', 'Pengajuan surat tugas berhasil dibuat.');
     }
 
@@ -42,7 +42,7 @@ class PengajuanSuratController extends Controller
     {
         $pengajuanSurat->load(['laporan', 'penandatangan']);
 
-        return view('kepala-inspektorat.detail.surat', compact('pengajuanSurat'));
+        return view('ketua-bidang.detail.surat', compact('pengajuanSurat'));
     }
 
     /**
@@ -84,7 +84,7 @@ class PengajuanSuratController extends Controller
         $pengajuanSurat->delete();
 
         return redirect()
-            ->route('kepala.surat_tugas')
+            ->route('ketua_bidang.surat')
             ->with('success', 'Pengajuan surat tugas berhasil dihapus.');
     }
 

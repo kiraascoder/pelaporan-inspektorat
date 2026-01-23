@@ -65,9 +65,11 @@ Route::prefix('ketua-investigasi')->group(function () {
     Route::post('store-tim', [KetuaBidangController::class, 'storeTim'])->name('ketua_bidang.store-tim');
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');
     Route::get('surat', [KetuaBidangController::class, 'suratTugas'])->name('ketua_bidang.surat');
+    Route::post('/surat-tugas', [PengajuanSuratController::class, 'store'])->name('pengajuan-surat.store');
     Route::get('review', [KetuaBidangController::class, 'review'])->name('ketua_bidang.review');
     Route::put('/laporan/{laporan}/status', [KetuaBidangController::class, 'updateStatusLaporan'])->name('ketua.laporan.updateStatus');
     Route::get('/surat-tugas/{pengajuanSurat}/detail', [KetuaBidangController::class, 'showSurat'])->name('ketua-bidang.surat.show');
+    Route::delete('/surat-tugas/{pengajuanSurat}/destroy', [PengajuanSuratController::class, 'destroy'])->name('pengajuan-surat.destroy');
     Route::get(
         '/surat-tugas/{pengajuanSurat}/cetak-pdf',
         [KetuaBidangController::class, 'generatePdf']
@@ -82,7 +84,7 @@ Route::prefix('pegawai')->group(function () {
     Route::patch('/tim/{tim_id}/status', [PegawaiController::class, 'updateStatusLaporan'])->name('ketuaTim.tim.laporan.updateStatus');
     Route::get('tim', [PegawaiController::class, 'tim'])->name('pegawai.tim');
     Route::get('laporan-tugas', [PegawaiController::class, 'laporanTugas'])->name('pegawai.laporan_tugas');
-    Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');    
+    Route::post('laporan-tugas/store', [LaporanTugasController::class, 'store'])->name('pegawai.laporan_tugas.store');
     Route::get('report-tugas/{laporan}/detail', [LaporanTugasController::class, 'showLaporan'])->name('pegawai.report.show');
     Route::put('/laporan/{laporan}/status', [LaporanPengaduanController::class, 'updateStatus'])->name('pegawai.laporan.updateStatus');
     Route::put('{id}/update', [LaporanTugasController::class, 'update'])->name('laporan_tugas.update');
@@ -110,7 +112,7 @@ Route::prefix('sekretaris')->group(function () {
     Route::get(
         'sekretaris/surat-tugas/{pengajuanSurat}/cetak-pdf',
         [SekretarisController::class, 'generatePdf']
-    )->name('sekretaris-surat.cetak-pdf');    
+    )->name('sekretaris-surat.cetak-pdf');
 });
 
 Route::prefix('kepala-inspektorat')->group(function () {
@@ -122,9 +124,8 @@ Route::prefix('kepala-inspektorat')->group(function () {
     Route::get('laporan-tugas', [KepalaInspektoratController::class, 'laporanTugas'])->name('kepala.review');
     Route::get('report-tugas/{laporan}/', [LaporanTugasController::class, 'show'])->name('kepala.report.show');
     Route::get('/surat-tugas', [KepalaInspektoratController::class, 'suratTugas'])->name('kepala.surat_tugas');
-    Route::post('/surat-tugas', [PengajuanSuratController::class, 'store'])->name('pengajuan-surat.store');
     Route::get('/surat-tugas/{pengajuanSurat}/detail', [KepalaInspektoratController::class, 'show'])->name('pengajuan-surat.show');
-    Route::delete('/surat-tugas/{pengajuanSurat}/destroy', [PengajuanSuratController::class, 'destroy'])->name('pengajuan-surat.destroy');
+
     // Route::get('/surat-tugas/{suratTugas}/store', [KepalaInspektoratController::class, 'downloadPdf']);
 });
 

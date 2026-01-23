@@ -11,10 +11,6 @@
                 <h1 class="text-2xl font-bold text-gray-900">Surat Tugas</h1>
                 <p class="text-gray-600">Kelola dan monitoring surat tugas investigasi</p>
             </div>
-            <button id="openCreateSuratModal"
-                class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
-                + Buat Pengajuan Surat Tugas
-            </button>
         </div>
 
         {{-- Table --}}
