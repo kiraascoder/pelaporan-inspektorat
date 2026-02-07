@@ -15,23 +15,22 @@ class KetuaBidangSeeder extends Seeder
     public function run(): void
     {
         $users = [
-            // Ketua Investigasi
             [
                 'user_id' => 3,
-                'username' => 'ketuainvestigasi',
-                'nik' => '1234567890',
-                'email' => 'ketuabidanginvestigasi@gmail.com',
-                'nama_lengkap' => 'Ketua Investigasi Inspektorat',
+                'username' => 'andi.kamarlang',
+                'nik' => '196905202002012013',
+                'email' => 'andi.kamarlang@inspektorat.go.id',
+                'nama_lengkap' => 'ANDI KAMARLANG',
                 'password' => Hash::make('password123'),
-                'no_telepon' => '1234567890',
+                'no_telepon' => '081234567890',
                 'alamat' => 'Jl. Contoh, Kota Contoh',
                 'role' => 'Ketua_Bidang_Investigasi',
-                'nip' => '1234567890',
-                'jabatan' => 'Ketua Bidang Investigasi',
+                'nip' => '196905202002012013',
+                'jabatan' => 'Pembina / IV.a',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ];
 
         DB::table('users')->insert($users);
