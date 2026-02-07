@@ -14,9 +14,9 @@ class WargaSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = [            
+        $users = [
             [
-                'user_id' => 8,
+                'user_id' => 13,
                 'username' => 'dewix',
                 'nik' => '312093021930',
                 'email' => 'dewinibos@gmail.com',
@@ -30,7 +30,7 @@ class WargaSeeder extends Seeder
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],     
+            ],
         ];
 
         DB::table('users')->insert($users);

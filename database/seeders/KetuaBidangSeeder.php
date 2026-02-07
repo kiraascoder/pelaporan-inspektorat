@@ -16,7 +16,7 @@ class KetuaBidangSeeder extends Seeder
     {
         $users = [
             [
-                'user_id' => 3,
+                'user_id' => 14,
                 'username' => 'andi.kamarlang',
                 'nik' => '196905202002012013',
                 'email' => 'andi.kamarlang@inspektorat.go.id',
