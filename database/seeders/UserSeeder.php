@@ -60,7 +60,7 @@ class UserSeeder extends Seeder
                 'alamat' => 'Jl. Contoh, Kota Contoh',
                 'role' => 'Sekretaris',
                 'nip' => '1234567890',
-                'jabatan' => 'Sekretaris Inspektorat',
+                'jabatan' => 'Kepala Inspektorat',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
