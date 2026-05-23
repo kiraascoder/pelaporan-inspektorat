@@ -243,7 +243,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                 placeholder="Masukkan nama tim">
                         </div>
-                        
+
 
                         <!-- Anggota Tim -->
                         <div>
@@ -442,7 +442,7 @@
                                 <div class="font-medium text-gray-900">${anggota.nama}</div>
                                 <div class="text-sm text-gray-600">${anggota.jabatan}</div>
                             </div>
-                            <button type="button" onclick="removeAnggota(${anggota.id})" 
+                            <button type="button" onclick="removeAnggota(${anggota.id})"
                                     class="ml-3 text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

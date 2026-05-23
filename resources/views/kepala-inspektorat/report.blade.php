@@ -267,8 +267,6 @@
                         <!-- Temuan -->
                         <x-form.textarea label="Temuan" name="temuan" />
 
-                        <!-- Rekomendasi -->
-                        <x-form.textarea label="Rekomendasi" name="rekomendasi" />
 
 
 

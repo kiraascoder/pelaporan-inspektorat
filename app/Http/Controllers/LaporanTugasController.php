@@ -30,7 +30,6 @@ class LaporanTugasController extends Controller
             'judul_laporan'        => 'required|string|max:255',
             'isi_laporan'          => 'required|string',
             'temuan'               => 'nullable|string',
-            'rekomendasi'          => 'nullable|string',
 
             // Hanya dua status sesuai <select> di form
             'status_laporan'       => 'required|string|in:Draft,Submitted',
@@ -58,13 +57,12 @@ class LaporanTugasController extends Controller
         DB::beginTransaction();
         try {
             $tanggalSubmit = $validated['status_laporan'] === 'Submitted' ? now() : null;
-            
+
             $payload = [
                 'sekretaris_id'         => $sekretarisId,
                 'judul_laporan'      => $validated['judul_laporan'],
                 'isi_laporan'        => $validated['isi_laporan'],
                 'temuan'             => $validated['temuan'] ?? null,
-                'rekomendasi'        => $validated['rekomendasi'] ?? null,
                 'temuan_pemeriksaan' => $validated['temuan_pemeriksaan'] ?? null, // cast: array
                 'bukti_pendukung'    => $storedPaths ?: null,                     // cast: array
                 'status_laporan'     => $validated['status_laporan'],
@@ -139,15 +137,32 @@ class LaporanTugasController extends Controller
     }
     public function showLaporan(LaporanPengaduan $laporan)
     {
-        $laporan->load('laporanTugas.pegawai');
-        $tim = TimInvestigasi::with('anggotaAktif')
+        $laporan->load([
+            'laporanTugas.pegawai',
+            'suratTugas',
+            'user',
+        ]);
+
+        $tim = TimInvestigasi::with([
+            'ketuaTim',
+            'anggotaAktif',
+        ])
             ->where('laporan_id', $laporan->laporan_id)
             ->first();
+
+        $user = auth()->user();
+        $userId = $user->user_id ?? $user->id;
+
+        $ketuaId = $tim->ketua_tim_id ?? ($tim?->ketuaTim?->user_id ?? null);
+
+        $isKetuaTim = $tim && $ketuaId && (string) $userId === (string) $ketuaId;
 
         return view('pegawai.detail.laporan-tugas', [
             'laporan'      => $laporan,
             'laporanTugas' => $laporan->laporanTugas,
             'tim'          => $tim,
+            'suratTugas'   => $laporan->suratTugas,
+            'isKetuaTim'   => $isKetuaTim,
         ]);
     }
 
@@ -169,7 +184,6 @@ class LaporanTugasController extends Controller
             'judul_laporan'        => 'required|string',
             'isi_laporan'          => 'required|string',
             'temuan'               => 'nullable|string',
-            'rekomendasi'          => 'nullable|string',
             'temuan_pemeriksaan'   => 'nullable|array',
             'bukti_pendukung.*'    => 'nullable|file|max:5120',
             'status_laporan'       => 'required|in:Draft,Submitted',
@@ -268,8 +282,6 @@ class LaporanTugasController extends Controller
         Temuan:
         {$laporan->temuan}
 
-        Rekomendasi:
-        {$laporan->rekomendasi}
         ";
 
         return response($content)

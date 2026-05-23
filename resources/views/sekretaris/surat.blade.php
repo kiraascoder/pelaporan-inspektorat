@@ -25,7 +25,6 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Laporan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penandatangan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
@@ -39,11 +38,10 @@
                                 <td class="px-6 py-3">
                                     {{ $s->laporan->judul ?? ($s->laporan->permasalahan ?? '') }}
                                 </td>
-                                <td class="px-6 py-3">{{ $s->penandatangan->nama_lengkap ?? '-' }}</td>
                                 <td class="px-6 py-3">
                                     <span
-                                        class="px-2.5 py-1 rounded-full text-xs font-medium 
-                                    @if ($s->status == 'Pending') bg-yellow-100 text-yellow-800 
+                                        class="px-2.5 py-1 rounded-full text-xs font-medium
+                                    @if ($s->status == 'Pending') bg-yellow-100 text-yellow-800
                                     @elseif($s->status == 'Dibuat') bg-blue-100 text-blue-800
                                     @elseif($s->status == 'Selesai') bg-green-100 text-green-800 @endif">
                                         {{ $s->status }}
@@ -99,21 +97,6 @@
                                 @endforeach
                             </select>
                             @error('laporan_id')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Penandatangan Surat</label>
-                            <select name="penandatangan_id" required class="w-full rounded-md border-gray-300">
-                                <option value="">— Pilih Penandatangan —</option>
-                                @foreach ($userList ?? [] as $u)
-                                    <option value="{{ $u->user_id }}" @selected(old('penandatangan_id') == $u->user_id)>
-                                        {{ $u->nama_lengkap }} — {{ $u->jabatan ?? $u->role }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('penandatangan_id')
                                 <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                             @enderror
                         </div>

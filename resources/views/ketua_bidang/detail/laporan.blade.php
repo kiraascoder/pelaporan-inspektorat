@@ -27,7 +27,7 @@
                             <option value="Diterima" {{ ($laporan->status ?? '') == 'Diterima' ? 'selected' : '' }}>Diterima
                             </option>
                             <option value="Ditolak" {{ ($laporan->status ?? '') == 'Ditolak' ? 'selected' : '' }}>Ditolak
-                            </option>                            
+                            </option>
                         </select>
                     </div>
 
@@ -143,7 +143,7 @@
             <div class="space-y-5">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Permasalahan yang Diadukan</h3>
-                    <p class="text-gray-900 whitespace-pre-line">{{ $laporan->permasalahan }}</p>
+                    <p class="text-gray-900 whitespace-pre-line">{{ $laporan->kategori_pengaduan }}</p>
                 </div>
 
                 @if (!empty($laporan->harapan))

@@ -78,12 +78,36 @@
 
                     {{-- Alamat (full width) --}}
                     <div class="sm:col-span-2">
-                        <label for="alamat" class="block text-sm font-medium text-gray-700">Alamat</label>
-                        <textarea name="alamat" id="alamat" rows="2" required
-                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 sm:text-sm">{{ old('alamat') }}</textarea>
-                        @error('alamat')
-                            <p class="text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+
+                        {{-- Kelurahan --}}
+                        <div>
+                            <label for="kelurahan" class="block text-sm font-medium text-gray-700">Kelurahan</label>
+                            <input type="text" name="kelurahan" id="kelurahan" value="{{ old('kelurahan') }}" required
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                            @error('kelurahan')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Kecamatan --}}
+                        <div>
+                            <label for="kecamatan" class="block text-sm font-medium text-gray-700">Kecamatan</label>
+                            <input type="text" name="kecamatan" id="kecamatan" value="{{ old('kecamatan') }}" required
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                            @error('kecamatan')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Kabupaten --}}
+                        <div class="sm:col-span-2">
+                            <label for="kabupaten" class="block text-sm font-medium text-gray-700">Kabupaten</label>
+                            <input type="text" name="kabupaten" id="kabupaten" value="{{ old('kabupaten') }}" required
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                            @error('kabupaten')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     {{-- Password --}}

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -61,7 +62,7 @@ class AuthController extends Controller
             }
         }
 
-        return back()->with('error', 'username atau password salah.');
+        return back()->with('error', 'Username atau password salah.');
     }
 
     public function logout(Request $request)
@@ -77,39 +78,53 @@ class AuthController extends Controller
         $validated = $request->validate(
             [
                 'nama_lengkap' => 'required|string|max:255',
-                'username' => 'required|string|max:255|unique:users',
-                'nik' => 'required|string|max:16|unique:users',
-                'email' => 'required|email|unique:users',
+                'username' => 'required|string|max:255|unique:users,username',
+                'nik' => 'required|digits:16|unique:users,nik',
+                'email' => 'required|email|unique:users,email',
                 'no_telepon' => 'required|string|max:20',
-                'alamat' => 'required|string',
+                'kelurahan' => 'required|string|max:100',
+                'kecamatan' => 'required|string|max:100',
+                'kabupaten' => 'required|string|max:100',
                 'password' => 'required|string|min:6|confirmed',
             ],
             [
-                'username.unique' => 'username sudah terdaftar.',
+                'nama_lengkap.required' => 'Nama lengkap harus diisi.',
+                'username.required' => 'Username harus diisi.',
+                'username.unique' => 'Username sudah terdaftar.',
+                'nik.required' => 'NIK harus diisi.',
+                'nik.digits' => 'NIK harus 16 digit.',
+                'nik.unique' => 'NIK sudah terdaftar.',
+                'email.required' => 'Email harus diisi.',
                 'email.unique' => 'Email sudah terdaftar.',
+                'no_telepon.required' => 'No Telepon harus diisi.',
+                'no_telepon.max' => 'No Telepon maksimal 20 karakter.',
+                'kelurahan.required' => 'Kelurahan harus diisi.',
+                'kecamatan.required' => 'Kecamatan harus diisi.',
+                'kabupaten.required' => 'Kabupaten harus diisi.',
+                'password.required' => 'Password harus diisi.',
                 'password.confirmed' => 'Password tidak cocok.',
                 'password.min' => 'Password minimal 6 karakter.',
-                'username.required' => 'username harus diisi.',
-                'email.required' => 'Email harus diisi.',
-                'no_telepon.required' => 'No Telepon harus diisi.',
-                'alamat.required' => 'Alamat harus diisi.',
-                'password.required' => 'Password harus diisi.',
-                'username.numeric' => 'username harus berupa angka.',
-                'no_telepon.numeric' => 'No Telepon harus berupa angka.',
-                'nik.numeric' => 'NIK harus berupa angka.',
-                'nik.max' => 'NIK maksimal 16 karakter.',
-                'no_telepon.max' => 'No Telepon maksimal 20 karakter.',
             ]
         );
 
+        $alamat = 'Kelurahan ' . $validated['kelurahan'] .
+            ', Kecamatan ' . $validated['kecamatan'] .
+            ', Kabupaten ' . $validated['kabupaten'];
+
         $user = User::create([
-            ...$validated,
+            'nama_lengkap' => $validated['nama_lengkap'],
+            'username' => $validated['username'],
+            'nik' => $validated['nik'],
+            'email' => $validated['email'],
+            'no_telepon' => $validated['no_telepon'],
+            'alamat' => $alamat,
+            'password' => Hash::make($validated['password']),
             'role' => 'Warga',
             'is_active' => true,
         ]);
 
         auth()->login($user);
 
-        return redirect()->route('login')->with('success', 'Registrasi berhasil!');
+        return redirect()->route('warga.dashboard')->with('success', 'Registrasi berhasil!');
     }
 }

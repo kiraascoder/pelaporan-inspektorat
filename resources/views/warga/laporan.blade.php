@@ -71,7 +71,7 @@
 
                                 {{-- Judul/Card header: ringkas isi permasalahan --}}
                                 <h4 class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
-                                    {{ \Illuminate\Support\Str::limit($laporan->permasalahan, 80) }}
+                                    {{ \Illuminate\Support\Str::limit($laporan->kategori_pengaduan, 80) }}
                                 </h4>
 
                                 {{-- Ringkasan pelapor & terlapor --}}
@@ -238,22 +238,6 @@
                         </div>
 
                         <h4 class="text-sm font-semibold">FORMAT FORMULIR PENGADUAN</h4>
-
-                        <!-- No & Tanggal Pengaduan -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex items-center">
-                                <label class="w-44 text-sm text-gray-700">No. Pengaduan</label>
-                                <input type="text" name="no_pengaduan"
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                                    placeholder="(diisi petugas / sistem)">
-                            </div>
-                            <div class="flex items-center">
-                                <label class="w-44 text-sm text-gray-700">Tanggal Pengaduan</label>
-                                <input type="date" name="tanggal_pengaduan" value="{{ now()->toDateString() }}"
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                            </div>
-                        </div>
-
                         <!-- DATA PELAPOR -->
                         <div class="border border-gray-300 rounded-lg">
                             <div class="bg-gray-100 px-4 py-2 font-semibold text-sm">DATA PELAPOR</div>
@@ -261,24 +245,31 @@
                                 <div class="grid md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm mb-1">Nama</label>
-                                        <input type="text" name="pelapor_nama" required
-                                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                        <input type="text" name="pelapor_nama"
+                                            value="{{ old('pelapor_nama', $user->nama_lengkap) }}" readonly
+                                            class="w-full px-3 py-2 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-green-500">
                                     </div>
+
                                     <div>
                                         <label class="block text-sm mb-1">Pekerjaan/Jabatan</label>
                                         <input type="text" name="pelapor_pekerjaan"
+                                            value="{{ old('pelapor_pekerjaan', $user->pekerjaan ?? '') }}"
                                             class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
                                     </div>
                                 </div>
+
                                 <div>
                                     <label class="block text-sm mb-1">Alamat</label>
                                     <input type="text" name="pelapor_alamat"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                        value="{{ old('pelapor_alamat', $user->alamat) }}" readonly
+                                        class="w-full px-3 py-2 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-green-500">
                                 </div>
+
                                 <div>
                                     <label class="block text-sm mb-1">No. Telp/HP</label>
                                     <input type="text" name="pelapor_telp"
-                                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                        value="{{ old('pelapor_telp', $user->no_telepon) }}" readonly
+                                        class="w-full px-3 py-2 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-green-500">
                                 </div>
                             </div>
                         </div>
@@ -310,6 +301,28 @@
                                         class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm mb-1">
+                                Kategori Pengaduan <span class="text-red-500">*</span>
+                            </label>
+
+                            <select name="kategori_pengaduan" required
+                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="">-- Pilih Kategori --</option>
+
+                                @foreach (\App\Models\LaporanPengaduan::KATEGORI_PENGADUAN as $kategori)
+                                    <option value="{{ $kategori }}"
+                                        {{ old('kategori_pengaduan') == $kategori ? 'selected' : '' }}>
+                                        {{ $kategori }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('kategori_pengaduan')
+                                <p class="text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- SUBSTANSI PENGADUAN -->

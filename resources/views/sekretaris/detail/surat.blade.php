@@ -70,15 +70,6 @@
                         </p>
                     </div>
 
-                    <div>
-                        <p class="text-xs font-semibold text-gray-500 uppercase">Penandatangan</p>
-                        <p class="mt-1 text-gray-800">
-                            {{ $pengajuanSurat->penandatangan->nama_lengkap ?? '—' }}<br>
-                            <span class="text-xs text-gray-500">
-                                {{ $pengajuanSurat->penandatangan->jabatan ?? ($pengajuanSurat->penandatangan->role ?? '') }}
-                            </span>
-                        </p>
-                    </div>
 
                     <div>
                         <p class="text-xs font-semibold text-gray-500 uppercase">Dibuat</p>

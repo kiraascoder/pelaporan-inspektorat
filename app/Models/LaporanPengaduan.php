@@ -16,6 +16,7 @@ class LaporanPengaduan extends Model
         'user_id',
         'no_pengaduan',
         'tanggal_pengaduan',
+        'kategori_pengaduan',
         'pelapor_nama',
         'pelapor_pekerjaan',
         'pelapor_alamat',
@@ -38,6 +39,18 @@ class LaporanPengaduan extends Model
         'bukti_pendukung'   => 'array',
     ];
 
+    public const KATEGORI_PENGADUAN = [
+        'Penyalahgunaan Wewenang',
+        'Korupsi/Pungutan Liar',
+        'Pelayanan Publik',
+        'Kepegawaian',
+        'Pengadaan Barang/Jasa',
+        'Aset/Keuangan Daerah',
+        'Disiplin Aparatur',
+        'Bantuan Sosial/Hibah',
+        'Infrastruktur/Pembangunan',
+        'Lainnya',
+    ];
     // Scopes status
     public function scopePending($query)
     {
@@ -77,16 +90,9 @@ class LaporanPengaduan extends Model
 
     public function suratTugas()
     {
-        // 1 laporan -> 1 pengajuan_surat_tugas (FK surat_tugas_id)
-        return $this->belongsTo(PengajuanSuratTugas::class, 'surat_tugas_id', 'pengajuan_surat_id');
+        return $this->hasOne(SuratTugas::class, 'laporan_id', 'laporan_id');
     }
-
-    public function pengajuanSuratTugas()
-    {
-        // alternatif relasi via laporan_id
-        return $this->hasOne(PengajuanSuratTugas::class, 'laporan_id', 'laporan_id');
-    }
-
+    
     public function getRouteKeyName()
     {
         return 'laporan_id';

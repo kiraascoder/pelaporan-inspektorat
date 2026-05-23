@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PengajuanSuratTugas;
+use App\Models\SuratTugas;
 use App\Models\LaporanPengaduan;
 use Illuminate\Http\Request;
 
@@ -15,7 +15,6 @@ class PengajuanSuratController extends Controller
     {
         $validated = $request->validate([
             'laporan_id'                      => 'required|exists:laporan_pengaduan,laporan_id',
-            'penandatangan_id'                => 'required|exists:users,user_id',
             'nama_ditugaskan'                 => 'nullable|array',
             'nama_ditugaskan.*.nama'          => 'required|string|max:255',
             'nama_ditugaskan.*.jabatan'       => 'nullable|string|max:255',
@@ -23,12 +22,12 @@ class PengajuanSuratController extends Controller
         ]);
 
 
-        $validated['status'] = PengajuanSuratTugas::STATUS_PENDING;
+        $validated['status'] = SuratTugas::STATUS_PENDING;
 
         if (empty($validated['nama_ditugaskan'])) {
             $validated['nama_ditugaskan'] = [];
         }
-        $pengajuan = PengajuanSuratTugas::create($validated);
+        $pengajuan = SuratTugas::create($validated);
 
         return redirect()
             ->route('ketua-bidang.surat.show', $pengajuan->pengajuan_surat_id)
@@ -38,9 +37,9 @@ class PengajuanSuratController extends Controller
     /**
      * Detail pengajuan
      */
-    public function show(PengajuanSuratTugas $pengajuanSurat)
+    public function show(SuratTugas $pengajuanSurat)
     {
-        $pengajuanSurat->load(['laporan', 'penandatangan']);
+        $pengajuanSurat->load(['laporan']);
 
         return view('ketua-bidang.detail.surat', compact('pengajuanSurat'));
     }
@@ -48,9 +47,9 @@ class PengajuanSuratController extends Controller
     /**
      * Form edit (biasanya dipakai Sekretaris untuk isi nomor surat & update status)
      */
-    public function edit(PengajuanSuratTugas $pengajuanSurat)
+    public function edit(SuratTugas $pengajuanSurat)
     {
-        $pengajuanSurat->load(['laporan', 'penandatangan']);
+        $pengajuanSurat->load(['laporan']);
 
         return view('admin.pengajuan-surat.edit', compact('pengajuanSurat'));
     }
@@ -58,10 +57,10 @@ class PengajuanSuratController extends Controller
     /**
      * Update data pengajuan (nomor surat, status, nama_ditugaskan, deskripsi)
      */
-    public function update(Request $request, PengajuanSuratTugas $pengajuanSurat)
+    public function update(Request $request, SuratTugas $pengajuanSurat)
     {
         $validated = $request->validate([
-            'nomor_surat'       => 'nullable|string|max:100|unique:pengajuan_surat_tugas,nomor_surat,' .
+            'nomor_surat'       => 'nullable|string|max:100|unique:surat_tugas,nomor_surat,' .
                 $pengajuanSurat->pengajuan_surat_id . ',pengajuan_surat_id',
             'status'            => 'required|in:Pending,Dibuat,Selesai',
             'nama_ditugaskan'   => 'nullable|array',
@@ -79,7 +78,7 @@ class PengajuanSuratController extends Controller
     /**
      * Hapus pengajuan
      */
-    public function destroy(PengajuanSuratTugas $pengajuanSurat)
+    public function destroy(SuratTugas $pengajuanSurat)
     {
         $pengajuanSurat->delete();
 
@@ -92,16 +91,16 @@ class PengajuanSuratController extends Controller
      * Endpoint opsional:
      * Sekretaris isi nomor surat dan langsung set status "Selesai"
      */
-    public function setNomorDanSelesai(Request $request, PengajuanSuratTugas $pengajuanSurat)
+    public function setNomorDanSelesai(Request $request, SuratTugas $pengajuanSurat)
     {
         $validated = $request->validate([
-            'nomor_surat' => 'required|string|max:100|unique:pengajuan_surat_tugas,nomor_surat,' .
+            'nomor_surat' => 'required|string|max:100|unique:surat_tugas,nomor_surat,' .
                 $pengajuanSurat->pengajuan_surat_id . ',pengajuan_surat_id',
         ]);
 
         $pengajuanSurat->update([
             'nomor_surat' => $validated['nomor_surat'],
-            'status'      => PengajuanSuratTugas::STATUS_SELESAI,
+            'status'      => SuratTugas::STATUS_SELESAI,
         ]);
 
         return back()->with('success', 'Nomor surat di-set dan status diubah menjadi Selesai.');

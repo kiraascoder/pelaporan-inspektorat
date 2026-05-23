@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
 use App\Models\LaporanTugas;
-use App\Models\PengajuanSuratTugas;
+use App\Models\SuratTugas;
 
 use App\Models\TimInvestigasi;
 use App\Models\User;
@@ -21,7 +21,6 @@ class KepalaInspektoratController extends Controller
             'laporan_pending'      => LaporanPengaduan::where('status', 'Pending')->count(),
             'tim_aktif'            => TimInvestigasi::where('status_tim', 'Aktif')->count(),
             'tim_dipimpin'         => TimInvestigasi::where('ketua_tim_id', $user->user_id)->count(),
-            'surat_tugas_aktif'    => PengajuanSuratTugas::where('status', 'Selesai')->count(),
             'laporan_tugas'        => LaporanTugas::where('status_laporan', 'Submitted')->count(),
         ];
         $timBertugas = $user->timInvestigasiDiikuti()
@@ -94,7 +93,7 @@ class KepalaInspektoratController extends Controller
     public function suratTugas()
     {
 
-        $suratList = PengajuanSuratTugas::with(['laporan', 'penandatangan'])
+        $suratList = SuratTugas::with(['laporan', 'penandatangan'])
             ->latest()
             ->get();
 
@@ -241,7 +240,7 @@ class KepalaInspektoratController extends Controller
 
         return view('kepala-inspektorat.laporan', compact('stats', 'laporan'));
     }
-    public function show(PengajuanSuratTugas $pengajuanSurat)
+    public function show(SuratTugas $pengajuanSurat)
     {
         $pengajuanSurat->load(['laporan', 'penandatangan']);
 

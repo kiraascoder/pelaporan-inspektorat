@@ -102,21 +102,6 @@
                                 <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Penandatangan Surat</label>
-                            <select name="penandatangan_id" required class="w-full rounded-md border-gray-300">
-                                <option value="">— Pilih Penandatangan —</option>
-                                @foreach ($userList ?? [] as $u)
-                                    <option value="{{ $u->user_id }}" @selected(old('penandatangan_id') == $u->user_id)>
-                                        {{ $u->nama_lengkap }} — {{ $u->jabatan ?? $u->role }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('penandatangan_id')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
                     </div>
 
                     {{-- NAMA-NAMA YANG DITUGASKAN (JSON ARRAY OF OBJECTS) --}}

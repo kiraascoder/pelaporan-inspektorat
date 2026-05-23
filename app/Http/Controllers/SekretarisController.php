@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaporanPengaduan;
-use App\Models\PengajuanSuratTugas;
+use App\Models\SuratTugas;
 use App\Models\TimInvestigasi;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 class SekretarisController extends Controller
 {
 
-    public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
+    public function generatePdf(SuratTugas $pengajuanSurat)
     {
         if ($pengajuanSurat->surat_tugas_path) {
             return back()->with('error', 'Surat tugas sudah pernah dibuat.');
@@ -24,13 +24,13 @@ class SekretarisController extends Controller
         DB::transaction(function () use ($pengajuanSurat) {
 
             /** 1. NOMOR SURAT */
-            $urutan = PengajuanSuratTugas::whereNotNull('nomor_surat')->count() + 1;
+            $urutan = SuratTugas::whereNotNull('nomor_surat')->count() + 1;
             $nomorSurat = "700.1 / {$urutan} / Inspektorat";
 
             /** 2. UPDATE STATUS */
             $pengajuanSurat->update([
                 'nomor_surat' => $nomorSurat,
-                'status'      => PengajuanSuratTugas::STATUS_SELESAI,
+                'status'      => SuratTugas::STATUS_SELESAI,
             ]);
 
             /** 3. UPDATE LAPORAN */
@@ -48,7 +48,7 @@ class SekretarisController extends Controller
 
             /** 5. RENDER VIEW */
             $html = view('sekretaris.surat-tugas.pdf', [
-                'pengajuan' => $pengajuanSurat->fresh(['laporan', 'penandatangan']),
+                'pengajuan' => $pengajuanSurat->fresh(['laporan']),
                 'logoBase64' => $logoBase64,
             ])->render();
 
@@ -306,14 +306,14 @@ class SekretarisController extends Controller
             return back()->with('error', 'Tim tidak ditemukan');
         }
     }
-    public function show(PengajuanSuratTugas $pengajuanSurat)
+    public function show(SuratTugas $pengajuanSurat)
     {
-        $pengajuanSurat->load(['laporan', 'penandatangan']);
+        $pengajuanSurat->load(['laporan']);
 
         return view('sekretaris.detail.surat', compact('pengajuanSurat'));
     }
 
-    public function destroy(PengajuanSuratTugas $pengajuanSurat)
+    public function destroy(SuratTugas $pengajuanSurat)
     {
         $pengajuanSurat->delete();
         $jabatanList = [
@@ -330,7 +330,7 @@ class SekretarisController extends Controller
 
     public function suratTugas()
     {
-        $suratList = PengajuanSuratTugas::with(['laporan', 'penandatangan'])
+        $suratList = SuratTugas::with(['laporan'])
             ->latest()
             ->get();
 

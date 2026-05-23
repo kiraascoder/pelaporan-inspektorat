@@ -12,11 +12,11 @@ return new class extends Migration
             // File surat tugas (PDF)
             $table->string('surat_tugas_file')->nullable()->after('bukti_pendukung');
 
-            // Relasi opsional ke pengajuan_surat_tugas
+            // Relasi opsional ke surat_tugas
             $table->unsignedBigInteger('surat_tugas_id')->nullable()->after('surat_tugas_file');
 
             $table->foreign('surat_tugas_id')
-                ->references('pengajuan_surat_id')->on('pengajuan_surat_tugas')
+                ->references('pengajuan_surat_id')->on('surat_tugas')
                 ->nullOnDelete();
         });
     }

@@ -76,7 +76,7 @@
             <div class="space-y-5">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Permasalahan yang Diadukan</h3>
-                    <p class="text-gray-900 whitespace-pre-line">{{ $laporan->permasalahan }}</p>
+                    <p class="text-gray-900 whitespace-pre-line">{{ $laporan->kategori_pengaduan }}</p>
                 </div>
 
                 @if (!empty($laporan->harapan))
@@ -114,7 +114,19 @@
                     </div>
                 @endif
             </div>
+            <form action="{{ route('warga.laporan.bukti.store', $laporan->laporan_id) }}" method="POST"
+                enctype="multipart/form-data">
+                @csrf
 
+                <label class="block text-sm mb-1">Tambah Bukti Pengaduan</label>
+
+                <input type="file" name="bukti_pendukung[]" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+
+                <button type="submit" class="mt-3 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">
+                    Tambah Bukti
+                </button>
+            </form>
             {{-- Keterangan Admin (opsional) --}}
             @if (!empty($laporan->keterangan_admin))
                 <div class="mt-6">
@@ -129,7 +141,7 @@
             </div>
 
             {{-- Aksi --}}
-            <div class="mt-4 flex items-center justify-end space-x-3">                
+            <div class="mt-4 flex items-center justify-end space-x-3">
                 <form action="{{ route('warga.laporan.destroy', $laporan->laporan_id) }}" method="POST"
                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?')">
                     @csrf

@@ -7,6 +7,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+
 
 
 class WargaController extends Controller
@@ -55,15 +57,29 @@ class WargaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $user = auth()->user();
+
+        $kategoriPengaduan = [
+            'Penyalahgunaan Wewenang',
+            'Korupsi/Pungutan Liar',
+            'Pelayanan Publik',
+            'Kepegawaian',
+            'Pengadaan Barang/Jasa',
+            'Aset/Keuangan Daerah',
+            'Disiplin Aparatur',
+            'Bantuan Sosial/Hibah',
+            'Infrastruktur/Pembangunan',
+            'Lainnya',
+        ];
+
+        $validated = $request->validate([
             'no_pengaduan'       => 'nullable|string|max:100',
             'tanggal_pengaduan'  => 'nullable|date',
 
+            'kategori_pengaduan' => ['required', Rule::in($kategoriPengaduan)],
+
             // Data Pelapor
-            'pelapor_nama'       => 'required|string|max:255',
             'pelapor_pekerjaan'  => 'nullable|string|max:255',
-            'pelapor_alamat'     => 'nullable|string|max:500',
-            'pelapor_telp'       => 'nullable|string|max:50',
 
             // Data Terlapor
             'terlapor_nama'      => 'nullable|string|max:255',
@@ -74,53 +90,59 @@ class WargaController extends Controller
             // Substansi
             'permasalahan'       => 'required|string',
             'harapan'            => 'nullable|string',
+            'agreement'          => 'required',
 
-            // File bukti (multiple)
-            'bukti_pendukung'    => 'nullable',
-            'bukti_pendukung.*'  => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // maks 10MB
+            // File bukti
+            'bukti_pendukung'    => 'nullable|array',
+            'bukti_pendukung.*'  => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
         ], [
-            'pelapor_nama.required'  => 'Nama pelapor wajib diisi.',
-            'permasalahan.required'  => 'Permasalahan wajib diisi.',
-            'bukti_pendukung.*.mimes' => 'Bukti harus PDF/JPG/JPEG/PNG/DOC/DOCX.',
-            'bukti_pendukung.*.max'  => 'Bukti maksimal 10MB per file.',
+            'kategori_pengaduan.required' => 'Kategori pengaduan wajib dipilih.',
+            'kategori_pengaduan.in'       => 'Kategori pengaduan tidak valid.',
+            'permasalahan.required'       => 'Permasalahan wajib diisi.',
+            'agreement.required'          => 'Pernyataan wajib disetujui.',
+            'bukti_pendukung.*.mimes'    => 'Bukti harus PDF/JPG/JPEG/PNG/DOC/DOCX.',
+            'bukti_pendukung.*.max'      => 'Bukti maksimal 10MB per file.',
         ]);
 
-        // Siapkan data
-        $userId = auth()->id(); // pastikan model User punya $primaryKey = 'user_id' jika kolomnya user_id
+        $userId = $user->user_id ?? $user->id;
         $today  = now()->toDateString();
 
-        // Auto generate no_pengaduan jika kosong (opsional)
         $noPengaduan = $request->filled('no_pengaduan')
-            ? $request->string('no_pengaduan')->toString()
-            : 'PD-' . now()->format('Ymd-His') . '-' . str_pad((string)$userId, 4, '0', STR_PAD_LEFT);
+            ? $request->input('no_pengaduan')
+            : 'PD-' . now()->format('Ymd-His') . '-' . str_pad((string) $userId, 4, '0', STR_PAD_LEFT);
 
-        // Upload bukti (bisa 0..n file)
         $buktiPaths = [];
+
         if ($request->hasFile('bukti_pendukung')) {
-            foreach ((array) $request->file('bukti_pendukung') as $file) {
+            foreach ($request->file('bukti_pendukung') as $file) {
                 if ($file && $file->isValid()) {
                     $buktiPaths[] = $file->store('bukti_pendukung', 'public');
                 }
             }
         }
 
-        // Simpan
         LaporanPengaduan::create([
-            'user_id'            => $userId,
-            'no_pengaduan'       => $noPengaduan,
-            'tanggal_pengaduan'  => $request->date('tanggal_pengaduan')?->toDateString() ?? $today,
-            'pelapor_nama'       => $request->string('pelapor_nama'),
-            'pelapor_pekerjaan'  => $request->string('pelapor_pekerjaan'),
-            'pelapor_alamat'     => $request->string('pelapor_alamat'),
-            'pelapor_telp'       => $request->string('pelapor_telp'),
-            'terlapor_nama'      => $request->string('terlapor_nama'),
-            'terlapor_pekerjaan' => $request->string('terlapor_pekerjaan'),
-            'terlapor_alamat'    => $request->string('terlapor_alamat'),
-            'terlapor_telp'      => $request->string('terlapor_telp'),
-            'permasalahan'       => $request->input('permasalahan'),
-            'harapan'            => $request->input('harapan'),
-            'bukti_pendukung'    => $buktiPaths, // cast ke array di model            
-            'status'             => 'Pending',
+            'user_id'             => $userId,
+            'no_pengaduan'        => $noPengaduan,
+            'tanggal_pengaduan'   => $request->date('tanggal_pengaduan')?->toDateString() ?? $today,
+            'kategori_pengaduan'  => $validated['kategori_pengaduan'],
+
+            // Data pelapor otomatis dari akun
+            'pelapor_nama'        => $user->nama_lengkap,
+            'pelapor_pekerjaan'   => $validated['pelapor_pekerjaan'] ?? null,
+            'pelapor_alamat'      => $user->alamat,
+            'pelapor_telp'        => $user->no_telepon,
+
+            // Data terlapor dari form
+            'terlapor_nama'       => $validated['terlapor_nama'] ?? null,
+            'terlapor_pekerjaan'  => $validated['terlapor_pekerjaan'] ?? null,
+            'terlapor_alamat'     => $validated['terlapor_alamat'] ?? null,
+            'terlapor_telp'       => $validated['terlapor_telp'] ?? null,
+
+            'permasalahan'        => $validated['permasalahan'],
+            'harapan'             => $validated['harapan'] ?? null,
+            'bukti_pendukung'     => $buktiPaths,
+            'status'              => 'Pending',
         ]);
 
         return redirect()
@@ -212,13 +234,11 @@ class WargaController extends Controller
             'laporan_selesai' => $laporanSelesai,
         ];
 
-
         $laporanTerbaru = LaporanPengaduan::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(5);
 
-
-        return view('warga.laporan', compact('stats', 'laporanTerbaru'));
+        return view('warga.laporan', compact('stats', 'laporanTerbaru', 'user'));
     }
 
     public function profileView()
@@ -245,5 +265,41 @@ class WargaController extends Controller
 
         // kembalikan sebagai file download
         return $pdf->download('Formulir_Pengaduan.pdf');
+    }
+    public function tambahBukti(Request $request, $laporan_id)
+    {
+        $laporan = LaporanPengaduan::findOrFail($laporan_id);
+
+        $userId = auth()->user()->user_id ?? auth()->id();
+
+        if ($laporan->user_id != $userId) {
+            abort(403);
+        }
+
+        $request->validate([
+            'bukti_pendukung'   => 'required|array',
+            'bukti_pendukung.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+        ], [
+            'bukti_pendukung.required' => 'File bukti wajib dipilih.',
+            'bukti_pendukung.*.mimes' => 'Bukti harus PDF/JPG/JPEG/PNG/DOC/DOCX.',
+            'bukti_pendukung.*.max'   => 'Bukti maksimal 10MB per file.',
+        ]);
+
+        $buktiLama = $laporan->bukti_pendukung ?? [];
+        $buktiBaru = [];
+
+        foreach ($request->file('bukti_pendukung') as $file) {
+            if ($file && $file->isValid()) {
+                $buktiBaru[] = $file->store('bukti_pendukung', 'public');
+            }
+        }
+
+        $laporan->update([
+            'bukti_pendukung' => array_merge($buktiLama, $buktiBaru),
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Bukti pengaduan berhasil ditambahkan.');
     }
 }

@@ -26,7 +26,6 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Laporan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penandatangan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
@@ -104,20 +103,6 @@
                             @enderror
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Penandatangan Surat</label>
-                            <select name="penandatangan_id" required class="w-full rounded-md border-gray-300">
-                                <option value="">— Pilih Penandatangan —</option>
-                                @foreach ($userList ?? [] as $u)
-                                    <option value="{{ $u->user_id }}" @selected(old('penandatangan_id') == $u->user_id)>
-                                        {{ $u->nama_lengkap }} — {{ $u->jabatan ?? $u->role }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('penandatangan_id')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
                     </div>
 
                     {{-- NAMA-NAMA YANG DITUGASKAN (JSON ARRAY OF OBJECTS) --}}

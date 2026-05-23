@@ -18,7 +18,6 @@ class LaporanTugas extends Model
         'judul_laporan',
         'isi_laporan',
         'temuan',
-        'rekomendasi',
         'temuan_pemeriksaan',
         'bukti_pendukung',
         'status_laporan',

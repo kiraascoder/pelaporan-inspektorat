@@ -41,10 +41,13 @@ class PegawaiController extends Controller
         TimInvestigasi $tim,
         LaporanPengaduan $laporan
     ) {
-        $timId = $tim->id;
+        $timId = $tim->tim_id ?? $tim->id;
 
         $user = auth()->user();
-        $idsCalon = array_values(array_filter([$user->id ?? null, $user->user_id ?? null]));
+        $idsCalon = array_values(array_filter([
+            $user->id ?? null,
+            $user->user_id ?? null,
+        ]));
 
         $baseAnggotaQ = DB::table('anggota_tim')
             ->where('tim_id', $timId)
@@ -55,37 +58,63 @@ class PegawaiController extends Controller
             });
 
         $pegawaiId = (clone $baseAnggotaQ)->value('pegawai_id');
-        abort_unless($pegawaiId, 403, 'Akun ini belum terdaftar sebagai anggota tim ini.');
+
+        abort_unless(
+            $pegawaiId,
+            403,
+            'Akun ini belum terdaftar sebagai anggota tim ini.'
+        );
 
         $isKetua = (clone $baseAnggotaQ)
             ->whereRaw('LOWER(role_dalam_tim) = ?', ['ketua'])
-            ->when(Schema::hasColumn('anggota_tim', 'is_active'), function ($q) {
-                $q->where('is_active', 1);
-            })
             ->exists();
 
-        abort_unless($isKetua, 403, 'Hanya ketua tim yang boleh mengubah status.');
+        abort_unless(
+            $isKetua,
+            403,
+            'Hanya ketua tim yang boleh mengubah status.'
+        );
+
+        $laporanId = $laporan->laporan_id ?? $laporan->id;
 
         $terhubung = DB::table('tim_investigasi')
             ->where('tim_id', $timId)
-            ->where('laporan_id', $laporan->laporan_id ?? $laporan->id)
+            ->where('laporan_id', $laporanId)
             ->when(Schema::hasColumn('tim_investigasi', 'status_penugasan'), function ($q) {
                 $q->where('status_penugasan', 'Aktif');
             })
             ->exists();
 
-        abort_unless($terhubung, 404, 'Laporan tidak terhubung ke tim ini.');
+        abort_unless(
+            $terhubung,
+            404,
+            'Laporan tidak terhubung ke tim ini.'
+        );
 
         $data = $request->validate([
-            'status' => ['required', Rule::in(['Pending', 'Diterima', 'Dalam_Investigasi', 'Selesai', 'Ditolak'])],
+            'status' => [
+                'required',
+                Rule::in([
+                    'Pending',
+                    'Diterima',
+                    'Dalam_Investigasi',
+                    'Selesai',
+                    'Ditolak',
+                ]),
+            ],
         ]);
 
         $oldStatus = $laporan->status;
-        $laporan->update(['status' => $data['status']]);
 
-        return back()->with('success', "Status laporan diubah dari {$oldStatus} menjadi {$laporan->status}.");
+        $laporan->update([
+            'status' => $data['status'],
+        ]);
+
+        return back()->with(
+            'success',
+            "Status laporan diubah dari {$oldStatus} menjadi {$laporan->status}."
+        );
     }
-
 
     public function laporan(Request $request)
     {
@@ -169,49 +198,80 @@ class PegawaiController extends Controller
         }
     }
 
-    public function tim()
+    public function tim(Request $request)
     {
         try {
             $pegawaiId = Auth::user()->user_id;
-            $timList = TimInvestigasi::whereHas('anggotaAktif', function ($query) use ($pegawaiId) {
+
+            $baseQuery = TimInvestigasi::whereHas('anggotaAktif', function ($query) use ($pegawaiId) {
                 $query->where('pegawai_id', $pegawaiId);
-            })
-                ->with(['ketuaTim', 'anggotaAktif', 'laporanPengaduan'])
-                ->latest()
-                ->get();
-            $dalamInvestigasi = TimInvestigasi::aktif()
-                ->whereHas('laporanPengaduan', function ($query) {
-                    $query->where('status_tim', 'Dalam Investigasi');
-                })->count();
-            $kasusSelesai = TimInvestigasi::whereHas('laporanPengaduan', function ($query) {
-                $query->where('status_tim', 'Selesai');
-            })->count();
-
-            // Hitung total dan statistik hanya dari tim yang diikuti
-            $totalTim = $timList->count();
-            $timAktif = $timList->where('is_active', true)->count();
-
-            // $dalamInvestigasi = $timList->filter(function ($tim) {
-            //     return $tim->laporanPengaduan->contains('status_tim', 'Dalam Investigasi');
-            // })->count();
-
-            // $kasusSelesai = $timList->filter(function ($tim) {
-            //     return $tim->laporanPengaduan->contains('status_tim', 'Selesai');
-            // })->count();
-
-            // Pegawai list dan laporan hanya jika kamu perlu (misalnya untuk modal tambah tim)
-            $pegawaiList = User::where('role', 'Pegawai')->get()->map(function ($user) {
-                return [
-                    'id' => $user->user_id,
-                    'user_id' => $user->user_id,
-                    'nama_lengkap' => $user->nama_lengkap,
-                    'jabatan' => $user->jabatan
-                ];
             });
+
+            // Statistik semua tim yang diikuti user
+            $totalTim = (clone $baseQuery)->count();
+
+            // Tidak pakai is_active lagi
+            $timAktif = (clone $baseQuery)
+                ->whereIn('status_tim', ['Dibentuk', 'Aktif'])
+                ->count();
+
+            $dalamInvestigasi = (clone $baseQuery)
+                ->whereHas('laporanPengaduan', function ($query) {
+                    $query->whereIn('status', ['Dalam_Investigasi', 'Dalam Investigasi']);
+                })
+                ->count();
+
+            $kasusSelesai = (clone $baseQuery)
+                ->whereHas('laporanPengaduan', function ($query) {
+                    $query->where('status', 'Selesai');
+                })
+                ->count();
+
+            $timQuery = (clone $baseQuery)
+                ->with([
+                    'ketuaTim',
+                    'anggotaAktif',
+                    'laporanPengaduan.suratTugas',
+                ]);
+
+            if ($request->filled('q')) {
+                $q = trim($request->q);
+
+                $timQuery->where(function ($query) use ($q) {
+                    $query->where('nama_tim', 'like', "%{$q}%")
+                        ->orWhere('tim_id', 'like', "%{$q}%")
+                        ->orWhere('status_tim', 'like', "%{$q}%")
+                        ->orWhereHas('ketuaTim', function ($ketua) use ($q) {
+                            $ketua->where('nama_lengkap', 'like', "%{$q}%");
+                        })
+                        ->orWhereHas('laporanPengaduan', function ($laporan) use ($q) {
+                            $laporan->where('kategori_pengaduan', 'like', "%{$q}%")
+                                ->orWhere('permasalahan', 'like', "%{$q}%")
+                                ->orWhere('status', 'like', "%{$q}%");
+                        });
+                });
+            }
+
+            $timList = $timQuery
+                ->latest()
+                ->paginate(10)
+                ->withQueryString();
+
+            $pegawaiList = User::where('role', 'Pegawai')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->user_id,
+                        'user_id' => $user->user_id,
+                        'nama_lengkap' => $user->nama_lengkap,
+                        'name' => $user->nama_lengkap,
+                        'jabatan' => $user->jabatan,
+                    ];
+                });
 
             $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
                 ->whereDoesntHave('timInvestigasi')
-                ->get(['laporan_id as id', 'permasalahan']);
+                ->get(['laporan_id', 'permasalahan']);
 
             return view('pegawai.tim', compact(
                 'totalTim',
@@ -352,7 +412,6 @@ class PegawaiController extends Controller
             'judul_laporan' => 'required|string|max:255',
             'isi_laporan' => 'required|string',
             'temuan' => 'nullable|string',
-            'rekomendasi' => 'nullable|string',
             'bukti_pendukung.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
@@ -403,7 +462,6 @@ class PegawaiController extends Controller
             'judul_laporan' => 'required|string|max:255',
             'isi_laporan' => 'required|string',
             'temuan' => 'nullable|string',
-            'rekomendasi' => 'nullable|string',
         ]);
 
         $laporanTugas->update($request->all());

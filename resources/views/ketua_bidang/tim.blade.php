@@ -236,7 +236,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                                 placeholder="Misal: Tim Investigasi Drainase RW 05">
                         </div>
-                                                
+
 
                         {{-- Laporan Terkait (tetap tampil) --}}
                         <div>
@@ -366,10 +366,16 @@
         // Render opsi pegawai (value = user_id)
         function renderPegawaiOptions() {
             pegawaiSel.innerHTML = '<option value="">Pilih Pegawai untuk ditambahkan</option>';
+
             (PEGAWAI_LIST || []).forEach(p => {
                 const opt = document.createElement('option');
-                opt.value = p.user_id; // WAJIB user_id untuk lolos exists:users,user_id
-                opt.textContent = p.name ?? ('User #' + p.user_id);
+
+                opt.value = p.user_id;
+
+                const namaPegawai = p.nama_lengkap || p.name || p.username || ('User #' + p.user_id);
+
+                opt.textContent = namaPegawai;
+
                 pegawaiSel.appendChild(opt);
             });
         }
@@ -378,15 +384,17 @@
         pegawaiSel.addEventListener('change', () => {
             const userId = pegawaiSel.value;
             if (!userId) return;
+
             if (selected.some(s => String(s.user_id) === String(userId))) {
                 pegawaiSel.value = '';
                 return;
             }
 
             const peg = (PEGAWAI_LIST || []).find(p => String(p.user_id) === String(userId));
+
             selected.push({
                 user_id: String(userId),
-                name: peg?.name || ('User #' + userId),
+                name: peg?.nama_lengkap || peg?.name || peg?.username || ('User #' + userId),
                 role: 'Anggota'
             });
 

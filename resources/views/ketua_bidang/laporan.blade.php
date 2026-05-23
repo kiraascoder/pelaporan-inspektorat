@@ -119,7 +119,7 @@
                             </option>
                             <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak
                             </option>
-                        </select>                        
+                        </select>
                         <div class="flex space-x-2">
                             <button type="button" id="apply_filter"
                                 class="bg-primary-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
@@ -174,7 +174,7 @@
                                     <td class="px-6 py-4">
                                         <div class="max-w-xs">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ Str::limit($report->permasalahan, 60) }}
+                                                {{ Str::limit($report->kategori_pengaduan, 60) }}
                                             </div>
                                         </div>
                                     </td>

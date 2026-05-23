@@ -126,7 +126,7 @@
             {{-- Created at --}}
             <div class="mt-6 text-xs text-gray-500">
                 Dibuat pada {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
-            </div>            
+            </div>
         </div>
     </div>
 @endsection

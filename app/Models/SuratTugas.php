@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PengajuanSuratTugas extends Model
+class SuratTugas extends Model
 {
     use HasFactory;
 
     // Nama tabel
-    protected $table = 'pengajuan_surat_tugas';
+    protected $table = 'surat_tugas';
 
     // Primary key kustom
     protected $primaryKey = 'pengajuan_surat_id';
@@ -21,12 +21,10 @@ class PengajuanSuratTugas extends Model
     // Auto-increment aktif
     public $incrementing = true;
 
-    // Kolom yang bisa diisi massal    
+    // Kolom yang bisa diisi massal
     protected $fillable = [
         'laporan_id',
-        'penandatangan_id',
         'nomor_surat',
-        'status',
         'nama_ditugaskan',
         'deskripsi_umum',
         'surat_tugas_path',
@@ -36,11 +34,8 @@ class PengajuanSuratTugas extends Model
 
     protected $casts = [
         'nama_ditugaskan' => 'array',
+        'surat_tugas_uploaded_at' => 'datetime',
     ];
-
-    public const STATUS_PENDING = 'Pending';
-    public const STATUS_DIBUAT  = 'Dibuat';
-    public const STATUS_SELESAI = 'Selesai';
 
 
     // ========================
@@ -63,11 +58,5 @@ class PengajuanSuratTugas extends Model
     public function laporan()
     {
         return $this->belongsTo(LaporanPengaduan::class, 'laporan_id', 'laporan_id');
-    }
-
-    /** Relasi ke User penandatangan (Kepala Inspektorat) */
-    public function penandatangan()
-    {
-        return $this->belongsTo(User::class, 'penandatangan_id', 'user_id');
     }
 }

@@ -27,6 +27,8 @@ Route::prefix('warga')->group(function () {
     Route::get('dashboard', [WargaController::class, 'dashboard'])->name('warga.dashboard');
     Route::get('laporan', [WargaController::class, 'laporanView'])->name('warga.laporan');
     Route::get('profile', [WargaController::class, 'profileView'])->name('warga.profile');
+    Route::post('laporan/{laporan_id}/bukti', [WargaController::class, 'tambahBukti'])
+        ->name('warga.laporan.bukti.store');
 
     // Laporan Warga Route
 

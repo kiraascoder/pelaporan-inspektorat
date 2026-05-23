@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         if (!Schema::hasColumn('laporan_tugas', 'temuan_pemeriksaan')) {
             Schema::table('laporan_tugas', function (Blueprint $table) {
-                $table->json('temuan_pemeriksaan')->nullable()->after('rekomendasi');
+                $table->json('temuan_pemeriksaan')->nullable();
             });
         }
     }

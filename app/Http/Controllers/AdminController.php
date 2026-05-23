@@ -151,7 +151,6 @@ class AdminController extends Controller
             'laporan_dalam_investigasi' => LaporanPengaduan::dalamInvestigasi()->count(),
             'laporan_selesai' => LaporanPengaduan::selesai()->count(),
             'semuaTim' => TimInvestigasi::count(),
-            'surat_tugas_aktif' => SuratTugas::where('status_surat', 'Aktif')->count(),
         ];
 
         $query = LaporanPengaduan::query();
@@ -191,7 +190,6 @@ class AdminController extends Controller
             'laporan_dalam_investigasi' => LaporanPengaduan::dalamInvestigasi()->count(),
             'laporan_selesai' => LaporanPengaduan::selesai()->count(),
             'semuaTim' => TimInvestigasi::count(),
-            'surat_tugas_aktif' => SuratTugas::where('status_surat', 'Aktif')->count(),
         ];
 
         $query = LaporanPengaduan::query();
@@ -488,7 +486,7 @@ class AdminController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Update data user        
+        // Update data user
         $user->username = $request->username;
         $user->email = $request->email;
         $user->nama_lengkap = $request->nama_lengkap;

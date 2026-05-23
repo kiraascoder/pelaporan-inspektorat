@@ -5,6 +5,8 @@
 @section('content')
     @php
         $lap = $tim->laporanPengaduan;
+        $suratTugas = $lap?->suratTugas;
+        $anggotaAktif = collect($tim->anggotaAktif ?? []);
 
         $statusColors = [
             'Pending' => 'bg-yellow-100 text-yellow-800 ring-yellow-200',
@@ -13,235 +15,427 @@
             'Selesai' => 'bg-green-100 text-green-800 ring-green-200',
             'Ditolak' => 'bg-red-100 text-red-800 ring-red-200',
         ];
-        $statusColor = $statusColors[$lap->status ?? ''] ?? 'bg-gray-100 text-gray-800 ring-gray-200';
 
-        // normalisasi lampiran
+        $statusLaporan = $lap->status ?? '-';
+        $statusColor = $statusColors[$statusLaporan] ?? 'bg-gray-100 text-gray-800 ring-gray-200';
+
+        $formatTanggal = function ($tanggal) {
+            if (!$tanggal) {
+                return '-';
+            }
+
+            try {
+                return \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y');
+            } catch (\Throwable $e) {
+                return '-';
+            }
+        };
+
+        $storageUrl = function ($path) {
+            if (!$path) {
+                return null;
+            }
+
+            $cleanPath = ltrim($path, '/');
+
+            if (\Illuminate\Support\Str::startsWith($cleanPath, ['http://', 'https://'])) {
+                return $cleanPath;
+            }
+
+            if (\Illuminate\Support\Str::startsWith($cleanPath, 'storage/')) {
+                return asset($cleanPath);
+            }
+
+            return asset('storage/' . $cleanPath);
+        };
+
         $lampiran = $lap->bukti_pendukung ?? [];
+
         if (is_string($lampiran)) {
-            $dec = json_decode($lampiran, true);
-            $lampiran = is_array($dec) ? $dec : ($lampiran ? [$lampiran] : []);
+            $decoded = json_decode($lampiran, true);
+            $lampiran = is_array($decoded) ? $decoded : ($lampiran ? [$lampiran] : []);
+        } elseif ($lampiran instanceof \Illuminate\Support\Collection) {
+            $lampiran = $lampiran->toArray();
         } elseif (!is_array($lampiran)) {
             $lampiran = $lampiran ? (array) $lampiran : [];
         }
-        $lampiranCount = count($lampiran);
 
-        $pelaporNama = $lap->pelapor_nama ?? ($lap->user->nama_lengkap ?? '-');
-        $terlaporNama = $lap->terlapor_nama ?? '-';
+        $lampiran = array_values(array_filter($lampiran));
+
+        $getLampiranPath = function ($item) {
+            if (is_array($item)) {
+                return $item['path_file'] ?? ($item['path'] ?? ($item['file'] ?? null));
+            }
+
+            if (is_object($item)) {
+                return $item->path_file ?? ($item->path ?? ($item->file ?? null));
+            }
+
+            return $item;
+        };
+
+        $getLampiranName = function ($item) use ($getLampiranPath) {
+            if (is_array($item) && !empty($item['nama_file'])) {
+                return $item['nama_file'];
+            }
+
+            if (is_object($item) && !empty($item->nama_file)) {
+                return $item->nama_file;
+            }
+
+            $path = $getLampiranPath($item);
+
+            return $path ? basename($path) : 'Lampiran';
+        };
+
+        $suratPath = $suratTugas->surat_tugas_path ?? null;
+        $suratUrl = $storageUrl($suratPath);
+
+        $kategori = $lap->kategori_pengaduan ?? ($lap->kategori ?? '-');
+
+        $roleBadge = function ($role) {
+            $map = [
+                'Ketua' => 'bg-yellow-100 text-yellow-800 ring-yellow-200',
+                'Penanggung_Jawab' => 'bg-purple-100 text-purple-800 ring-purple-200',
+                'Wakil_Penanggung_Jawab' => 'bg-fuchsia-100 text-fuchsia-800 ring-fuchsia-200',
+                'Pengendali_Teknis' => 'bg-blue-100 text-blue-800 ring-blue-200',
+                'Anggota' => 'bg-gray-100 text-gray-800 ring-gray-200',
+            ];
+
+            return $map[$role] ?? 'bg-gray-100 text-gray-800 ring-gray-200';
+        };
     @endphp
 
-    <div class="space-y-6 w-full">
+    <div class="space-y-6">
 
-        {{-- Header bar full --}}
+        {{-- HEADER --}}
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ $tim->nama_tim }}</h1>
-                <p class="text-gray-600 mt-1">Detail tim & laporan yang ditangani</p>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    {{ $tim->nama_tim }}
+                </h1>
+                <p class="text-gray-600 mt-1">
+                    Detail tim investigasi, data laporan pengaduan, bukti pendukung, dan surat tugas
+                </p>
             </div>
-            <div class="flex items-center gap-3">
+
+            <div class="flex flex-wrap items-center gap-3">
                 <span
                     class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium ring-1 {{ $statusColor }}">
-                    <span class="w-2 h-2 rounded-full bg-current mr-2"></span>
-                    {{ str_replace('_', ' ', $lap->status ?? '-') }}
+                    {{ str_replace('_', ' ', $statusLaporan) }}
                 </span>
+
                 <a href="{{ route('ketua_bidang.tim') }}"
                     class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
                     Kembali
                 </a>
             </div>
         </div>
 
-        {{-- Banner info full width --}}
-        <div class="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border border-gray-200 rounded-xl p-6">
-            <div class="flex flex-col md:flex-row gap-4 md:items-start">
-                <div class="flex-shrink-0 bg-white/70 p-3 rounded-lg shadow-sm ring-1 ring-white">
-                    <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div class="bg-white rounded-lg p-3 ring-1 ring-gray-200">
-                            <div class="text-[11px] text-gray-500">Pelapor</div>
-                            <div class="text-sm font-medium text-gray-900">{{ $pelaporNama }}</div>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 ring-1 ring-gray-200">
-                            <div class="text-[11px] text-gray-500">Terlapor</div>
-                            <div class="text-sm font-medium text-gray-900">{{ $terlaporNama }}</div>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 ring-1 ring-gray-200">
-                            <div class="text-[11px] text-gray-500">Tgl Pengaduan</div>
-                            <div class="text-sm font-medium text-gray-900">
-                                {{ optional($lap->tanggal_pengaduan)->format('d M Y') ?? ($lap->created_at?->format('d M Y') ?? '-') }}
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 ring-1 ring-gray-200">
-                            <div class="text-[11px] text-gray-500">Lampiran</div>
-                            <div class="text-sm font-medium text-gray-900">{{ $lampiranCount }} file</div>
-                        </div>
+        @if (!$lap)
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 text-yellow-800">
+                Laporan pengaduan belum terhubung dengan tim ini.
+            </div>
+        @else
+            {{-- RINGKASAN --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Nomor Pengaduan</div>
+                    <div class="mt-1 font-semibold text-gray-900">
+                        {{ $lap->no_pengaduan ?? 'LP-' . $lap->laporan_id }}
                     </div>
-                    @if (!empty($lap->permasalahan))
-                        <p class="mt-4 text-sm text-gray-700">
-                            {{ \Illuminate\Support\Str::limit($lap->permasalahan, 220) }}
-                        </p>
-                    @endif
-                    @if ($lap->surat_tugas_file)
-                        <div class="mt-4">
-                            <a href="{{ asset('storage/' . $lap->surat_tugas_file) }}" class="text-blue-600 underline"
-                                target="_blank">
-                                📄 Lihat Surat Tugas
-                            </a>
-                        </div>
-                    @endif
+                </div>
+
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Kategori</div>
+                    <div class="mt-1 font-semibold text-gray-900">
+                        {{ str_replace('_', ' ', $kategori) }}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Tanggal Pengaduan</div>
+                    <div class="mt-1 font-semibold text-gray-900">
+                        {{ $formatTanggal($lap->tanggal_pengaduan ?? $lap->created_at) }}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide">Lampiran Bukti</div>
+                    <div class="mt-1 font-semibold text-gray-900">
+                        {{ count($lampiran) }} file
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Grid konten full width --}}
-        <div class="grid grid-cols-12 gap-6 w-full">
-            {{-- Kolom kiri: informasi laporan --}}
-            <div class="col-span-12 xl:col-span-7">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-                    <h3 class="text-sm font-semibold text-gray-700 tracking-wide">INFORMASI LAPORAN</h3>
+            {{-- SURAT TUGAS --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div
+                    class="px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Surat Tugas</h2>
+                        <p class="text-sm text-gray-500">Surat tugas yang otomatis dibuat saat tim investigasi dibentuk</p>
+                    </div>
+
+                    @if ($suratUrl)
+                        <a href="{{ $suratUrl }}" target="_blank"
+                            class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                            Lihat Surat Tugas
+                        </a>
+                    @else
+                        <span class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-600 text-sm rounded-lg">
+                            File surat belum tersedia
+                        </span>
+                    @endif
+                </div>
+
+                <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <div class="text-xs text-gray-500">Nomor Surat</div>
+                        <div class="font-medium text-gray-900">
+                            {{ $suratTugas->nomor_surat ?? '-' }}
+                        </div>
+                    </div>
 
                     <div>
-                        <div class="text-xs text-gray-500 mb-1">Permasalahan</div>
-                        <div class="text-gray-900 text-sm whitespace-pre-line">
-                            {{ $lap->permasalahan ?? '-' }}
+                        <div class="text-xs text-gray-500">Tanggal Dibuat</div>
+                        <div class="font-medium text-gray-900">
+                            {{ $formatTanggal($suratTugas->created_at ?? null) }}
                         </div>
                     </div>
 
-                    @if (!empty($lap->harapan))
-                        <div class="pt-4 border-t border-gray-100">
-                            <div class="text-xs text-gray-500 mb-1">Harapan</div>
-                            <div class="text-gray-900 text-sm whitespace-pre-line">
-                                {{ $lap->harapan }}
-                            </div>
+                    <div>
+                        <div class="text-xs text-gray-500">File</div>
+                        <div class="font-medium text-gray-900">
+                            {{ $suratPath ? basename($suratPath) : '-' }}
                         </div>
-                    @endif
-
-                    @if ($lampiranCount > 0)
-                        <div class="pt-4 border-t border-gray-100">
-                            <div class="text-xs text-gray-500 mb-2">Bukti Pendukung</div>
-                            <div class="grid sm:grid-cols-2 gap-2">
-                                @foreach ($lampiran as $i => $path)
-                                    <a href="{{ asset('storage/' . $path) }}" target="_blank"
-                                        class="group flex items-center justify-between px-3 py-2 rounded-md ring-1 ring-gray-200 hover:ring-primary-300 hover:bg-primary-50">
-                                        <span class="text-sm text-blue-700 group-hover:underline">Lampiran
-                                            {{ $i + 1 }}</span>
-                                        <span class="text-[11px] text-gray-500 truncate ml-3">{{ basename($path) }}</span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
+                    </div>
                 </div>
             </div>
 
-            {{-- Kolom kanan: anggota tim --}}
-            <div class="col-span-12 xl:col-span-5">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-sm font-semibold text-gray-700 tracking-wide mb-4">
-                        ANGGOTA TIM ({{ count($tim->anggotaAktif) }} orang)
-                    </h3>
+            {{-- DATA LAPORAN --}}
+            <div class="grid grid-cols-12 gap-6">
 
-                    {{-- Ketua --}}
-                    <div class="flex items-center p-4 rounded-lg bg-emerald-50 ring-1 ring-emerald-100 mb-4">
-                        <div class="flex-shrink-0 bg-white p-2 rounded-full mr-3 ring-1 ring-emerald-100">
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                {{-- KIRI --}}
+                <div class="col-span-12 xl:col-span-8 space-y-6">
+
+                    {{-- DATA PELAPOR & TERLAPOR --}}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                <h3 class="font-semibold text-gray-900">Data Pelapor</h3>
+                            </div>
+
+                            <div class="p-6 space-y-4">
+                                <div>
+                                    <div class="text-xs text-gray-500">Nama</div>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ $lap->pelapor_nama ?? ($lap->user->nama_lengkap ?? '-') }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-gray-500">Pekerjaan/Jabatan</div>
+                                    <div class="text-sm text-gray-900">
+                                        {{ $lap->pelapor_pekerjaan ?? '-' }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-gray-500">Alamat</div>
+                                    <div class="text-sm text-gray-900 whitespace-pre-line">
+                                        {{ $lap->pelapor_alamat ?? '-' }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-gray-500">No. Telp/HP</div>
+                                    <div class="text-sm text-gray-900">
+                                        {{ $lap->pelapor_telp ?? '-' }}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                <h3 class="font-semibold text-gray-900">Data Terlapor</h3>
+                            </div>
+
+                            <div class="p-6 space-y-4">
+                                <div>
+                                    <div class="text-xs text-gray-500">Nama</div>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ $lap->terlapor_nama ?? '-' }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-gray-500">Pekerjaan/Jabatan</div>
+                                    <div class="text-sm text-gray-900">
+                                        {{ $lap->terlapor_pekerjaan ?? '-' }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-gray-500">Alamat</div>
+                                    <div class="text-sm text-gray-900 whitespace-pre-line">
+                                        {{ $lap->terlapor_alamat ?? '-' }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-gray-500">No. Telp/HP</div>
+                                    <div class="text-sm text-gray-900">
+                                        {{ $lap->terlapor_telp ?? '-' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- SUBSTANSI --}}
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                            <h3 class="font-semibold text-gray-900">Substansi Pengaduan</h3>
+                        </div>
+
+                        <div class="p-6 space-y-6">
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Permasalahan yang Diadukan</div>
+                                <div class="text-sm text-gray-900 whitespace-pre-line leading-relaxed">
+                                    {{ $lap->permasalahan ?? '-' }}
+                                </div>
+                            </div>
+
+                            <div class="pt-5 border-t border-gray-100">
+                                <div class="text-xs text-gray-500 mb-1">Harapan</div>
+                                <div class="text-sm text-gray-900 whitespace-pre-line leading-relaxed">
+                                    {{ $lap->harapan ?? '-' }}
+                                </div>
+                            </div>
+
+                            <div class="pt-5 border-t border-gray-100">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <div class="text-sm font-semibold text-gray-900">Bukti Pendukung</div>
+                                        <div class="text-xs text-gray-500">{{ count($lampiran) }} file terlampir</div>
+                                    </div>
+                                </div>
+
+                                @if (count($lampiran))
+                                    <div class="grid sm:grid-cols-2 gap-3">
+                                        @foreach ($lampiran as $i => $file)
+                                            @php
+                                                $path = $getLampiranPath($file);
+                                                $namaFile = $getLampiranName($file);
+                                                $url = $storageUrl($path);
+                                            @endphp
+
+                                            @if ($url)
+                                                <a href="{{ $url }}" target="_blank"
+                                                    class="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300">
+                                                    <div class="min-w-0">
+                                                        <div class="text-sm font-medium text-blue-700 truncate">
+                                                            Lampiran {{ $i + 1 }}
+                                                        </div>
+                                                        <div class="text-xs text-gray-500 truncate">
+                                                            {{ $namaFile }}
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs text-blue-600">Lihat</span>
+                                                </a>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div
+                                        class="text-sm text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4">
+                                        Belum ada bukti pendukung terlampir.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- KANAN --}}
+                <div class="col-span-12 xl:col-span-4 space-y-6">
+
+                    {{-- TIM --}}
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                            <h3 class="font-semibold text-gray-900">Tim Investigasi</h3>
+                            <p class="text-xs text-gray-500 mt-1">{{ $anggotaAktif->count() }} anggota aktif</p>
+                        </div>
+
+                        <div class="p-6 space-y-4">
+                            <div class="p-4 rounded-lg bg-emerald-50 border border-emerald-100">
+                                <div class="text-xs text-emerald-700">Ketua Tim</div>
+                                <div class="font-semibold text-gray-900">
+                                    {{ $tim->ketuaTim->nama_lengkap ?? '-' }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                @forelse ($anggotaAktif as $anggota)
+                                    @php
+                                        $role = $anggota->pivot->role_dalam_tim ?? 'Anggota';
+                                        $label = str_replace('_', ' ', $role);
+                                    @endphp
+
+                                    <div
+                                        class="flex items-start justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-medium text-gray-900 truncate">
+                                                {{ $anggota->nama_lengkap ?? ($anggota->name ?? '-') }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                User ID: {{ $anggota->user_id ?? $anggota->id }}
+                                            </div>
+                                        </div>
+
+                                        <span
+                                            class="shrink-0 inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1 {{ $roleBadge($role) }}">
+                                            {{ $label }}
+                                        </span>
+                                    </div>
+                                @empty
+                                    <div class="text-sm text-gray-500">
+                                        Belum ada anggota tim.
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- INFO TAMBAHAN --}}
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+                        <h3 class="font-semibold text-gray-900">Informasi Tim</h3>
+
                         <div>
-                            <p class="font-medium text-gray-900">{{ $tim->ketuaTim->nama_lengkap }}</p>
-                            <p class="text-xs text-emerald-700">Ketua Tim</p>
+                            <div class="text-xs text-gray-500">Status Tim</div>
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ $tim->status_tim ?? '-' }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-xs text-gray-500">Dibuat</div>
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ $tim->created_at?->format('d M Y, H:i') ?? '-' }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-xs text-gray-500">Laporan ID</div>
+                            <div class="text-sm font-medium text-gray-900">
+                                #{{ $lap->laporan_id }}
+                            </div>
                         </div>
                     </div>
-
-                    {{-- Anggota lain --}}
-                    @php
-                        // Aman: bandingkan via ID, bukan nama
-                        $ketuaId = optional($tim->ketuaTim)->user_id ?? optional($tim->ketuaTim)->id;
-
-                        // Warna badge per role
-                        $roleBadge = function ($role) {
-                            $map = [
-                                'Ketua' => 'bg-yellow-100 text-yellow-800 ring-yellow-200',
-                                'Penanggung_Jawab' => 'bg-purple-100 text-purple-800 ring-purple-200',
-                                'Wakil_Penanggung_Jawab' => 'bg-fuchsia-100 text-fuchsia-800 ring-fuchsia-200',
-                                'Pengendali_Teknis' => 'bg-blue-100 text-blue-800 ring-blue-200',
-                                'Anggota' => 'bg-gray-100 text-gray-800 ring-gray-200',
-                            ];
-                            return $map[$role] ?? 'bg-gray-100 text-gray-800 ring-gray-200';
-                        };
-
-                        // Ikon kecil per role (opsional)
-                        $roleIcon = function ($role) {
-                            switch ($role) {
-                                case 'Ketua':
-                                    return 'M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zm0 2c-3.314 0-6 2.239-6 5v1h12v-1c0-2.761-2.686-5-6-5z'; // user icon
-                                case 'Penanggung_Jawab':
-                                    return 'M12 6v6l4 2'; // clock-ish
-                                case 'Wakil_Penanggung_Jawab':
-                                    return 'M5 13l4 4L19 7'; // check
-                                case 'Pengendali_Teknis':
-                                    return 'M12 8v8m-4-4h8'; // plus
-                                default:
-                                    return 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'; // default
-                            }
-                        };
-                    @endphp
-
-                    <div class="grid sm:grid-cols-2 gap-3">
-                        @foreach ($tim->anggotaAktif as $anggota)
-                            @php
-                                // Ambil role dari pivot
-                                $role = $anggota->pivot->role_dalam_tim ?? 'Anggota';
-                                $label = str_replace('_', ' ', $role);
-
-                                // Ambil id anggota (user_id atau id)
-                                $anggotaId = $anggota->user_id ?? $anggota->id;
-
-                                // Skip ketua bila ketua ditampilkan di tempat lain
-                                if ($ketuaId && (string) $anggotaId === (string) $ketuaId) {
-                                    continue;
-                                }
-                            @endphp
-
-                            <div class="flex items-center p-3 bg-gray-50 rounded-lg ring-1 ring-gray-100">
-                                <div class="flex-shrink-0 bg-white p-2 rounded-full mr-3 ring-1 ring-gray-200">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="{{ $roleIcon($role) }}" />
-                                    </svg>
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="font-medium text-gray-900 truncate">
-                                        {{ $anggota->nama_lengkap ?? ($anggota->name ?? '—') }}
-                                    </p>
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1 {{ $roleBadge($role) }}">
-                                        {{ $label }}
-                                    </span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                </div>
-
-                {{-- Footer info --}}
-                <div class="mt-6 text-sm text-gray-500">
-                    Dibuat: {{ $tim->created_at?->format('d M Y, H:i') ?? '-' }} WIB
                 </div>
             </div>
-        </div>
-
+        @endif
     </div>
 @endsection

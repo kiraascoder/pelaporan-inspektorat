@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AnggotaTim;
 use App\Models\LaporanPengaduan;
-use App\Models\PengajuanSuratTugas;
-use App\Models\TimInvestigasi;
 use App\Models\SuratTugas;
+use App\Models\TimInvestigasi;
 use App\Models\LaporanTugas;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -19,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
+
 class KetuaBidangController extends Controller
 {
     public function dashboard()
@@ -27,7 +27,6 @@ class KetuaBidangController extends Controller
         $stats = [
             'laporan_pending' => LaporanPengaduan::where('status', 'Pending')->count(),
             'tim_aktif' => TimInvestigasi::where('status_tim', 'Aktif')->count(),
-            'surat_tugas_aktif' => PengajuanSuratTugas::where('status', 'Selesai')->count(),
             'laporan_tugas' => LaporanTugas::where('status_laporan', 'Submitted')->count(),
         ];
         $timDipimpin = $user->timInvestigasiDipimpin()
@@ -253,98 +252,219 @@ class KetuaBidangController extends Controller
         return view('ketua_bidang.tim.create', compact('laporan', 'pegawai'));
     }
 
-    public function storeTim(Request $request, LaporanPengaduan $laporan)
+    public function storeTim(Request $request)
     {
-        $roles = ['Ketua', 'Anggota', 'Penanggung_Jawab', 'Wakil_Penanggung_Jawab', 'Pengendali_Teknis'];
+        $roles = [
+            'Ketua',
+            'Anggota',
+            'Penanggung_Jawab',
+            'Wakil_Penanggung_Jawab',
+            'Pengendali_Teknis'
+        ];
 
         $validator = Validator::make($request->all(), [
-            'nama_tim'         => 'required|string|max:255',
+            'nama_tim' => 'required|string|max:255',
 
-            // Wajib: anggota_ids[] berisi user_id dari tabel users.user_id
-            'anggota_ids'      => 'required|array|min:1',
-            'anggota_ids.*'    => ['required', 'distinct', 'integer', 'exists:users,user_id'],
+            // Wajib karena surat tugas otomatis dibuat berdasarkan laporan
+            'laporan_id' => 'required|exists:laporan_pengaduan,laporan_id',
 
-            // Wajib: anggota_roles[] sejajar index dengan anggota_ids[]
-            'anggota_roles'    => 'required|array',
-            'anggota_roles.*'  => ['required', Rule::in($roles)],
+            'anggota_ids' => 'required|array|min:1',
+            'anggota_ids.*' => ['required', 'distinct', 'integer', 'exists:users,user_id'],
 
-            // Ketua harus dipilih
-            'ketua_tim_id'     => ['required', 'integer'],
+            'anggota_roles' => 'required|array',
+            'anggota_roles.*' => ['required', Rule::in($roles)],
 
-            // Opsional jika memilih dari dropdown "Laporan Terkait"
-            'laporan_id'       => 'nullable|exists:laporan_pengaduan,laporan_id',
+            'ketua_tim_id' => ['required', 'integer', 'exists:users,user_id'],
+
+            'status_tim' => 'nullable|string|max:50',
         ], [
-            'anggota_ids.required'    => 'Minimal pilih satu anggota tim.',
-            'anggota_ids.min'         => 'Minimal pilih satu anggota tim.',
-            'anggota_ids.*.exists'    => 'Anggota tim tidak valid.',
-            'anggota_ids.*.distinct'  => 'Anggota tim ada yang duplikat.',
-            'anggota_roles.required'  => 'Role untuk setiap anggota wajib diisi.',
-            'anggota_roles.*.in'      => 'Role anggota tidak valid.',
-            'ketua_tim_id.required'   => 'Ketua tim wajib dipilih.',
+            'nama_tim.required' => 'Nama tim wajib diisi.',
+            'laporan_id.required' => 'Laporan wajib dipilih.',
+            'laporan_id.exists' => 'Laporan tidak valid.',
+            'anggota_ids.required' => 'Minimal pilih satu anggota tim.',
+            'anggota_ids.min' => 'Minimal pilih satu anggota tim.',
+            'anggota_ids.*.exists' => 'Anggota tim tidak valid.',
+            'anggota_ids.*.distinct' => 'Anggota tim ada yang duplikat.',
+            'anggota_roles.required' => 'Role untuk setiap anggota wajib diisi.',
+            'anggota_roles.*.in' => 'Role anggota tidak valid.',
+            'ketua_tim_id.required' => 'Ketua tim wajib dipilih.',
+            'ketua_tim_id.exists' => 'Ketua tim tidak valid.',
         ]);
 
-        // Cek hubungan antar field setelah rule dasar lolos
         $validator->after(function ($v) use ($request) {
-            $ids   = (array) $request->input('anggota_ids', []);
+            $ids = (array) $request->input('anggota_ids', []);
             $roles = (array) $request->input('anggota_roles', []);
 
-            // jumlah harus sama
             if (count($ids) !== count($roles)) {
                 $v->errors()->add('anggota_roles', 'Jumlah role harus sama dengan jumlah anggota.');
             }
 
-            // ketua harus salah satu dari anggota
             $ketua = $request->input('ketua_tim_id');
-            if (!in_array((string)$ketua, array_map('strval', $ids), true)) {
+
+            if (!in_array((string) $ketua, array_map('strval', $ids), true)) {
                 $v->errors()->add('ketua_tim_id', 'Ketua tim harus berasal dari anggota yang dipilih.');
             }
         });
 
         $validator->validate();
 
-        // --- Buat tim ---
-        $tim = TimInvestigasi::create([
-            'laporan_id'    => $request->input('laporan_id', $laporan->laporan_id),
-            'ketua_tim_id'  => $request->ketua_tim_id,
-            'nama_tim'      => $request->nama_tim,
-            'status_tim'    => $request->input('status_tim', 'Dibentuk'),
-        ]);
+        $result = DB::transaction(function () use ($request) {
+            $laporanId = $request->input('laporan_id');
 
-        // --- Siapkan & attach pivot ---
-        $ids        = $request->anggota_ids;       // array of user_id (users.user_id)
-        $rolesInput = $request->anggota_roles;     // array of role sejajar index
+            // 1. Buat tim
+            $tim = TimInvestigasi::create([
+                'laporan_id' => $laporanId,
+                'ketua_tim_id' => $request->ketua_tim_id,
+                'nama_tim' => $request->nama_tim,
+                'status_tim' => $request->input('status_tim', 'Dibentuk'),
+            ]);
 
-        // pastikan hanya satu 'Ketua' (yang dipilih di ketua_tim_id)
-        $attachData = [];
-        foreach ($ids as $i => $userId) {
-            $role = $rolesInput[$i] ?? 'Anggota';
-            if ((string)$userId === (string)$request->ketua_tim_id) {
-                $role = 'Ketua';
+            // 2. Simpan anggota tim
+            $ids = $request->anggota_ids;
+            $rolesInput = $request->anggota_roles;
+
+            $attachData = [];
+
+            foreach ($ids as $i => $userId) {
+                $role = $rolesInput[$i] ?? 'Anggota';
+
+                if ((string) $userId === (string) $request->ketua_tim_id) {
+                    $role = 'Ketua';
+                }
+
+                $attachData[$userId] = [
+                    'role_dalam_tim' => $role,
+                    'tanggal_bergabung' => now(),
+                    'is_active' => true,
+                ];
             }
-            $attachData[$userId] = [
-                'role_dalam_tim'   => $role,
-                'tanggal_bergabung' => now(),
-                'is_active'        => true,
+
+            $tim->anggota()->attach($attachData);
+
+            // 3. Ambil data pegawai untuk isi nama_ditugaskan pada surat tugas
+            $pegawaiList = User::whereIn('user_id', $ids)
+                ->get()
+                ->keyBy('user_id');
+
+            $namaDitugaskan = [];
+
+            foreach ($ids as $i => $userId) {
+                $pegawai = $pegawaiList[$userId] ?? null;
+                $role = $rolesInput[$i] ?? 'Anggota';
+
+                if ((string) $userId === (string) $request->ketua_tim_id) {
+                    $role = 'Ketua';
+                }
+
+                $namaDitugaskan[] = [
+                    'nama' => $pegawai->nama_lengkap ?? $pegawai->name ?? 'User #' . $userId,
+                    'jabatan' => str_replace('_', ' ', $role),
+                ];
+            }
+
+            // 4. Buat surat tugas dulu, nomor_surat dibuat setelah ID tersedia
+            $suratTugas = SuratTugas::create([
+                'laporan_id' => $laporanId,
+                'nomor_surat' => null,
+                'nama_ditugaskan' => $namaDitugaskan,
+                'deskripsi_umum' => "Melaksanakan tugas investigasi berdasarkan laporan pengaduan terkait Tim {$tim->nama_tim}.",
+                'surat_tugas_path' => null,
+                'surat_tugas_uploaded_at' => null,
+            ]);
+
+            // 5. Generate nomor surat otomatis
+            $suratTugas->update([
+                'nomor_surat' => $this->generateNomorSurat($suratTugas),
+            ]);
+
+            $suratTugas->refresh();
+
+            // 6. Generate PDF dari resources/views/template/surat_tugas.blade.php
+            $pdfPath = $this->generateSuratTugasPdf($suratTugas);
+
+            // 7. Simpan path PDF ke database
+            $suratTugas->update([
+                'surat_tugas_path' => $pdfPath,
+                'surat_tugas_uploaded_at' => now(),
+            ]);
+
+            // 8. Update status laporan
+            LaporanPengaduan::where('laporan_id', $laporanId)
+                ->update([
+                    'status' => 'Dalam_Investigasi',
+                ]);
+
+            return [
+                'tim' => $tim,
+                'surat_tugas' => $suratTugas,
             ];
-        }
+        });
 
-        // Relasi harus sesuai (lihat catatan B)
-        $tim->anggota()->attach($attachData);
-
-        // Update status laporan
-        $laporan->update(['status' => 'Dalam_Investigasi']);
-
-        return redirect()->route('ketua_bidang.tim.show', $tim)
-            ->with('success', 'Tim investigasi berhasil dibentuk.');
+        return redirect()
+            ->route('ketua_bidang.tim.show', $result['tim'])
+            ->with('success', 'Tim investigasi berhasil dibentuk, nomor surat otomatis dibuat, dan file surat tugas berhasil digenerate.');
     }
+
+
+    private function generateNomorSurat(SuratTugas $suratTugas): string
+    {
+        $tahun = now()->format('Y');
+        $bulanRomawi = $this->bulanRomawi((int) now()->format('m'));
+
+        // pakai primary key agar nomor unik dan tidak bentrok
+        $nomorUrut = str_pad((string) $suratTugas->pengajuan_surat_id, 3, '0', STR_PAD_LEFT);
+
+        return "700.1 / {$nomorUrut} / Inspektorat / {$bulanRomawi} / {$tahun}";
+    }
+
+    private function bulanRomawi(int $bulan): string
+    {
+        return [
+            1 => 'I',
+            2 => 'II',
+            3 => 'III',
+            4 => 'IV',
+            5 => 'V',
+            6 => 'VI',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+        ][$bulan] ?? '';
+    }
+
+    private function generateSuratTugasPdf(SuratTugas $suratTugas): string
+    {
+        $logoPath = public_path('logo.png');
+
+        $logoBase64 = file_exists($logoPath)
+            ? base64_encode(file_get_contents($logoPath))
+            : null;
+
+        $pdf = Pdf::loadView('template.surat_tugas', [
+            'pengajuan' => $suratTugas,
+            'logoBase64' => $logoBase64,
+        ])->setPaper('a4', 'portrait');
+
+        $fileName = 'surat-tugas-' . $suratTugas->pengajuan_surat_id . '.pdf';
+        $path = 'surat_tugas/' . $fileName;
+
+        Storage::disk('public')->put($path, $pdf->output());
+
+        return $path;
+    }
+
 
     public function showTimInvestigasi($tim_id)
     {
         try {
             $tim = TimInvestigasi::with([
+                'laporanPengaduan.user',
+                'laporanPengaduan.suratTugas',
                 'ketuaTim',
                 'anggotaAktif',
-                'laporanPengaduan',
             ])->findOrFail($tim_id);
 
             return view('ketua_bidang.detail.tim', compact('tim'));
@@ -352,6 +472,7 @@ class KetuaBidangController extends Controller
             return back()->with('error', 'Tim tidak ditemukan');
         }
     }
+
 
 
     public function showTim(TimInvestigasi $tim)
@@ -553,7 +674,7 @@ class KetuaBidangController extends Controller
     public function suratTugas()
     {
 
-        $suratList = PengajuanSuratTugas::with(['laporan', 'penandatangan'])
+        $suratList = SuratTugas::with(['laporan'])
             ->latest()
             ->get();
 
@@ -586,15 +707,15 @@ class KetuaBidangController extends Controller
             'jabatanList' => $jabatanList
         ]);
     }
-    public function showSurat(PengajuanSuratTugas $pengajuanSurat)
+    public function showSurat(SuratTugas $pengajuanSurat)
     {
-        $pengajuanSurat->load(['laporan', 'penandatangan']);
+        $pengajuanSurat->load(['laporan']);
 
         return view('ketua_bidang.detail.surat', compact('pengajuanSurat'));
     }
-    public function generatePdf(PengajuanSuratTugas $pengajuanSurat)
+    public function generatePdf(SuratTugas $pengajuanSurat)
     {
-        $pengajuanSurat->load(['laporan', 'penandatangan']);
+        $pengajuanSurat->load(['laporan']);
 
         if ($pengajuanSurat->status !== 'Selesai') {
             return back()->with('error', 'Surat hanya bisa dibuat jika pengajuan sudah berstatus Selesai.');

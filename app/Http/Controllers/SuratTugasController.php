@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PengajuanSuratTugas;
+use App\Models\SuratTugas;
 use Illuminate\Http\Request;
 
 class SuratTugasController extends Controller
@@ -10,9 +10,8 @@ class SuratTugasController extends Controller
     public function store(Request $r)
     {
         $data = $r->validate([
-            'nomor_surat'      => ['required', 'string', 'max:120', 'unique:pengajuan_surat_tugas,nomor_surat'],
+            'nomor_surat'      => ['required', 'string', 'max:120', 'unique:surat_tugas,nomor_surat'],
             'laporan_id'       => ['required', 'exists:laporan_pengaduan,laporan_id'],
-            'penandatangan_id' => ['required', 'exists:users,user_id'],
             'deskripsi_umum'   => ['nullable', 'string'], // tiap baris = 1 poin "Untuk"
             'status'           => ['required', 'in:Pending,Dibuat,Selesai'],
             // anggota tim (opsional)
@@ -22,10 +21,9 @@ class SuratTugasController extends Controller
         ]);
 
         DB::transaction(function () use ($data, $r) {
-            $pengajuan = PengajuanSuratTugas::create([
+            $pengajuan = SuratTugas::create([
                 'nomor_surat'      => $data['nomor_surat'],
                 'laporan_id'       => $data['laporan_id'],
-                'penandatangan_id' => $data['penandatangan_id'],
                 'deskripsi_umum'   => $data['deskripsi_umum'] ?? null,
                 'status'           => $data['status'],
             ]);
@@ -37,7 +35,7 @@ class SuratTugasController extends Controller
 
             foreach ($pegIds as $i => $pid) {
                 if (!$pid) continue;
-                PengajuanSuratTugas::create([
+                SuratTugas::create([
                     'pengajuan_id'    => $pengajuan->pengajuan_surat_id,
                     'pegawai_id'      => $pid,
                     'role_dalam_tim'  => $roles[$i] ?? 'Anggota',
