@@ -191,9 +191,9 @@ class KetuaBidangController extends Controller
         return view('ketua_bidang.review', compact('laporanList'));
     }
 
-    public function show(LaporanPengaduan $laporan)
+    public function reviewLaporan(LaporanPengaduan $laporan)
     {
-        return view('ketua_bidang.detail.laporan', compact('laporan'));
+        return view('ketua_bidang.detail.laporan-tugas', compact('laporan'));
     }
 
     public function showLaporan(LaporanPengaduan $laporan)
@@ -618,19 +618,24 @@ class KetuaBidangController extends Controller
         return view('ketua_bidang.surat_tugas.show', compact('surat'));
     }
 
-    public function laporanTugasReview()
+    public function laporanTugasReview(LaporanPengaduan $laporan)
     {
         $user = auth()->user();
+        $userId = $user->user_id ?? $user->id;
 
-        $laporanTugas = LaporanTugas::whereHas('suratTugas', function ($query) use ($user) {
-            $query->where('dibuat_oleh', $user->user_id);
-        })
-            ->whereIn('status_laporan', ['Submitted', 'Reviewed'])
-            ->with(['pegawai', 'suratTugas.timInvestigasi'])
+        $laporanTugas = LaporanTugas::whereIn('status_laporan', ['Submitted', 'Reviewed'])
+            ->whereHas('laporanPengaduan.timInvestigasi', function ($query) use ($userId) {
+                $query->where('ketua_tim_id', $userId);
+            })
+            ->whereColumn('pegawai_id', '!=', DB::raw('0'))
+            ->with([
+                'pegawai',
+                'laporanPengaduan.timInvestigasi.ketuaTim',
+                'laporanPengaduan.suratTugas',
+            ])
             ->latest()
             ->paginate(10);
-
-        return view('ketua_bidang.laporan_tugas.review', compact('laporanTugas'));
+        return view('ketua_bidang.detail.laporan-tugas', compact('laporanTugas', 'laporan'));
     }
 
     public function reviewLaporanTugas(Request $request, LaporanTugas $laporanTugas)

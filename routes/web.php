@@ -69,6 +69,7 @@ Route::prefix('ketua-investigasi')->group(function () {
     Route::get('surat', [KetuaBidangController::class, 'suratTugas'])->name('ketua_bidang.surat');
     Route::post('/surat-tugas', [PengajuanSuratController::class, 'store'])->name('pengajuan-surat.store');
     Route::get('review', [KetuaBidangController::class, 'review'])->name('ketua_bidang.review');
+    Route::get('review/{laporan}', [KetuaBidangController::class, 'laporanTugasReview'])->name('ketua_bidang.laporan_tugas.review');
     Route::put('/laporan/{laporan}/status', [KetuaBidangController::class, 'updateStatusLaporan'])->name('ketua.laporan.updateStatus');
     Route::get('/surat-tugas/{pengajuanSurat}/detail', [KetuaBidangController::class, 'showSurat'])->name('ketua-bidang.surat.show');
     Route::delete('/surat-tugas/{pengajuanSurat}/destroy', [PengajuanSuratController::class, 'destroy'])->name('pengajuan-surat.destroy');

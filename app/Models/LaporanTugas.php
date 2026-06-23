@@ -100,4 +100,5 @@ class LaporanTugas extends Model
             'laporan_id'            // PK di laporan_pengaduan
         );
     }
+    
 }

@@ -210,12 +210,9 @@
                             </div>
 
                             <div class="flex items-center space-x-2">
-                                <button
-                                    class="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 border border-blue-200 rounded hover:bg-blue-50 transition-colors">
-                                    Edit
-                                </button>
                                 <button class="text-green-600 hover:text-green-700 text-sm font-medium">
-                                    <a href="{{ route('pegawai.report.show', $laporan->laporan_tugas_id) }}">
+                                    <a
+                                        href="{{ route('ketua_bidang.laporan_tugas.review', $laporan->laporan_tugas_id) }}">
                                         Detail →
                                     </a>
                                 </button>

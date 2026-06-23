@@ -7,22 +7,27 @@
         <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
             <div class="mb-4 flex justify-between items-center">
                 <h2 class="text-lg font-semibold text-gray-800">Detail Laporan</h2>
-                <a href="{{ route('pegawai.laporan') }}" class="text-sm text-green-600 hover:underline">
+
+                <a href="{{ route('ketua_bidang.review') }}" class="text-sm text-green-600 hover:underline">
                     ← Kembali ke Daftar laporan
                 </a>
             </div>
 
-            {{-- Status --}}
+            {{-- Status Laporan Pengaduan --}}
             <div class="mb-4">
                 @php
                     $statusColors = [
                         'Pending' => 'bg-yellow-100 text-yellow-800',
+                        'Diterima' => 'bg-emerald-100 text-emerald-800',
                         'Dalam_Investigasi' => 'bg-blue-100 text-blue-800',
+                        'Dalam Investigasi' => 'bg-blue-100 text-blue-800',
                         'Selesai' => 'bg-green-100 text-green-800',
                         'Ditolak' => 'bg-red-100 text-red-800',
                     ];
+
                     $statusColor = $statusColors[$laporan->status] ?? 'bg-gray-100 text-gray-800';
                 @endphp
+
                 <span class="inline-block px-3 py-1 rounded-full text-sm {{ $statusColor }}">
                     {{ str_replace('_', ' ', $laporan->status) }}
                 </span>
@@ -33,9 +38,10 @@
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Tanggal Pengaduan</h3>
                     <p class="text-gray-900">
-                        {{ optional($laporan->tanggal_pengaduan)->format('d M Y') ?? $laporan->created_at->format('d M Y') }}
+                        {{ optional($laporan->tanggal_pengaduan)->format('d M Y') ?? $laporan->created_at?->format('d M Y') }}
                     </p>
                 </div>
+
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">No. Pengaduan</h3>
                     <p class="text-gray-900">{{ $laporan->no_pengaduan ?? '-' }}</p>
@@ -46,28 +52,53 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="border border-gray-200 rounded-lg">
                     <div class="bg-gray-50 px-4 py-2 text-sm font-semibold">DATA PELAPOR</div>
+
                     <div class="p-4 space-y-2 text-sm">
-                        <div><span class="text-gray-500">Nama:</span> <span
-                                class="text-gray-900">{{ $laporan->pelapor_nama }}</span></div>
-                        <div><span class="text-gray-500">Pekerjaan/Jabatan:</span> <span
-                                class="text-gray-900">{{ $laporan->pelapor_pekerjaan ?? '-' }}</span></div>
-                        <div><span class="text-gray-500">Alamat:</span> <span
-                                class="text-gray-900">{{ $laporan->pelapor_alamat ?? '-' }}</span></div>
-                        <div><span class="text-gray-500">Telp/HP:</span> <span
-                                class="text-gray-900">{{ $laporan->pelapor_telp ?? '-' }}</span></div>
+                        <div>
+                            <span class="text-gray-500">Nama:</span>
+                            <span class="text-gray-900">{{ $laporan->pelapor_nama ?? '-' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500">Pekerjaan/Jabatan:</span>
+                            <span class="text-gray-900">{{ $laporan->pelapor_pekerjaan ?? '-' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500">Alamat:</span>
+                            <span class="text-gray-900">{{ $laporan->pelapor_alamat ?? '-' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500">Telp/HP:</span>
+                            <span class="text-gray-900">{{ $laporan->pelapor_telp ?? '-' }}</span>
+                        </div>
                     </div>
                 </div>
+
                 <div class="border border-gray-200 rounded-lg">
                     <div class="bg-gray-50 px-4 py-2 text-sm font-semibold">DATA TERLAPOR</div>
+
                     <div class="p-4 space-y-2 text-sm">
-                        <div><span class="text-gray-500">Nama:</span> <span
-                                class="text-gray-900">{{ $laporan->terlapor_nama ?? '-' }}</span></div>
-                        <div><span class="text-gray-500">Pekerjaan/Jabatan:</span> <span
-                                class="text-gray-900">{{ $laporan->terlapor_pekerjaan ?? '-' }}</span></div>
-                        <div><span class="text-gray-500">Alamat:</span> <span
-                                class="text-gray-900">{{ $laporan->terlapor_alamat ?? '-' }}</span></div>
-                        <div><span class="text-gray-500">Telp/HP:</span> <span
-                                class="text-gray-900">{{ $laporan->terlapor_telp ?? '-' }}</span></div>
+                        <div>
+                            <span class="text-gray-500">Nama:</span>
+                            <span class="text-gray-900">{{ $laporan->terlapor_nama ?? '-' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500">Pekerjaan/Jabatan:</span>
+                            <span class="text-gray-900">{{ $laporan->terlapor_pekerjaan ?? '-' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500">Alamat:</span>
+                            <span class="text-gray-900">{{ $laporan->terlapor_alamat ?? '-' }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500">Telp/HP:</span>
+                            <span class="text-gray-900">{{ $laporan->terlapor_telp ?? '-' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,40 +117,82 @@
                     </div>
                 @endif
 
-                {{-- Lampiran (multiple) --}}
+                {{-- Lampiran --}}
                 @php
                     $lampiran = $laporan->bukti_pendukung;
+
                     if (is_string($lampiran)) {
-                        // jika tersimpan sebagai JSON string
                         $decoded = json_decode($lampiran, true);
                         $lampiran = is_array($decoded) ? $decoded : ($lampiran ? [$lampiran] : []);
                     } elseif (!is_array($lampiran)) {
                         $lampiran = $lampiran ? (array) $lampiran : [];
                     }
+
+                    $lampiran = array_values(array_filter($lampiran));
+
+                    $getLampiranPath = function ($item) {
+                        if (is_array($item)) {
+                            return $item['path_file'] ?? ($item['path'] ?? ($item['file'] ?? null));
+                        }
+
+                        if (is_object($item)) {
+                            return $item->path_file ?? ($item->path ?? ($item->file ?? null));
+                        }
+
+                        return $item;
+                    };
+
+                    $getLampiranName = function ($item) use ($getLampiranPath) {
+                        if (is_array($item) && !empty($item['nama_file'])) {
+                            return $item['nama_file'];
+                        }
+
+                        if (is_object($item) && !empty($item->nama_file)) {
+                            return $item->nama_file;
+                        }
+
+                        $path = $getLampiranPath($item);
+
+                        return $path ? basename($path) : 'Lampiran';
+                    };
                 @endphp
+
                 @if (count($lampiran) > 0)
                     <div>
                         <h3 class="text-sm font-semibold text-gray-700 mb-2">Bukti Pendukung</h3>
+
                         <ul class="list-disc pl-5 space-y-1 text-sm">
-                            @foreach ($lampiran as $i => $path)
-                                <li>
-                                    <a href="{{ asset('storage/' . $path) }}" target="_blank"
-                                        class="text-blue-600 hover:underline">
-                                        Lampiran {{ $i + 1 }}
-                                    </a>
-                                    <span class="text-gray-400 ml-1">({{ basename($path) }})</span>
-                                </li>
+                            @foreach ($lampiran as $i => $file)
+                                @php
+                                    $path = $getLampiranPath($file);
+                                    $namaFile = $getLampiranName($file);
+                                @endphp
+
+                                @if ($path)
+                                    <li>
+                                        <a href="{{ asset('storage/' . $path) }}" target="_blank"
+                                            class="text-blue-600 hover:underline">
+                                            Lampiran {{ $i + 1 }}
+                                        </a>
+
+                                        <span class="text-gray-400 ml-1">
+                                            ({{ $namaFile }})
+                                        </span>
+                                    </li>
+                                @endif
                             @endforeach
                         </ul>
                     </div>
                 @endif
             </div>
 
-            {{-- Keterangan Admin (opsional) --}}
+            {{-- Keterangan Admin --}}
             @if (!empty($laporan->keterangan_admin))
                 <div class="mt-6">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Keterangan Admin</h3>
-                    <p class="text-gray-900 whitespace-pre-line text-sm">{{ $laporan->keterangan_admin }}</p>
+                    <p class="text-gray-900 whitespace-pre-line text-sm">
+                        {{ $laporan->keterangan_admin }}
+                    </p>
                 </div>
             @endif
 
@@ -127,13 +200,26 @@
             <div class="mt-6 text-xs text-gray-500">
                 Dibuat pada {{ $laporan->created_at ? $laporan->created_at->format('d M Y') : '-' }}
             </div>
+
             {{-- =========================
-     DAFTAR LAPORAN TUGAS PEGAWAI
-     ========================= --}}
+            DAFTAR LAPORAN TUGAS KETUA TIM
+            ========================= --}}
             <div class="mt-6 bg-white rounded-lg shadow p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                    Daftar Laporan Tugas Pegawai
-                </h3>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            Laporan Tugas Ketua Tim
+                        </h3>
+
+                        <p class="text-sm text-gray-500 mt-1">
+                            Review laporan tugas yang sudah dikirim oleh Ketua Tim.
+                        </p>
+                    </div>
+
+                    <span class="text-sm text-gray-500">
+                        Total: {{ isset($laporanTugas) ? $laporanTugas->count() : 0 }}
+                    </span>
+                </div>
 
                 @if (isset($laporanTugas) && $laporanTugas->count() > 0)
                     <div class="overflow-x-auto">
@@ -141,45 +227,130 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-3 py-2 border text-left">No</th>
-                                    <th class="px-3 py-2 border text-left">Pegawai</th>
+                                    <th class="px-3 py-2 border text-left">Ketua Tim</th>
                                     <th class="px-3 py-2 border text-left">Judul Laporan</th>
                                     <th class="px-3 py-2 border text-left">Status</th>
                                     <th class="px-3 py-2 border text-left">Tanggal</th>
                                     <th class="px-3 py-2 border text-center">Aksi</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 @foreach ($laporanTugas as $i => $lt)
                                     @php
-                                        $statusColors = [
+                                        $statusLaporanTugasColors = [
                                             'Draft' => 'bg-gray-100 text-gray-800',
                                             'Submitted' => 'bg-yellow-100 text-yellow-800',
                                             'Reviewed' => 'bg-blue-100 text-blue-800',
                                             'Approved' => 'bg-green-100 text-green-800',
+                                            'Rejected' => 'bg-red-100 text-red-800',
                                         ];
+
+                                        $statusLaporanTugasText = [
+                                            'Draft' => 'Draft',
+                                            'Submitted' => 'Menunggu Review',
+                                            'Reviewed' => 'Sudah Direview',
+                                            'Approved' => 'Disetujui',
+                                            'Rejected' => 'Ditolak',
+                                        ];
+
+                                        $statusLaporanTugasInfo = [
+                                            'Draft' => 'Belum dikirim oleh Ketua Tim.',
+                                            'Submitted' => 'Menunggu keputusan Ketua Bidang.',
+                                            'Reviewed' => 'Sudah direview, menunggu keputusan akhir.',
+                                            'Approved' => 'Laporan tugas telah disetujui.',
+                                            'Rejected' => 'Laporan tugas ditolak.',
+                                        ];
+
+                                        $badgeClass =
+                                            $statusLaporanTugasColors[$lt->status_laporan] ??
+                                            'bg-gray-100 text-gray-800';
+
+                                        $labelStatus =
+                                            $statusLaporanTugasText[$lt->status_laporan] ?? $lt->status_laporan;
+
+                                        $infoStatus = $statusLaporanTugasInfo[$lt->status_laporan] ?? null;
                                     @endphp
+
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 border">{{ $i + 1 }}</td>
+                                        <td class="px-3 py-2 border">
+                                            {{ $i + 1 }}
+                                        </td>
+
                                         <td class="px-3 py-2 border">
                                             {{ $lt->pegawai->nama_lengkap ?? '-' }}
                                         </td>
+
                                         <td class="px-3 py-2 border">
                                             {{ $lt->judul_laporan ?? '-' }}
                                         </td>
+
                                         <td class="px-3 py-2 border">
-                                            <span
-                                                class="px-2 py-1 rounded-full text-xs {{ $statusColors[$lt->status_laporan] ?? 'bg-gray-100 text-gray-800' }}">
-                                                {{ $lt->status_laporan }}
+                                            <span class="px-2 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
+                                                {{ $labelStatus }}
                                             </span>
+
+                                            @if ($infoStatus)
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    {{ $infoStatus }}
+                                                </p>
+                                            @endif
                                         </td>
+
                                         <td class="px-3 py-2 border">
                                             {{ $lt->created_at ? $lt->created_at->format('d M Y') : '-' }}
                                         </td>
+
                                         <td class="px-3 py-2 border text-center">
-                                            <a href="{{ route('pegawai.laporan_tugas.show', $lt->laporan_tugas_id) }}"
-                                                class="text-blue-600 hover:underline text-sm">
-                                                Detail
-                                            </a>
+                                            <div class="flex items-center justify-center gap-3 flex-wrap">
+                                                <a href="{{ route('pegawai.laporan_tugas.show', $lt->laporan_tugas_id) }}"
+                                                    class="text-blue-600 hover:underline text-sm">
+                                                    Detail
+                                                </a>
+
+                                                @if ($lt->status_laporan !== 'Draft')
+                                                    <a href="{{ route('laporan_tugas.download', $lt->laporan_tugas_id) }}"
+                                                        class="text-indigo-600 hover:underline text-sm">
+                                                        Download
+                                                    </a>
+                                                @endif
+
+                                                @if (in_array($lt->status_laporan, ['Submitted', 'Reviewed']))
+                                                    <form
+                                                        action="{{ route('laporan_tugas.approve', $lt->laporan_tugas_id) }}"
+                                                        method="POST">
+                                                        @csrf
+
+                                                        <select name="status" onchange="this.form.submit()"
+                                                            class="text-xs border-gray-300 rounded-md px-2 py-1 bg-emerald-50 text-emerald-800">
+                                                            <option value="" selected disabled>
+                                                                Pilih Approval
+                                                            </option>
+
+                                                            <option value="Reviewed"
+                                                                {{ $lt->status_laporan === 'Reviewed' ? 'selected' : '' }}>
+                                                                Reviewed
+                                                            </option>
+
+                                                            <option value="Approved">
+                                                                Approved
+                                                            </option>
+
+                                                            <option value="Rejected">
+                                                                Rejected
+                                                            </option>
+                                                        </select>
+                                                    </form>
+                                                @elseif ($lt->status_laporan === 'Approved')
+                                                    <span class="text-xs text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                                                        Sudah disetujui
+                                                    </span>
+                                                @elseif ($lt->status_laporan === 'Rejected')
+                                                    <span class="text-xs text-red-700 bg-red-50 px-2 py-1 rounded-full">
+                                                        Sudah ditolak
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -188,7 +359,7 @@
                     </div>
                 @else
                     <div class="text-sm text-gray-500 text-center py-6">
-                        Belum ada laporan tugas yang dibuat oleh pegawai.
+                        Belum ada laporan tugas yang dikirim oleh Ketua Tim.
                     </div>
                 @endif
             </div>

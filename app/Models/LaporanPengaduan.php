@@ -92,7 +92,7 @@ class LaporanPengaduan extends Model
     {
         return $this->hasOne(SuratTugas::class, 'laporan_id', 'laporan_id');
     }
-    
+
     public function getRouteKeyName()
     {
         return 'laporan_id';

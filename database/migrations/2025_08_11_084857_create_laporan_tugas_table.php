@@ -25,7 +25,6 @@ return new class extends Migration
             $table->string('judul_laporan');
             $table->text('isi_laporan');
             $table->text('temuan')->nullable();
-            $table->text('rekomendasi')->nullable();
             $table->json('bukti_pendukung')->nullable();
 
             $table->enum('status_laporan', ['Draft', 'Submitted', 'Approved', 'Rejected'])
