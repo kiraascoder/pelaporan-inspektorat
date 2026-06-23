@@ -62,7 +62,7 @@ Route::prefix('admin')->group(function () {
 Route::prefix('ketua-investigasi')->group(function () {
     Route::get('dashboard', [KetuaBidangController::class, 'dashboard'])->name('ketua_bidang.dashboard');
     Route::get('laporan-masuk', [KetuaBidangController::class, 'laporan'])->name('ketua_bidang.laporan');
-    Route::get('laporan/{laporan}', [KetuaBidangController::class, 'show'])->name('ketua_bidang.laporan.show');
+    Route::get('laporan/{laporan}', [KetuaBidangController::class, 'showLaporan'])->name('ketua_bidang.laporan.show');
     Route::get('tim', [KetuaBidangController::class, 'tim'])->name('ketua_bidang.tim');
     Route::post('store-tim', [KetuaBidangController::class, 'storeTim'])->name('ketua_bidang.store-tim');
     Route::get('tim/{tim_id}', [KetuaBidangController::class, 'showTimInvestigasi'])->name('ketua_bidang.tim.show');

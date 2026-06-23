@@ -200,7 +200,7 @@ class KetuaBidangController extends Controller
     {
         $laporan->load(['user', 'timInvestigasi.anggotaAktif']);
 
-        return view('ketua_bidang.laporan.show', compact('laporan'));
+        return view('ketua_bidang.detail.laporan', compact('laporan'));
     }
 
     public function terimaDanTolakLaporan(Request $request, LaporanPengaduan $laporan)
@@ -264,9 +264,9 @@ class KetuaBidangController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama_tim' => 'required|string|max:255',
-
-            // Wajib karena surat tugas otomatis dibuat berdasarkan laporan
             'laporan_id' => 'required|exists:laporan_pengaduan,laporan_id',
+
+            'deskripsi_umum' => 'required|string|max:2000',
 
             'anggota_ids' => 'required|array|min:1',
             'anggota_ids.*' => ['required', 'distinct', 'integer', 'exists:users,user_id'],
@@ -275,18 +275,23 @@ class KetuaBidangController extends Controller
             'anggota_roles.*' => ['required', Rule::in($roles)],
 
             'ketua_tim_id' => ['required', 'integer', 'exists:users,user_id'],
-
             'status_tim' => 'nullable|string|max:50',
         ], [
             'nama_tim.required' => 'Nama tim wajib diisi.',
             'laporan_id.required' => 'Laporan wajib dipilih.',
             'laporan_id.exists' => 'Laporan tidak valid.',
+
+            'deskripsi_umum.required' => 'Deskripsi umum wajib diisi.',
+            'deskripsi_umum.max' => 'Deskripsi umum maksimal 2000 karakter.',
+
             'anggota_ids.required' => 'Minimal pilih satu anggota tim.',
             'anggota_ids.min' => 'Minimal pilih satu anggota tim.',
             'anggota_ids.*.exists' => 'Anggota tim tidak valid.',
             'anggota_ids.*.distinct' => 'Anggota tim ada yang duplikat.',
+
             'anggota_roles.required' => 'Role untuk setiap anggota wajib diisi.',
             'anggota_roles.*.in' => 'Role anggota tidak valid.',
+
             'ketua_tim_id.required' => 'Ketua tim wajib dipilih.',
             'ketua_tim_id.exists' => 'Ketua tim tidak valid.',
         ]);
@@ -311,7 +316,6 @@ class KetuaBidangController extends Controller
         $result = DB::transaction(function () use ($request) {
             $laporanId = $request->input('laporan_id');
 
-            // 1. Buat tim
             $tim = TimInvestigasi::create([
                 'laporan_id' => $laporanId,
                 'ketua_tim_id' => $request->ketua_tim_id,
@@ -319,7 +323,6 @@ class KetuaBidangController extends Controller
                 'status_tim' => $request->input('status_tim', 'Dibentuk'),
             ]);
 
-            // 2. Simpan anggota tim
             $ids = $request->anggota_ids;
             $rolesInput = $request->anggota_roles;
 
@@ -341,7 +344,6 @@ class KetuaBidangController extends Controller
 
             $tim->anggota()->attach($attachData);
 
-            // 3. Ambil data pegawai untuk isi nama_ditugaskan pada surat tugas
             $pegawaiList = User::whereIn('user_id', $ids)
                 ->get()
                 ->keyBy('user_id');
@@ -362,33 +364,28 @@ class KetuaBidangController extends Controller
                 ];
             }
 
-            // 4. Buat surat tugas dulu, nomor_surat dibuat setelah ID tersedia
             $suratTugas = SuratTugas::create([
                 'laporan_id' => $laporanId,
                 'nomor_surat' => null,
                 'nama_ditugaskan' => $namaDitugaskan,
-                'deskripsi_umum' => "Melaksanakan tugas investigasi berdasarkan laporan pengaduan terkait Tim {$tim->nama_tim}.",
+                'deskripsi_umum' => $request->deskripsi_umum,
                 'surat_tugas_path' => null,
                 'surat_tugas_uploaded_at' => null,
             ]);
 
-            // 5. Generate nomor surat otomatis
             $suratTugas->update([
                 'nomor_surat' => $this->generateNomorSurat($suratTugas),
             ]);
 
             $suratTugas->refresh();
 
-            // 6. Generate PDF dari resources/views/template/surat_tugas.blade.php
             $pdfPath = $this->generateSuratTugasPdf($suratTugas);
 
-            // 7. Simpan path PDF ke database
             $suratTugas->update([
                 'surat_tugas_path' => $pdfPath,
                 'surat_tugas_uploaded_at' => now(),
             ]);
 
-            // 8. Update status laporan
             LaporanPengaduan::where('laporan_id', $laporanId)
                 ->update([
                     'status' => 'Dalam_Investigasi',

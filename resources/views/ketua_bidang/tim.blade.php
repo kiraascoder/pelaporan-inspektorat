@@ -227,7 +227,6 @@
                     @csrf
                     <div class="px-6 py-4 space-y-6">
 
-                        {{-- Nama Tim --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Nama Tim <span class="text-red-500">*</span>
@@ -237,8 +236,6 @@
                                 placeholder="Misal: Tim Investigasi Drainase RW 05">
                         </div>
 
-
-                        {{-- Laporan Terkait (tetap tampil) --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Laporan Terkait</label>
                             <select name="laporan_id"
@@ -256,11 +253,27 @@
                                 terpilih.</p>
                         </div>
 
-                        {{-- Anggota Tim --}}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Deskripsi Umum <span class="text-red-500">*</span>
+                            </label>
+
+                            <textarea name="deskripsi_umum" rows="4" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                placeholder="Tulis deskripsi umum surat tugas secara manual...">{{ old('deskripsi_umum') }}</textarea>
+
+                            @error('deskripsi_umum')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+
+                            <p class="text-xs text-gray-500 mt-1">
+                                Diisi manual untuk menjelaskan maksud penugasan investigasi.
+                            </p>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Anggota Tim</label>
 
-                            {{-- Select untuk memilih pegawai (value = user_id) --}}
                             <div class="mb-4">
                                 <select id="pegawaiSelect"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
@@ -268,16 +281,13 @@
                                 </select>
                             </div>
 
-                            {{-- Daftar anggota yang dipilih --}}
                             <div id="selectedAnggota" class="space-y-2">
                                 <p class="text-sm text-gray-500" id="emptyMessage">Belum ada anggota dipilih</p>
                             </div>
 
-                            {{-- Hidden inputs untuk submit (anggota_ids[] & anggota_roles[]) --}}
                             <div id="hiddenInputs"></div>
                         </div>
 
-                        {{-- Ketua Tim (harus dari anggota yang dipilih) --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Ketua Tim <span class="text-red-500">*</span>
@@ -290,7 +300,6 @@
                             </p>
                         </div>
 
-                        {{-- Status Tim (default Dibentuk) --}}
                         <input type="hidden" name="status_tim" value="Dibentuk">
                         <div class="text-sm">
                             <span class="text-gray-700 font-medium">Status Tim</span>
@@ -301,7 +310,6 @@
                         </div>
                     </div>
 
-                    <!-- Modal Footer -->
                     <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
                         <button type="button" onclick="closeModal()"
                             class="px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors">
