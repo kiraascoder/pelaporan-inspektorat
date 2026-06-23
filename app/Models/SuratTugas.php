@@ -29,6 +29,7 @@ class SuratTugas extends Model
         'deskripsi_umum',
         'surat_tugas_path',
         'surat_tugas_uploaded_at',
+        'penandatangan_id',
     ];
 
 
@@ -53,7 +54,10 @@ class SuratTugas extends Model
     }
 
 
-
+    public function penandatangan()
+    {
+        return $this->belongsTo(\App\Models\Penandatangan::class, 'penandatangan_id', 'penandatangan_id');
+    }
 
     public function laporan()
     {

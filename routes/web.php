@@ -13,7 +13,12 @@ use App\Http\Controllers\WargaController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\PenandatanganController;
 
+Route::prefix('ketua-bidang')->name('ketua_bidang.')->group(function () {
+    Route::resource('penandatangan', PenandatanganController::class)
+        ->except(['show']);
+});
 
 
 Route::middleware('authenticated')->group(function () {

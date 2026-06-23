@@ -270,6 +270,27 @@
                                 Diisi manual untuk menjelaskan maksud penugasan investigasi.
                             </p>
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Penandatangan Surat Tugas <span class="text-red-500">*</span>
+                            </label>
+
+                            <select name="penandatangan_id" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                <option value="">Pilih penandatangan</option>
+                                @foreach ($penandatanganList as $ttd)
+                                    <option value="{{ $ttd->penandatangan_id }}"
+                                        {{ old('penandatangan_id') == $ttd->penandatangan_id ? 'selected' : '' }}>
+                                        {{ $ttd->jabatan }} - {{ $ttd->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('penandatangan_id')
+                                <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Anggota Tim</label>

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Models\Penandatangan;
 
 
 class KetuaBidangController extends Controller
@@ -160,6 +161,10 @@ class KetuaBidangController extends Controller
             $laporanList = LaporanPengaduan::where('status', '!=', 'Selesai')
                 ->whereDoesntHave('timInvestigasi')
                 ->get(['laporan_id as id', 'permasalahan']);
+            $penandatanganList = Penandatangan::active()
+                ->orderBy('urutan')
+                ->orderBy('jabatan')
+                ->get();
 
             return view('ketua_bidang.tim', compact(
                 'totalTim',
@@ -169,7 +174,8 @@ class KetuaBidangController extends Controller
                 'timList',
                 'pegawaiList',
                 'laporanList',
-                'dataTim'
+                'dataTim',
+                'penandatanganList'
             ));
         } catch (Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat memuat data: ' . $e->getMessage());
@@ -259,13 +265,14 @@ class KetuaBidangController extends Controller
             'Anggota',
             'Penanggung_Jawab',
             'Wakil_Penanggung_Jawab',
-            'Pengendali_Teknis'
+            'Pengendali_Teknis',
         ];
 
         $validator = Validator::make($request->all(), [
             'nama_tim' => 'required|string|max:255',
             'laporan_id' => 'required|exists:laporan_pengaduan,laporan_id',
 
+            'penandatangan_id' => 'required|exists:penandatangan,penandatangan_id',
             'deskripsi_umum' => 'required|string|max:2000',
 
             'anggota_ids' => 'required|array|min:1',
@@ -315,7 +322,7 @@ class KetuaBidangController extends Controller
 
         $result = DB::transaction(function () use ($request) {
             $laporanId = $request->input('laporan_id');
-
+            $penandatangan = \App\Models\Penandatangan::findOrFail($request->penandatangan_id);
             $tim = TimInvestigasi::create([
                 'laporan_id' => $laporanId,
                 'ketua_tim_id' => $request->ketua_tim_id,
@@ -366,9 +373,14 @@ class KetuaBidangController extends Controller
 
             $suratTugas = SuratTugas::create([
                 'laporan_id' => $laporanId,
+                'penandatangan_id' => $penandatangan->penandatangan_id,
                 'nomor_surat' => null,
                 'nama_ditugaskan' => $namaDitugaskan,
                 'deskripsi_umum' => $request->deskripsi_umum,
+                'jabatan_ttd' => $penandatangan->jabatan,
+                'nama_ttd' => $penandatangan->nama,
+                'pangkat_ttd' => $penandatangan->pangkat,
+                'nip_ttd' => $penandatangan->nip,
                 'surat_tugas_path' => null,
                 'surat_tugas_uploaded_at' => null,
             ]);
