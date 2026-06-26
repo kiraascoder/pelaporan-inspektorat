@@ -24,12 +24,12 @@ class SuratTugas extends Model
     // Kolom yang bisa diisi massal
     protected $fillable = [
         'laporan_id',
+        'penandatangan_id',
         'nomor_surat',
         'nama_ditugaskan',
         'deskripsi_umum',
         'surat_tugas_path',
         'surat_tugas_uploaded_at',
-        'penandatangan_id',
     ];
 
 

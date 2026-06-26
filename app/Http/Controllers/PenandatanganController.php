@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Penandatangan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PenandatanganController extends Controller
 {
@@ -30,12 +31,17 @@ class PenandatanganController extends Controller
             'nip' => 'nullable|string|max:100',
             'urutan' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'ttd_image' => 'nullable|image|mimes:png|max:2048',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['urutan'] = $validated['urutan'] ?? 0;
 
-        Penandatangan::create($validated);
+        if ($request->hasFile('ttd_image')) {
+            $validated['ttd_image'] = $request->file('ttd_image')->store('penandatangan', 'public');
+        }
+
+        \App\Models\Penandatangan::create($validated);
 
         return redirect()
             ->route('ketua_bidang.penandatangan.index')
@@ -56,10 +62,19 @@ class PenandatanganController extends Controller
             'nip' => 'nullable|string|max:100',
             'urutan' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'ttd_image' => 'nullable|image|mimes:png|max:2048',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
         $validated['urutan'] = $validated['urutan'] ?? 0;
+
+        if ($request->hasFile('ttd_image')) {
+            if ($penandatangan->ttd_image && Storage::disk('public')->exists($penandatangan->ttd_image)) {
+                Storage::disk('public')->delete($penandatangan->ttd_image);
+            }
+
+            $validated['ttd_image'] = $request->file('ttd_image')->store('penandatangan', 'public');
+        }
 
         $penandatangan->update($validated);
 

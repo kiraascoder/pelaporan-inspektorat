@@ -14,6 +14,7 @@ class Penandatangan extends Model
         'jabatan',
         'pangkat',
         'nip',
+        'ttd_image',
         'is_active',
         'urutan',
     ];
@@ -25,5 +26,9 @@ class Penandatangan extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+    public function getTtdImageUrlAttribute()
+    {
+        return $this->ttd_image ? asset('storage/' . $this->ttd_image) : null;
     }
 }

@@ -233,11 +233,9 @@
                         if (is_array($item) && !empty($item['jabatan'])) {
                             return $item['jabatan'];
                         }
-
                         if (is_object($item) && !empty($item->jabatan)) {
                             return $item->jabatan;
                         }
-
                         return null;
                     };
                 @endphp
@@ -297,18 +295,29 @@
         Demikian surat tugas ini diberikan untuk dilaksanakan dengan penuh rasa tanggung jawab.
     </p>
 
-    {{-- TTD --}}
     @php
         $tgl = \Carbon\Carbon::parse($pengajuan->created_at ?? now())->translatedFormat('d F Y');
 
-        // Prioritas: snapshot di surat_tugas -> relasi penandatangan -> fallback default
-        $jabatanTtd = $pengajuan->jabatan_ttd ?? ($pengajuan->penandatangan->jabatan ?? 'INSPEKTUR DAERAH');
+        $jabatanTtd = optional($pengajuan->penandatangan)->jabatan ?? '[Jabatan penandatangan belum diatur]';
+        $namaTtd = optional($pengajuan->penandatangan)->nama ?? '[Penandatangan belum dipilih]';
+        $pangkatTtd = optional($pengajuan->penandatangan)->pangkat ?? '-';
+        $nipTtd = optional($pengajuan->penandatangan)->nip ?? '-';
 
-        $namaTtd = $pengajuan->nama_ttd ?? ($pengajuan->penandatangan->nama ?? 'Drs. MUSTARI KADIR, M.Si.');
+        $ttdFile = optional($pengajuan->penandatangan)->ttd_image;
+        $ttdImagePath = null;
+        $ttdBase64 = null;
+        $ttdMime = 'image/png';
 
-        $pangkatTtd = $pengajuan->pangkat_ttd ?? ($pengajuan->penandatangan->pangkat ?? 'Pembina Utama Muda');
+        if (!empty($ttdFile)) {
+            $ttdFile = ltrim($ttdFile, '/');
+            $ttdImagePath = storage_path('app/public/' . $ttdFile);
 
-        $nipTtd = $pengajuan->nip_ttd ?? ($pengajuan->penandatangan->nip ?? '19680119 199112 1 002');
+            if (file_exists($ttdImagePath)) {
+                $ext = strtolower(pathinfo($ttdImagePath, PATHINFO_EXTENSION));
+                $ttdMime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/png';
+                $ttdBase64 = base64_encode(file_get_contents($ttdImagePath));
+            }
+        }
     @endphp
 
     <table class="ttd-table">
@@ -319,7 +328,14 @@
                 Pada Tanggal {{ $tgl }}<br><br>
 
                 {{ strtoupper($jabatanTtd) }}<br>
-                KABUPATEN SIDENRENG RAPPANG<br><br><br><br>
+                KABUPATEN SIDENRENG RAPPANG<br><br>
+
+                @if ($ttdBase64)
+                    <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}"
+                        style="height:90px; max-width:200px;"><br>
+                @else
+                    <div style="height:80px;"></div>
+                @endif
 
                 <u>{{ $namaTtd }}</u><br>
                 Pangkat : {{ $pangkatTtd }}<br>

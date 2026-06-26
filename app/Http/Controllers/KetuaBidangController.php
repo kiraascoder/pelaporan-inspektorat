@@ -323,6 +323,7 @@ class KetuaBidangController extends Controller
         $result = DB::transaction(function () use ($request) {
             $laporanId = $request->input('laporan_id');
             $penandatangan = \App\Models\Penandatangan::findOrFail($request->penandatangan_id);
+
             $tim = TimInvestigasi::create([
                 'laporan_id' => $laporanId,
                 'ketua_tim_id' => $request->ketua_tim_id,
@@ -377,10 +378,6 @@ class KetuaBidangController extends Controller
                 'nomor_surat' => null,
                 'nama_ditugaskan' => $namaDitugaskan,
                 'deskripsi_umum' => $request->deskripsi_umum,
-                'jabatan_ttd' => $penandatangan->jabatan,
-                'nama_ttd' => $penandatangan->nama,
-                'pangkat_ttd' => $penandatangan->pangkat,
-                'nip_ttd' => $penandatangan->nip,
                 'surat_tugas_path' => null,
                 'surat_tugas_uploaded_at' => null,
             ]);

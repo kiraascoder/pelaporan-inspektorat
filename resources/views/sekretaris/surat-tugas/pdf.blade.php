@@ -23,7 +23,6 @@
             font-weight: bold;
         }
 
-
         body {
             font-family: "Times-Roman", serif;
             font-size: 12pt;
@@ -140,7 +139,6 @@
 </head>
 
 <body>
-    {{-- KOP SEDERHANA --}}
     {{-- KOP DENGAN LOGO --}}
     <table style="width:100%; margin-bottom:6px;">
         <tr>
@@ -160,8 +158,8 @@
             <td style="width:80px;"></td>
         </tr>
     </table>
-    <div class="garis"></div>
 
+    <div class="garis"></div>
 
     {{-- JUDUL --}}
     <div class="judul-surat">
@@ -200,10 +198,9 @@
             <td class="kolom-titik">:</td>
             <td>
                 @php
-                    // Ambil raw value dan normalisasi ke array
                     $namaDitugaskanRaw = $pengajuan->nama_ditugaskan ?? [];
+
                     if (is_string($namaDitugaskanRaw)) {
-                        // bila disimpan sebagai JSON string di DB
                         $decoded = json_decode($namaDitugaskanRaw, true);
                         $namaDitugaskan = is_array($decoded) ? $decoded : [$namaDitugaskanRaw];
                     } elseif (is_null($namaDitugaskanRaw)) {
@@ -212,34 +209,26 @@
                         $namaDitugaskan = is_array($namaDitugaskanRaw) ? $namaDitugaskanRaw : [$namaDitugaskanRaw];
                     }
 
-                    // Pemetaan role per index (jika Anda ingin mapping posisi tertentu)
                     $roleMap = [
                         0 => 'Penanggung Jawab',
                         1 => 'Wakil Penanggung Jawab',
                         2 => 'Pengendali Teknis',
                         3 => 'Ketua Tim',
-                        // sisanya default 'Anggota Tim'
                     ];
 
-                    // Helper untuk ambil nama dari berbagai format item
                     $getNama = function ($item) {
                         if (is_array($item)) {
-                            // struktur baru: ['nama' => '...', 'jabatan' => '...'] atau numeric indexed
                             if (!empty($item['nama'])) {
                                 return $item['nama'];
                             }
-                            // fallback ke index 0
                             return $item[0] ?? '[Tidak Diketahui]';
                         } elseif (is_object($item)) {
-                            // jika objek (stdClass), coba property nama
-                            return $item->nama ?? (property_exists($item, 0) ? $item->{0} : '[Tidak Diketahui]');
-                        } else {
-                            // string
-                            return (string) $item;
+                            return $item->nama ?? '[Tidak Diketahui]';
                         }
+
+                        return (string) $item;
                     };
 
-                    // Helper untuk ambil jabatan dari item (opsional)
                     $getJabatan = function ($item) {
                         if (is_array($item) && !empty($item['jabatan'])) {
                             return $item['jabatan'];
@@ -251,22 +240,19 @@
                     };
                 @endphp
 
-                @if (is_array($namaDitugaskan) && count($namaDitugaskan))
+                @if (count($namaDitugaskan))
                     <table class="simple">
                         @foreach ($namaDitugaskan as $i => $item)
                             @php
                                 $displayName = $getNama($item);
                                 $jabatanItem = $getJabatan($item);
                                 $roleLabel = $roleMap[$i] ?? 'Anggota Tim';
-                                // escape text untuk keamanan pada PDF generation
-                                $displayNameEsc = e($displayName);
-                                $roleLabelEsc = e($jabatanItem ?? $roleLabel);
                             @endphp
                             <tr>
-                                <td style="width: 18px;">{{ $i + 1 }}.</td>
-                                <td>{!! $displayNameEsc !!}</td>
-                                <td style="width: 190px; text-align:right; font-size:12px;">
-                                    {!! $roleLabelEsc !!}
+                                <td style="width:18px;">{{ $i + 1 }}.</td>
+                                <td>{{ $displayName }}</td>
+                                <td style="width:190px; text-align:right; font-size:12px;">
+                                    {{ $jabatanItem ?? $roleLabel }}
                                 </td>
                             </tr>
                         @endforeach
@@ -293,7 +279,7 @@
                             <li>{{ $line }}</li>
                         @endforeach
                     @else
-                        <li>[Belum ada uraian tugas, isi melalui deskripsi_umum pengajuan]</li>
+                        <li>[Belum ada uraian tugas, isi melalui deskripsi_umum]</li>
                     @endif
                 </ol>
             </td>
@@ -309,28 +295,59 @@
         Demikian surat tugas ini diberikan untuk dilaksanakan dengan penuh rasa tanggung jawab.
     </p>
 
+    @php
+        $tgl = \Carbon\Carbon::parse($pengajuan->created_at ?? now())->translatedFormat('d F Y');
+
+        $jabatanTtd =
+            $pengajuan->jabatan_ttd ??
+            (optional($pengajuan->penandatangan)->jabatan ?? '[Jabatan penandatangan belum diatur]');
+
+        $namaTtd =
+            $pengajuan->nama_ttd ?? (optional($pengajuan->penandatangan)->nama ?? '[Penandatangan belum dipilih]');
+
+        $pangkatTtd = $pengajuan->pangkat_ttd ?? (optional($pengajuan->penandatangan)->pangkat ?? '-');
+
+        $nipTtd = $pengajuan->nip_ttd ?? (optional($pengajuan->penandatangan)->nip ?? '-');
+
+        $ttdFile = $pengajuan->ttd_image_snapshot ?? optional($pengajuan->penandatangan)->ttd_image;
+
+        $ttdImagePath = null;
+        $ttdBase64 = null;
+        $ttdMime = 'image/png';
+
+        if (!empty($ttdFile)) {
+            $ttdFile = ltrim($ttdFile, '/');
+            $ttdImagePath = storage_path('app/public/' . $ttdFile);
+
+            if (file_exists($ttdImagePath)) {
+                $ext = strtolower(pathinfo($ttdImagePath, PATHINFO_EXTENSION));
+                $ttdMime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/png';
+                $ttdBase64 = base64_encode(file_get_contents($ttdImagePath));
+            }
+        }
+    @endphp
+
     {{-- TTD --}}
     <table class="ttd-table">
         <tr>
             <td style="width:50%;"></td>
             <td style="width:50%; text-align:left;">
-                @php
-                    $tgl = \Carbon\Carbon::parse($pengajuan->created_at ?? now())->translatedFormat('d F Y');
-                    $penandatanganNama = $pengajuan->penandatangan->nama_lengkap ?? 'Drs. MUSTARI KADIR, M.Si.';
-                    // Pangkat field pada model mungkin berbeda; jika Anda punya 'pangkat' gunakan itu.
-                    $penandatanganPangkat =
-                        $pengajuan->penandatangan->pangkat ??
-                        ($pengajuan->penandatangan->jabatan ?? 'Pembina Utama Muda');
-                    $penandatanganNip = $pengajuan->penandatangan->nip ?? '19680119 199112 1 002';
-                @endphp
                 Dikeluarkan di Pangkajene Sidenreng<br>
                 Pada Tanggal {{ $tgl }}<br><br>
-                INSPEKTUR DAERAH<br>
-                KABUPATEN SIDENRENG RAPPANG<br><br><br><br>
 
-                <u>{{ e($penandatanganNama) }}</u><br>
-                Pangkat : {{ e($penandatanganPangkat) }}<br>
-                Nip : {{ e($penandatanganNip) }}
+                {{ strtoupper($jabatanTtd) }}<br>
+                KABUPATEN SIDENRENG RAPPANG<br><br>
+
+                @if ($ttdBase64)
+                    <img src="data:{{ $ttdMime }};base64,{{ $ttdBase64 }}"
+                        style="height:70px; max-width:180px;"><br>
+                @else
+                    <div style="height:70px;"></div>
+                @endif
+
+                <u>{{ $namaTtd }}</u><br>
+                Pangkat : {{ $pangkatTtd }}<br>
+                Nip : {{ $nipTtd }}
             </td>
         </tr>
     </table>
